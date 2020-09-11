@@ -1,4 +1,4 @@
-# newspack-new-plugin-boilerplate
+# newspack-listings
 
 A new thing.
 
