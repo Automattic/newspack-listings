@@ -85,6 +85,8 @@ final class Newspack_Listings_Core {
 
 	/**
 	 * Is the current post a curated list post type?
+	 *
+	 * @return Boolean Whehter or not the post is a Curated List.
 	 */
 	public static function is_curated_list() {
 		return get_post_type() === self::NEWSPACK_LISTINGS_POST_TYPES['curated_list'];

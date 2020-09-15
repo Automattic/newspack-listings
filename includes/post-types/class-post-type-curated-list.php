@@ -50,7 +50,7 @@ final class Post_Type_Curated_List {
 
 		add_action( 'the_post', [ __CLASS__, 'strip_editor_modifications' ] );
 		add_filter( 'allowed_block_types', [ __CLASS__, 'restrict_block_types' ] );
-		add_filter( 'the_content', [ __CLASS__, 'add_list_wrapper_tags' ] );
+		add_filter( 'the_content', [ __CLASS__, 'add_list_wrapper_tags' ], 20 );
 	}
 
 	/**
@@ -106,9 +106,6 @@ final class Post_Type_Curated_List {
 			'show_in_rest' => true,
 			'show_ui'      => true,
 			'supports'     => [ 'editor', 'title', 'custom-fields', 'thumbnail' ],
-			'template'     => [
-				[ 'newspack-listings/listing', [] ],
-			],
 		];
 
 		register_post_type( Core::NEWSPACK_LISTINGS_POST_TYPES['curated_list'], $args );
@@ -120,12 +117,13 @@ final class Post_Type_Curated_List {
 	public static function register_meta() {
 		register_meta(
 			'post',
-			'newspack_listings_type',
+			'newspack_listings_show_numbers',
 			[
 				'object_subtype'    => Core::NEWSPACK_LISTINGS_POST_TYPES['curated_list'],
-				'description'       => __( 'The type of list.', 'newspack-listings' ),
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'default'           => true,
+				'description'       => __( 'Display numbers for the items in this list.', 'newspack-listings' ),
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
 				'single'            => true,
 				'show_in_rest'      => true,
 				'auth_callback'     => function() {
@@ -138,7 +136,24 @@ final class Post_Type_Curated_List {
 			'newspack_listings_show_map',
 			[
 				'object_subtype'    => Core::NEWSPACK_LISTINGS_POST_TYPES['curated_list'],
+				'default'           => true,
 				'description'       => __( 'Display a map with this list if at least one listing has geolocation data.', 'newspack-listings' ),
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'single'            => true,
+				'show_in_rest'      => true,
+				'auth_callback'     => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			]
+		);
+		register_meta(
+			'post',
+			'newspack_listings_show_sort_by_date',
+			[
+				'object_subtype'    => Core::NEWSPACK_LISTINGS_POST_TYPES['curated_list'],
+				'default'           => false,
+				'description'       => __( 'Display sort-by-date controls (only applicable to lists of events).', 'newspack-listings' ),
 				'type'              => 'boolean',
 				'sanitize_callback' => 'rest_sanitize_boolean',
 				'single'            => true,
@@ -158,7 +173,12 @@ final class Post_Type_Curated_List {
 	 */
 	public static function restrict_block_types( $allowed_blocks ) {
 		if ( get_post_type() === Core::NEWSPACK_LISTINGS_POST_TYPES['curated_list'] ) {
-			return [ 'newspack-listings/listing' ];
+			return [
+				'newspack-listings/event',
+				'newspack-listings/generic',
+				'newspack-listings/marketplace',
+				'newspack-listings/place',
+			];
 		}
 
 		return $allowed_blocks;
@@ -185,8 +205,21 @@ final class Post_Type_Curated_List {
 	 * @return string Filtered content.
 	 */
 	public static function add_list_wrapper_tags( $content ) {
-		if ( Core::is_curated_list() ) {
-			$content = '<ol>' . $content . '</ol>';
+		if ( Core::is_curated_list() && is_singular() && in_the_loop() && is_main_query() ) {
+			$post_id      = get_the_ID();
+			$show_map     = get_post_meta( $post_id, 'newspack_listings_show_map', true );
+			$show_numbers = get_post_meta( $post_id, 'newspack_listings_show_numbers', true );
+			$classes      = 'newspack-listings__curated-list';
+
+			if ( ! empty( $show_map ) ) {
+				$classes .= ' newspack-listings__show-map';
+			}
+
+			if ( ! empty( $show_numbers ) ) {
+				$classes .= ' newspack-listings__show-numbers';
+			}
+
+			$content = '<ol class="' . $classes . '">' . $content . '</ol>';
 		}
 
 		return $content;

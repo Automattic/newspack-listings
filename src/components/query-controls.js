@@ -19,9 +19,8 @@ class QueryControls extends Component {
 
 	fetchListingSuggestions = search => {
 		const { listingType, listItems } = this.props;
-		const basePath = '/newspack-listings/v1/listings';
 		return apiFetch( {
-			path: addQueryArgs( basePath, {
+			path: addQueryArgs( '/newspack-listings/v1/listings', {
 				search,
 				per_page: 20,
 				_fields: 'id,title',
@@ -43,9 +42,9 @@ class QueryControls extends Component {
 		} );
 	};
 
-	fetchSavedPosts = ( postIDs, listingType ) => {
+	fetchSavedPosts = postIDs => {
 		return apiFetch( {
-			path: addQueryArgs( '/wp/v2/' + ( listingType || 'newspack_lst_generic' ), {
+			path: addQueryArgs( 'newspack-listings/v1/listings', {
 				per_page: 100,
 				include: postIDs.join( ',' ),
 				_fields: 'id,title',
@@ -53,13 +52,13 @@ class QueryControls extends Component {
 		} ).then( function( posts ) {
 			return posts.map( post => ( {
 				value: post.id,
-				label: decodeEntities( post.title.rendered ) || __( '(no title)', 'newspack-listings' ),
+				label: decodeEntities( post.title ) || __( '(no title)', 'newspack-listings' ),
 			} ) );
 		} );
 	};
 
 	render = () => {
-		const { label, listingType, selectedPost, onChange } = this.props;
+		const { label, selectedPost, onChange } = this.props;
 
 		return [
 			<AutocompleteTokenField
@@ -67,7 +66,7 @@ class QueryControls extends Component {
 				tokens={ [ selectedPost ] }
 				onChange={ onChange }
 				fetchSuggestions={ this.fetchListingSuggestions }
-				fetchSavedInfo={ postIDs => this.fetchSavedPosts( postIDs, listingType ) }
+				fetchSavedInfo={ postIDs => this.fetchSavedPosts( postIDs ) }
 				label={ label }
 				help={ __(
 					'Begin typing post title, click autocomplete result to select.',

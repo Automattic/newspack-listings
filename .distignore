@@ -28,4 +28,5 @@ webpack.config.js
 node_modules
 /tests
 /bin
-/src
+/src/**/*.js
+*.scss

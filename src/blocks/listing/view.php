@@ -7,16 +7,22 @@
 
 namespace Newspack_Listings\Listing_Block;
 
+use \Newspack_Listings\Newspack_Listings_Core as Core;
+
 /**
  * Dynamic block registration.
  */
-function register_block() {
-	register_block_type(
-		'newspack-listings/listing',
-		[
-			'render_callback' => __NAMESPACE__ . '\render_block',
-		]
-	);
+function register_blocks() {
+	foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $post_type ) {
+		if ( 'curated_list' !== $label ) {
+			register_block_type(
+				'newspack-listings/' . $label,
+				[
+					'render_callback' => __NAMESPACE__ . '\render_block',
+				]
+			);
+		}
+	}
 }
 
 /**
@@ -30,15 +36,18 @@ function render_block( $attributes ) {
 		return;
 	}
 
+	// Bail if there's no listing post ID for this block.
 	if ( empty( $attributes['listing'] ) ) {
 		return;
 	}
 
 	$post = get_post( intval( $attributes['listing'] ) );
 
+	// Bail if there's no post with the saved ID.
 	if ( empty( $post ) ) {
 		return;
 	}
+
 	// This will let the FSE plugin know we need CSS/JS now.
 	do_action( 'newspack_listings_render_listing_block' );
 
@@ -49,7 +58,7 @@ function render_block( $attributes ) {
 		<a href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
 			<article class="newspack-listings__listing-article">
 				<h3><?php echo wp_kses_post( $post->post_title ); ?></h3>
-				<?php echo wp_kses_post( apply_filters( 'the_content', $post->post_content ) ); ?>
+				<?php echo wp_kses_post( $post->post_content ); ?>
 			</article>
 		</a>
 	</li>
@@ -60,28 +69,4 @@ function render_block( $attributes ) {
 	return $content;
 }
 
-/**
- * Query listings posts with the given attributes.
- *
- * @param Array $attributes Map of query attributes.
- * @return WP_Query Results of query.
- */
-function get_listings( $attributes ) {
-	$listing_type    = $attributes['listingType'];
-	$number_of_posts = $attributes['postsToShow'];
-	$specific_mode   = $attributes['specificMode'];
-	$specific_posts  = $attributes['specificPosts'];
-	$args            = [
-		'post_type' => $listing_type,
-	];
-
-	// If fetching specific posts by IDs.
-	if ( true === $specific_mode && ! empty( $specific_posts ) ) {
-		$args['post__in'] = $specific_posts;
-		$args['orderby']  = 'post__in';
-	}
-
-	return new \WP_Query( $args );
-}
-
-register_block();
+register_blocks();

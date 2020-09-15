@@ -9,9 +9,9 @@ import { InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
 import {
 	Button,
 	ButtonGroup,
+	Notice,
 	PanelBody,
 	PanelRow,
-	Placeholder,
 	RangeControl,
 	ToggleControl,
 	Spinner,
@@ -24,8 +24,9 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { QueryControls } from '../../components';
 
-const CuratedListEditorComponent = ( { attributes, listItems, meta, setAttributes } ) => {
+const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttributes } ) => {
 	const [ post, setPost ] = useState( null );
+	const [ error, setError ] = useState( null );
 	const [ isEditingPost, setIsEditingPost ] = useState( false );
 	const {
 		listing,
@@ -42,7 +43,17 @@ const CuratedListEditorComponent = ( { attributes, listItems, meta, setAttribute
 		showSubtitle,
 	} = attributes;
 
-	const listingType = meta.newspack_listings_type || 'newspack_lst_generic';
+	const { newspack_listings_show_map, newspack_listings_show_numbers } = meta;
+	const classes = [ 'newspack-listings__list-item' ];
+
+	const listingTypeSlug = name.split( '/' ).slice( -1 );
+	const listingType = window.newspack_listings_data.post_types[ listingTypeSlug ];
+
+	classes.push( listingTypeSlug );
+
+	if ( newspack_listings_show_map ) classes.push( 'newspack-listings__show-map' );
+
+	if ( newspack_listings_show_numbers ) classes.push( 'newspack-listings__show-numbers' );
 
 	const imageSizeOptions = [
 		{
@@ -78,42 +89,40 @@ const CuratedListEditorComponent = ( { attributes, listItems, meta, setAttribute
 		window.newspackIsPostSubtitleSupported &&
 		window.newspackIsPostSubtitleSupported.post_subtitle;
 
-	useEffect(() => {
-		if ( listing ) {
-			fetchPost( listing );
-		}
-	}, [ listing ]);
+	// Fetch listing post data if we have a listing post ID.
+	useEffect( () => listing && fetchPost( listing ), [ listing ] );
 
-	// Fetch listing title and content by listingId.
+	// Fetch listing post title and content by listingId.
 	const fetchPost = async listingId => {
 		try {
+			setError( null );
 			const posts = await apiFetch( {
-				path: addQueryArgs( '/wp/v2/' + ( listingType || 'newspack_lst_generic' ), {
+				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
-					include: listingId,
+					id: listingId,
 					_fields: 'id,title,content',
 				} ),
 			} );
 
 			if ( 0 === posts.length ) {
-				throw 'No posts found for ID ' + listingId;
+				throw `No posts found for ID ${ listingId }. Try refreshing or selecting a new post.`;
 			}
 
 			setPost( posts[ 0 ] );
 		} catch ( e ) {
 			// eslint-disable-next-line no-console
-			console.error( e );
+			setError( e );
 		}
 	};
 
-	// Renders the autocomplete search field to select listings. Will only show listings of the type selected in the parent post's metadata.
+	// Renders the autocomplete search field to select listings. Will only show listings of the type that matches the block.
 	const renderSearch = () => {
 		return (
 			<div className="newspack-listings__list-item-post">
 				<QueryControls
 					label={
-						isEditingPost && post.title.rendered
-							? __( 'Select a new listing to replace “', 'newspack-listings' ) + post.title.rendered
+						isEditingPost && post && post.title
+							? __( 'Select a new listing to replace “', 'newspack-listings' ) + post.title + '”'
 							: __( 'Select a listing.', 'newspack-listings' )
 					}
 					listingType={ listingType }
@@ -133,30 +142,49 @@ const CuratedListEditorComponent = ( { attributes, listItems, meta, setAttribute
 						{ __( 'Cancel', 'newspack-listings' ) }
 					</Button>
 				) }
+
+				<Button
+					isSecondary
+					href={ `/wp-admin/post-new.php?post_type=${ listingType }` }
+					target="_blank"
+				>
+					{ __( 'Create new listing', 'newspack-listing' ) }
+				</Button>
 			</div>
 		);
 	};
 
 	// Renders selected listing post, or a placeholder if still fetching.
 	const renderPost = () => {
-		if ( ! post ) {
-			return (
-				<Placeholder>
-					<Spinner />
-				</Placeholder>
-			);
+		if ( ! post && ! error ) {
+			return <Spinner />;
 		}
 
 		return (
 			<div className="newspack-listings__list-item-post">
-				<h3 className="newspack-listings__list-item-title">{ post.title.rendered }</h3>
-				<RawHTML>{ post.content.rendered }</RawHTML>
+				{ error && (
+					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
+						{ error }
+					</Notice>
+				) }
+				{ post && post.title && (
+					<h3 className="newspack-listings__list-item-title">
+						<RawHTML>{ post.title }</RawHTML>
+					</h3>
+				) }
+				{ post && post.content && <RawHTML>{ post.content }</RawHTML> }
 				<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
 					{ __( 'Replace listing', 'newspack-listing' ) }
 				</Button>
-				<Button isLink href={ `/wp-admin/post.php?post=${ listing }&action=edit` } target="_blank">
-					{ __( 'Edit this listing', 'newspack-listing' ) }
-				</Button>
+				{ post && (
+					<Button
+						isLink
+						href={ `/wp-admin/post.php?post=${ listing }&action=edit` }
+						target="_blank"
+					>
+						{ __( 'Edit this listing', 'newspack-listing' ) }
+					</Button>
+				) }
 			</div>
 		);
 	};
@@ -288,7 +316,7 @@ const CuratedListEditorComponent = ( { attributes, listItems, meta, setAttribute
 				</PanelBody>
 			</InspectorControls>
 
-			<div className="newspack-listings__list-item">
+			<div className={ classes.join( ' ' ) }>
 				{ ! listing || isEditingPost ? renderSearch() : renderPost() }
 			</div>
 		</div>
@@ -313,4 +341,4 @@ const mapStateToProps = select => {
 	};
 };
 
-export const CuratedListEditor = withSelect( mapStateToProps )( CuratedListEditorComponent );
+export const ListingEditor = withSelect( mapStateToProps )( ListingEditorComponent );

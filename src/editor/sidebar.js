@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { SelectControl, ToggleControl } from '@wordpress/components';
+import { ToggleControl } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
@@ -18,7 +18,11 @@ const SidebarComponent = props => {
 	}
 
 	const { meta, updateMetaValue } = props;
-	const { newspack_listings_show_map, newspack_listings_type } = meta;
+	const {
+		newspack_listings_show_map,
+		newspack_listings_show_numbers,
+		newspack_listings_show_sort_by_date,
+	} = meta;
 
 	return (
 		<PluginDocumentSettingPanel
@@ -26,18 +30,12 @@ const SidebarComponent = props => {
 			name="newspack-listings"
 			title={ __( 'Curated List Settings', 'newspack-listings' ) }
 		>
-			<SelectControl
-				className="newspack-listings__select-control"
-				label={ __( 'Listing Type', 'newspack-listings' ) }
-				value={ newspack_listings_type || 'newspack_lst_generic' }
-				options={ [
-					{ value: 'newspack_lst_generic', label: __( 'Generic', 'newspack-listings' ) },
-					{ value: 'newspack_lst_place', label: __( 'Place', 'newspack-listings' ) },
-					{ value: 'newspack_lst_mktplce', label: __( 'Marketplace', 'newspack-listings' ) },
-					{ value: 'newspack_lst_event', label: __( 'Event', 'newspack-listings' ) },
-				] }
-				onChange={ value => updateMetaValue( 'newspack_listings_type', value ) }
-				help={ __( 'Select the type of list to be shown.', 'newspack-listings' ) }
+			<ToggleControl
+				className="newspack-listings__toggle-control"
+				label={ __( 'Show numbers?', 'newspack-listings' ) }
+				help={ __( 'Display numbers for the items in this list.' ) }
+				checked={ newspack_listings_show_numbers }
+				onChange={ value => updateMetaValue( 'newspack_listings_show_numbers', value ) }
 			/>
 			<ToggleControl
 				className="newspack-listings__toggle-control"
@@ -45,6 +43,14 @@ const SidebarComponent = props => {
 				help={ __( 'Display a map with this list if at least one listing has geolocation data.' ) }
 				checked={ newspack_listings_show_map }
 				onChange={ value => updateMetaValue( 'newspack_listings_show_map', value ) }
+			/>
+
+			<ToggleControl
+				className="newspack-listings__toggle-control"
+				label={ __( 'Show sort-by-date controls?', 'newspack-listings' ) }
+				help={ __( 'Display sort-by-date controls (only applicable to lists of events).' ) }
+				checked={ newspack_listings_show_sort_by_date }
+				onChange={ value => updateMetaValue( 'newspack_listings_show_sort_by_date', value ) }
 			/>
 		</PluginDocumentSettingPanel>
 	);

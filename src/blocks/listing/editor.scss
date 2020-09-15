@@ -4,21 +4,30 @@
 
 .newspack-listings {
 	&__list-item-editor {
-		&::before {
-			counter-increment: list;
-			content: counter( list ) '. ';
-		}
+		border-radius: 2px;
+		box-shadow: inset 0 0 0 1px #1e1e1e;
+		padding: 1rem;
 
 		.components-spinner {
 			display: block;
 			float: none;
-			margin: auto;
+			margin: 2rem auto;
+		}
+
+		.components-button + .components.button {
+			margin-left: 0.5rem;
 		}
 	}
 
-	&__list-item-post {
-		border-radius: 2px;
-		box-shadow: inset 0 0 0 1px #1e1e1e;
-		padding: 1rem;
+	&__show-numbers::before {
+		color: #767676;
+		color: var( --wp--preset--color--medium-gray );
+		content: counter( list ) '. ';
+		counter-increment: list;
+		font-weight: bold;
+	}
+
+	&__error {
+		margin: 1rem auto 2rem;
 	}
 }

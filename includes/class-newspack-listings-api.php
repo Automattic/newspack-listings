@@ -70,21 +70,37 @@ final class Newspack_Listings_Api {
 	 * @return WP_REST_Response.
 	 */
 	public static function get_items( $request ) {
-		$params   = $request->get_params();
-		$search   = $params['search'];
-		$type     = $params['type'];
-		$per_page = $params['per_page'];
+		$params     = $request->get_params();
+		$search     = ! empty( $params['search'] ) ? $params['search'] : null;
+		$id         = ! empty( $params['id'] ) ? $params['id'] : null;
+		$post_types = ! empty( $params['type'] ) ? $params['type'] : [];
+		$per_page   = $params['per_page'];
 
-		if ( empty( $search || empty( $type ) ) ) {
+		if ( empty( $search ) && empty( $id ) ) {
 			return new \WP_REST_Response( [] );
 		}
 
+		if ( empty( $post_types ) ) {
+			foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $post_type ) {
+				if ( 'curated_list' !== $label ) {
+					$post_types[] = $post_type;
+				}
+			}
+		}
+
 		$args = [
-			'post_type'      => $type,
+			'post_type'      => $post_types,
 			'post_status'    => 'publish',
-			's'              => esc_sql( $search ),
 			'posts_per_page' => $per_page,
 		];
+
+		if ( ! empty( $search ) ) {
+			$args['s'] = esc_sql( $search );
+		}
+
+		if ( ! empty( $id ) ) {
+			$args['p'] = esc_sql( $id );
+		}
 
 		$query = new \WP_Query( $args );
 

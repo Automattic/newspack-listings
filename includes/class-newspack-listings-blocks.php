@@ -43,9 +43,9 @@ final class Newspack_Listings_Blocks {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_filter( 'block_categories', [ __CLASS__, 'update_block_categories' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
-		add_filter( 'block_categories', [ __CLASS__, 'update_block_categories' ] );
 	}
 
 	/**
@@ -59,6 +59,14 @@ final class Newspack_Listings_Blocks {
 				[],
 				NEWSPACK_LISTINGS_VERSION,
 				true
+			);
+
+			wp_localize_script(
+				'newspack-listings-editor',
+				'newspack_listings_data',
+				[
+					'post_types' => Core::NEWSPACK_LISTINGS_POST_TYPES,
+				]
 			);
 
 			wp_register_style(
@@ -81,8 +89,8 @@ final class Newspack_Listings_Blocks {
 			return;
 		}
 
-		$src_directory  = NEWSPACK_LISTINGS_PLUGIN_FILE . '/src/blocks/';
-		$dist_directory = NEWSPACK_LISTINGS_PLUGIN_FILE . '/dist/';
+		$src_directory  = NEWSPACK_LISTINGS_PLUGIN_FILE . 'src/blocks/';
+		$dist_directory = NEWSPACK_LISTINGS_PLUGIN_FILE . 'dist/';
 		$iterator       = new \DirectoryIterator( $src_directory );
 
 		foreach ( $iterator as $block_directory ) {
@@ -121,16 +129,15 @@ final class Newspack_Listings_Blocks {
 	 * @return array
 	 */
 	public static function update_block_categories( $categories ) {
-		if ( Core::is_curated_list() ) {
-			$categories[] = [
+		return array_merge(
+			$categories,
+			[
 				[
 					'slug'  => 'newspack-listings',
 					'title' => __( 'Newspack Listings', 'newspack-listings' ),
 				],
-			];
-		}
-
-		return $categories;
+			]
+		);
 	}
 }
 
