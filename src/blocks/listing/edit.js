@@ -90,7 +90,11 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 		window.newspackIsPostSubtitleSupported.post_subtitle;
 
 	// Fetch listing post data if we have a listing post ID.
-	useEffect( () => listing && fetchPost( listing ), [ listing ] );
+	useEffect(() => {
+		if ( listing ) {
+			fetchPost( listing );
+		}
+	}, [ listing ]);
 
 	// Fetch listing post title and content by listingId.
 	const fetchPost = async listingId => {
