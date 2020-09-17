@@ -14,8 +14,8 @@ use \Newspack_Listings\Newspack_Listings_Core as Core;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Main Core class.
- * Sets up CPTs and taxonomies for listings.
+ * API class.
+ * Sets up API endpoints and handlers for listings.
  */
 final class Newspack_Listings_Api {
 
@@ -27,8 +27,8 @@ final class Newspack_Listings_Api {
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings instance.
-	 * Ensures only one instance of Newspack_Listings is loaded or can be loaded.
+	 * Main Newspack_Listings_Api instance.
+	 * Ensures only one instance of Newspack_Listings_Api is loaded or can be loaded.
 	 *
 	 * @return Newspack_Listings_Api - Main instance.
 	 */
@@ -50,6 +50,8 @@ final class Newspack_Listings_Api {
 	 * Register REST API endpoints.
 	 */
 	public static function register_routes() {
+
+		// GET listings posts by ID or title search term.
 		register_rest_route(
 			'newspack-listings/v1',
 			'listings',
@@ -64,22 +66,24 @@ final class Newspack_Listings_Api {
 	}
 
 	/**
-	 * Lookup individual posts by title only.
+	 * Lookup individual posts by title search or post ID.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response.
 	 */
 	public static function get_items( $request ) {
 		$params     = $request->get_params();
+		$fields     = explode( ',', $params['_fields'] );
 		$search     = ! empty( $params['search'] ) ? $params['search'] : null;
 		$id         = ! empty( $params['id'] ) ? $params['id'] : null;
 		$post_types = ! empty( $params['type'] ) ? $params['type'] : [];
-		$per_page   = $params['per_page'];
+		$per_page   = ! empty( $params['per_page'] ) ? $params['per_page'] : 20;
 
 		if ( empty( $search ) && empty( $id ) ) {
 			return new \WP_REST_Response( [] );
 		}
 
+		// If not given a post type, look up posts of any listing type.
 		if ( empty( $post_types ) ) {
 			foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $post_type ) {
 				if ( 'curated_list' !== $label ) {
@@ -88,16 +92,19 @@ final class Newspack_Listings_Api {
 			}
 		}
 
+		// Query args.
 		$args = [
 			'post_type'      => $post_types,
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
 		];
 
-		if ( ! empty( $search ) ) {
+		// Look up by title only if provided with a search term and not an ID.
+		if ( ! empty( $search ) && empty( $id ) ) {
 			$args['s'] = esc_sql( $search );
 		}
 
+		// If given an ID, just look up that post.
 		if ( ! empty( $id ) ) {
 			$args['p'] = esc_sql( $id );
 		}
@@ -107,11 +114,26 @@ final class Newspack_Listings_Api {
 		if ( $query->have_posts() ) {
 			return new \WP_REST_Response(
 				array_map(
-					function( $post ) {
+					function( $post ) use ( $fields ) {
+
+						// If $fields includes meta, get all Newspack Listings meta fields.
+						$post_meta = [];
+
+						if ( in_array( 'meta', $fields ) ) {
+							$post_meta = array_filter(
+								get_post_meta( $post->ID ),
+								function( $key ) {
+									return is_numeric( strpos( $key, 'newspack_listings_' ) );
+								},
+								ARRAY_FILTER_USE_KEY
+							);
+						}
+
 						return [
 							'id'      => $post->ID,
 							'title'   => $post->post_title,
-							'content' => $post->post_content,
+							'content' => wpautop( get_the_excerpt( $post->ID ) ),
+							'meta'    => $post_meta,
 						];
 					},
 					$query->posts

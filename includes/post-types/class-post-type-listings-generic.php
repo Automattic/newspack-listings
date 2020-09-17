@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Settings as Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,13 +47,32 @@ final class Post_Type_Listings_Generic {
 	 */
 	public function __construct() {
 		self::register_cpt();
+		self::register_meta();
+		self::create_rewrite();
+	}
+
+	/**
+	 * Registers custom metadata fields for Generic listings.
+	 */
+	public static function register_meta() {
+		$post_type   = Core::NEWSPACK_LISTINGS_POST_TYPES['generic'];
+		$meta_fields = Core::get_meta_fields( $post_type );
+
+		foreach ( $meta_fields as $name => $meta_field ) {
+			register_meta(
+				'post',
+				$name,
+				$meta_field['settings']
+			);
+		}
 	}
 
 	/**
 	 * Registers Listings custom post types.
 	 */
 	public static function register_cpt() {
-		$args = [
+		$prefix = Settings::get_settings( 'permalink_prefix' );
+		$args   = [
 			'labels'       => [
 				'name'               => _x( 'Generic Listings', 'post type general name', 'newspack-listings' ),
 				'singular_name'      => _x( 'Listing', 'post type singular name', 'newspack-listings' ),
@@ -70,14 +90,23 @@ final class Post_Type_Listings_Generic {
 				'not_found_in_trash' => __( 'No listings found in Trash.', 'newspack-listings' ),
 			],
 			'public'       => true,
-			'rewrite'      => [ 'slug' => 'listings' ],
+			'rewrite'      => [ 'slug' => $prefix . '/items' ],
 			'show_in_menu' => 'newspack-listings',
 			'show_in_rest' => true,
 			'show_ui'      => true,
-			'supports'     => [ 'editor', 'title', 'custom-fields', 'thumbnail' ],
+			'supports'     => [ 'editor', 'excerpt', 'title', 'custom-fields', 'thumbnail' ],
 		];
 
 		register_post_type( Core::NEWSPACK_LISTINGS_POST_TYPES['generic'], $args );
+	}
+
+	/**
+	 * Create custom rewrite rule to handle namespaced permalinks.
+	 */
+	public static function create_rewrite() {
+		$prefix = Settings::get_settings( 'permalink_prefix' );
+
+		add_rewrite_rule( '^' . $prefix . '/items/([^/]+)/?$', 'index.php?name=$matches[1]&post_type=' . Core::NEWSPACK_LISTINGS_POST_TYPES['generic'], 'top' );
 	}
 }
 

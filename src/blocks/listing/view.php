@@ -58,7 +58,7 @@ function render_block( $attributes ) {
 		<a href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
 			<article class="newspack-listings__listing-article">
 				<h3><?php echo wp_kses_post( $post->post_title ); ?></h3>
-				<?php echo wp_kses_post( $post->post_content ); ?>
+				<?php echo wp_kses_post( wpautop( get_the_excerpt( $post->ID ) ) ); ?>
 			</article>
 		</a>
 	</li>

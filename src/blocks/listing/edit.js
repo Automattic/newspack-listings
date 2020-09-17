@@ -44,10 +44,11 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 	} = attributes;
 
 	const { newspack_listings_show_map, newspack_listings_show_numbers } = meta;
+	const { post_types } = window.newspack_listings_data;
 	const classes = [ 'newspack-listings__list-item' ];
 
 	const listingTypeSlug = name.split( '/' ).slice( -1 );
-	const listingType = window.newspack_listings_data.post_types[ listingTypeSlug ];
+	const listingType = post_types[ listingTypeSlug ];
 
 	classes.push( listingTypeSlug );
 
@@ -104,7 +105,7 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,content',
+					_fields: 'id,title,content,meta',
 				} ),
 			} );
 
@@ -114,7 +115,6 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 
 			setPost( posts[ 0 ] );
 		} catch ( e ) {
-			// eslint-disable-next-line no-console
 			setError( e );
 		}
 	};
@@ -321,6 +321,7 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 			</InspectorControls>
 
 			<div className={ classes.join( ' ' ) }>
+				<span className="newspack-listings__list-item-label">{ listingTypeSlug }</span>
 				{ ! listing || isEditingPost ? renderSearch() : renderPost() }
 			</div>
 		</div>

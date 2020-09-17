@@ -23,7 +23,11 @@ if ( ! defined( 'NEWSPACK_LISTINGS_PLUGIN_FILE' ) ) {
 
 // Include plugin resources.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/vendor/autoload.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/newspack-listings-utils.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-settings.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-core.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-api.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-blocks.php';
+
+// On plugin activation/deactivation.
+register_activation_hook( __FILE__, '\Newspack_Listings\Utils\activate' );

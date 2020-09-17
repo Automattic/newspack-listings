@@ -14,8 +14,8 @@ use \Newspack_Listings\Newspack_Listings_Core as Core;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Main Core class.
- * Sets up CPTs and taxonomies for listings.
+ * Blocks class.
+ * Sets up custom blocks for listings.
  */
 final class Newspack_Listings_Blocks {
 
@@ -27,8 +27,8 @@ final class Newspack_Listings_Blocks {
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings instance.
-	 * Ensures only one instance of Newspack_Listings is loaded or can be loaded.
+	 * Main Newspack_Listings_Blocks instance.
+	 * Ensures only one instance of Newspack_Listings_Blocks is loaded or can be loaded.
 	 *
 	 * @return Newspack_Listings_Blocks - Main instance.
 	 */
@@ -52,7 +52,7 @@ final class Newspack_Listings_Blocks {
 	 * Enqueue editor assets.
 	 */
 	public static function manage_editor_assets() {
-		if ( Core::is_curated_list() ) {
+		if ( Core::is_curated_list() || Core::is_listing() ) {
 			wp_enqueue_script(
 				'newspack-listings-editor',
 				NEWSPACK_LISTINGS_URL . 'dist/editor.js',
@@ -61,11 +61,15 @@ final class Newspack_Listings_Blocks {
 				true
 			);
 
+			$post_type = get_post_type();
+
 			wp_localize_script(
 				'newspack-listings-editor',
 				'newspack_listings_data',
 				[
-					'post_types' => Core::NEWSPACK_LISTINGS_POST_TYPES,
+					'post_type'   => get_post_type_object( $post_type )->labels->singular_name,
+					'post_types'  => Core::NEWSPACK_LISTINGS_POST_TYPES,
+					'meta_fields' => Core::get_meta_fields( $post_type ),
 				]
 			);
 
