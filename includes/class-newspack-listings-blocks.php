@@ -43,7 +43,6 @@ final class Newspack_Listings_Blocks {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'block_categories', [ __CLASS__, 'update_block_categories' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
 	}
@@ -122,24 +121,6 @@ final class Newspack_Listings_Blocks {
 				);
 			}
 		}
-	}
-
-	/**
-	 * Add custom block category.
-	 *
-	 * @param array $categories Default Gutenberg categories.
-	 * @return array
-	 */
-	public static function update_block_categories( $categories ) {
-		return array_merge(
-			$categories,
-			[
-				[
-					'slug'  => 'newspack-listings',
-					'title' => __( 'Newspack Listings', 'newspack-listings' ),
-				],
-			]
-		);
 	}
 }
 
