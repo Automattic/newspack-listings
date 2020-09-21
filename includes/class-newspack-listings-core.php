@@ -152,7 +152,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No curated lists found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No curated lists found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/lists' ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['curated_list'] ],
 			],
 			'event'        => [
 				'labels'  => [
@@ -171,7 +171,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/events' ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
 			],
 			'generic'      => [
 				'labels'  => [
@@ -190,7 +190,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/items' ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
 			],
 			'marketplace'  => [
 				'labels'  => [
@@ -209,7 +209,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No Marketplace listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No Marketplace listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/marketplace' ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
 			],
 			'place'        => [
 				'labels'  => [
@@ -228,7 +228,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No places found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No places found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/places' ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['place'] ],
 			],
 		];
 
