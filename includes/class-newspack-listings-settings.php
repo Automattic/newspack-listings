@@ -17,7 +17,6 @@ final class Newspack_Listings_Settings {
 	 * Set up hooks.
 	 */
 	public static function init() {
-		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
 		add_action( 'admin_init', [ __CLASS__, 'page_init' ] );
 	}
 
@@ -78,29 +77,6 @@ final class Newspack_Listings_Settings {
 				'type'  => 'input',
 			],
 		];
-	}
-
-	/**
-	 * Add options page
-	 */
-	public static function add_plugin_page() {
-		add_menu_page(
-			'Newspack Listings',
-			'Listings',
-			'edit_posts',
-			'newspack-listings',
-			'',
-			'dashicons-list-view',
-			35
-		);
-		add_submenu_page(
-			'newspack-listings',
-			__( 'Newspack Listings: Site-Wide Settings', 'newspack-listings' ),
-			__( 'Settings', 'newspack-listings' ),
-			'manage_options',
-			'newspack-listings-settings-admin',
-			[ __CLASS__, 'create_admin_page' ]
-		);
 	}
 
 	/**

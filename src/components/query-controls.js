@@ -13,10 +13,6 @@ import { decodeEntities } from '@wordpress/html-entities';
 import AutocompleteTokenField from './autocomplete-tokenfield';
 
 class QueryControls extends Component {
-	state = {
-		showAdvancedFilters: false,
-	};
-
 	fetchListingSuggestions = search => {
 		const { listingType, listItems } = this.props;
 		return apiFetch( {
