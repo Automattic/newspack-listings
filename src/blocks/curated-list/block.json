@@ -1,18 +1,18 @@
 {
-	"name": "newspack-listings/curated-list",
-	"category": "newspack-listings",
-	"attributes": {
-		"showNumbers": {
-			"type": "boolean",
-			"default": true
-		},
-		"showMap": {
-			"type": "boolean",
-			"default": true
-		},
-		"showSortByDate": {
-			"type": "boolean",
-			"default": false
-		}
-	}
+  "name": "newspack-listings/curated-list",
+  "category": "newspack",
+  "attributes": {
+    "showNumbers": {
+      "type": "boolean",
+      "default": true
+    },
+    "showMap": {
+      "type": "boolean",
+      "default": true
+    },
+    "showSortByDate": {
+      "type": "boolean",
+      "default": false
+    }
+  }
 }

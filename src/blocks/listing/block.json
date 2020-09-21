@@ -1,6 +1,6 @@
 {
   "name": "newspack-listings/listing",
-  "category": "newspack-listings",
+  "category": "newspack",
   "attributes": {
     "className": {
       "type": "string",

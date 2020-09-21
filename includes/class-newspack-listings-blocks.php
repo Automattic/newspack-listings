@@ -1,8 +1,8 @@
 <?php
 /**
- * Newspack Listings Core.
+ * Newspack Listings Blocks.
  *
- * Registers custom post types and taxonomies.
+ * Custom Gutenberg Blocks for Newspack Listings.
  *
  * @package Newspack_Listings
  */

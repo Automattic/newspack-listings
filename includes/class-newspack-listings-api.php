@@ -1,8 +1,8 @@
 <?php
 /**
- * Newspack Listings Core.
+ * Newspack Listings API.
  *
- * Registers custom post types and taxonomies.
+ * Custom API endpoints for Newspack Listings.
  *
  * @package Newspack_Listings
  */

@@ -2,7 +2,7 @@
 /**
  * Newspack Listings Core.
  *
- * Registers custom post types and taxonomies.
+ * Registers custom post types and metadata.
  *
  * @package Newspack_Listings
  */
@@ -36,7 +36,7 @@ final class Newspack_Listings_Core {
 	const NEWSPACK_LISTINGS_PERMALINK_SLUGS = [
 		'event'       => 'events',
 		'generic'     => 'items',
-		'marketplace' => 'markeptlace',
+		'marketplace' => 'marketplace',
 		'place'       => 'places',
 
 	];
