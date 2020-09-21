@@ -20,6 +20,7 @@ export const registerListingBlock = () => {
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
 				icon: 'list-view',
 				category,
+				parent: [ 'newspack-listing/curated-list' ],
 				keywords: [
 					__( 'lists', 'newspack-listings' ),
 					__( 'listings', 'newspack-listings' ),

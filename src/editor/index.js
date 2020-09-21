@@ -7,12 +7,13 @@ import { registerPlugin } from '@wordpress/plugins';
  * Internal dependencies
  */
 import { Sidebar } from './sidebar';
-import { registerListingBlock } from '../blocks';
+import { registerCuratedListBlock, registerListingBlock } from '../blocks';
 import './style.scss';
 
 /**
  * Register blocks.
  */
+registerCuratedListBlock();
 registerListingBlock();
 
 /**

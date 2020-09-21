@@ -332,10 +332,14 @@ const mapStateToProps = select => {
 	const { getBlocks, getEditedPostAttribute } = select( 'core/editor' );
 	const blocks = getBlocks();
 
-	// Build an array of just the list item post IDs.
+	// Build an array of just the list item post IDs that exist in the parent post.
 	const listItems = blocks.reduce( ( acc, item ) => {
-		if ( item.attributes.listing ) {
-			acc.push( item.attributes.listing );
+		if ( item.innerBlocks && 0 < item.innerBlocks.length ) {
+			item.innerBlocks.forEach( innerBlock => {
+				if ( innerBlock.attributes.listing ) {
+					acc.push( innerBlock.attributes.listing );
+				}
+			} );
 		}
 		return acc;
 	}, [] );

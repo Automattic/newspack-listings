@@ -52,36 +52,34 @@ final class Newspack_Listings_Blocks {
 	 * Enqueue editor assets.
 	 */
 	public static function manage_editor_assets() {
-		if ( Core::is_curated_list() || Core::is_listing() ) {
-			wp_enqueue_script(
-				'newspack-listings-editor',
-				NEWSPACK_LISTINGS_URL . 'dist/editor.js',
-				[],
-				NEWSPACK_LISTINGS_VERSION,
-				true
-			);
+		wp_enqueue_script(
+			'newspack-listings-editor',
+			NEWSPACK_LISTINGS_URL . 'dist/editor.js',
+			[],
+			NEWSPACK_LISTINGS_VERSION,
+			true
+		);
 
-			$post_type = get_post_type();
+		$post_type = get_post_type();
 
-			wp_localize_script(
-				'newspack-listings-editor',
-				'newspack_listings_data',
-				[
-					'post_type'   => get_post_type_object( $post_type )->labels->singular_name,
-					'post_types'  => Core::NEWSPACK_LISTINGS_POST_TYPES,
-					'meta_fields' => Core::get_meta_fields( $post_type ),
-				]
-			);
+		wp_localize_script(
+			'newspack-listings-editor',
+			'newspack_listings_data',
+			[
+				'post_type'   => get_post_type_object( $post_type )->labels->singular_name,
+				'post_types'  => Core::NEWSPACK_LISTINGS_POST_TYPES,
+				'meta_fields' => Core::get_meta_fields( $post_type ),
+			]
+		);
 
-			wp_register_style(
-				'newspack-listings-editor',
-				plugins_url( '../dist/editor.css', __FILE__ ),
-				[],
-				NEWSPACK_LISTINGS_VERSION
-			);
-			wp_style_add_data( 'newspack-listings-editor', 'rtl', 'replace' );
-			wp_enqueue_style( 'newspack-listings-editor' );
-		}
+		wp_register_style(
+			'newspack-listings-editor',
+			plugins_url( '../dist/editor.css', __FILE__ ),
+			[],
+			NEWSPACK_LISTINGS_VERSION
+		);
+		wp_style_add_data( 'newspack-listings-editor', 'rtl', 'replace' );
+		wp_enqueue_style( 'newspack-listings-editor' );
 	}
 
 	/**

@@ -1,0 +1,30 @@
+.newspack-listings {
+	&__curated-list-container {
+		border: 1px solid var( --wp--preset--color--dark-gray );
+		border-radius: 2px;
+		padding: 3rem 1rem 1rem;
+
+		&.show-numbers .newspack-listings__list-item-editor::before {
+			color: #767676;
+			color: var( --wp--preset--color--medium-gray );
+			content: counter( list ) '. ';
+			counter-increment: list;
+			font-weight: bold;
+		}
+	}
+
+	&__curated-list-container-label {
+		background-color: #36f;
+		border-bottom-left-radius: 2px;
+		color: var( --wp--preset--color--white );
+		display: block;
+		font-size: 0.75rem;
+		font-weight: bold;
+		left: 1px;
+		letter-spacing: 0.01rem;
+		padding: 0.25rem 0.5rem;
+		position: absolute;
+		text-transform: uppercase;
+		top: 1px;
+	}
+}
