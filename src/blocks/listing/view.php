@@ -48,9 +48,6 @@ function render_block( $attributes ) {
 		return;
 	}
 
-	// This will let the FSE plugin know we need CSS/JS now.
-	do_action( 'newspack_listings_render_listing_block' );
-
 	ob_start();
 
 	?>
