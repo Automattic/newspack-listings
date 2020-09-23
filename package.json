@@ -1,5 +1,5 @@
 {
-  "name": "newspack-new-plugin-boilerplate",
+  "name": "newspack-listings",
   "version": "0.0.0",
   "description": "",
   "scripts": {
@@ -19,7 +19,7 @@
     "lint:js:staged": "eslint --ext .js,.jsx",
     "lint:scss:staged": "stylelint --syntax scss",
     "lint:php:staged": "./vendor/bin/phpcs",
-    "release:archive": "rm -rf release && mkdir -p release && rsync -r . ./release/newspack-new-plugin-boilerplate --exclude-from='./.distignore' && cd release && zip -r newspack-new-plugin-boilerplate.zip newspack-new-plugin-boilerplate",
+    "release:archive": "rm -rf release && mkdir -p release && rsync -r . ./release/newspack-listings --exclude-from='./.distignore' && cd release && zip -r newspack-listings.zip newspack-listings",
     "release": "npm run build && npm run semantic-release"
   },
   "lint-staged": {
@@ -41,14 +41,14 @@
       [
         "semantic-release-version-bump",
         {
-          "files": "newspack-new-plugin-boilerplate.php",
+          "files": "newspack-listings.php",
           "callback": "npm run release:archive"
         }
       ],
       {
         "path": "@semantic-release/git",
         "assets": [
-          "newspack-new-plugin-boilerplate.php",
+          "newspack-listings.php",
           "package.json",
           "package-lock.json",
           "CHANGELOG.md"
@@ -71,8 +71,8 @@
         {
           "assets": [
             {
-              "path": "./release/newspack-new-plugin-boilerplate.zip",
-              "label": "newspack-new-plugin-boilerplate.zip"
+              "path": "./release/newspack-listings.zip",
+              "label": "newspack-listings.zip"
             }
           ]
         }
@@ -86,19 +86,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Automattic/newspack-new-plugin-boilerplate.git"
+    "url": "git+https://github.com/Automattic/newspack-listings.git"
   },
   "license": "GPL-2.0-or-later",
   "bugs": {
-    "url": "https://github.com/Automattic/newspack-new-plugin-boilerplate/issues"
+    "url": "https://github.com/Automattic/newspack-listings/issues"
   },
   "dependencies": {
     "@wordpress/api-fetch": "^3.12.0",
     "@wordpress/base-styles": "^1.5.0",
-    "@wordpress/block-editor": "^3.8.0",
+    "@wordpress/block-editor": "^3.11.0",
+    "@wordpress/blocks": "^6.21.0",
+    "@wordpress/components": "^10.1.0",
+    "@wordpress/compose": "^3.20.0",
+    "@wordpress/data": "^4.23.0",
     "@wordpress/dom-ready": "^2.8.0",
     "@wordpress/edit-post": "^3.14.0",
-    "@wordpress/html-entities": "^2.7.0"
+    "@wordpress/element": "^2.17.0",
+    "@wordpress/html-entities": "^2.7.0",
+    "@wordpress/i18n": "^3.15.0",
+    "@wordpress/plugins": "^2.21.0",
+    "@wordpress/url": "^2.18.0",
+    "lodash": "^4.17.20"
   },
   "devDependencies": {
     "@automattic/calypso-build": "^5.1.0",

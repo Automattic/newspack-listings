@@ -1,0 +1,81 @@
+{
+  "name": "newspack-listings/listing",
+  "category": "newspack-listings",
+  "attributes": {
+    "className": {
+      "type": "string",
+      "default": ""
+    },
+    "listing": {
+      "type": "string",
+      "default": ""
+    },
+    "showExcerpt": {
+      "type": "boolean",
+      "default": true
+    },
+    "showImage": {
+      "type": "boolean",
+      "default": true
+    },
+    "showCaption": {
+      "type": "boolean",
+      "default": false
+    },
+    "imageShape": {
+      "type": "string",
+      "default": "landscape"
+    },
+    "minHeight": {
+      "type": "integer",
+      "default": 0
+    },
+    "showCategory": {
+      "type": "boolean",
+      "default": false
+    },
+    "mediaPosition": {
+      "type": "string",
+      "default": "top"
+    },
+    "categories": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "integer" }
+    },
+    "tags": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "integer" }
+    },
+    "tagExclusions": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "integer" }
+    },
+    "typeScale": {
+      "type": "integer",
+      "default": 4
+    },
+    "imageScale": {
+      "type": "integer",
+      "default": 3
+    },
+    "mobileStack": {
+      "type": "boolean",
+      "default": false
+    },
+    "textColor": {
+      "type": "string",
+      "default": ""
+    },
+    "customTextColor": {
+      "type": "string",
+      "default": ""
+    },
+    "showSubtitle": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
