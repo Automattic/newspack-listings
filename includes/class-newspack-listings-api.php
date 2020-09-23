@@ -115,10 +115,25 @@ final class Newspack_Listings_Api {
 			return new \WP_REST_Response(
 				array_map(
 					function( $post ) use ( $fields ) {
+						$response = [
+							'id'    => $post->ID,
+							'title' => $post->post_title,
+						];
+
+						// If $fields includes excerpt, get the post excerpt.
+						if ( in_array( 'excerpt', $fields ) ) {
+							$response['excerpt'] = wpautop( get_the_excerpt( $post->ID ) );
+						}
+
+						// If $fields includes media, get the featured image + caption.
+						if ( in_array( 'media', $fields ) ) {
+							$response['media'] = [
+								'image'   => get_the_post_thumbnail_url( $post->ID, 'medium' ),
+								'caption' => get_the_post_thumbnail_caption( $post->ID ),
+							];
+						}
 
 						// If $fields includes meta, get all Newspack Listings meta fields.
-						$post_meta = [];
-
 						if ( in_array( 'meta', $fields ) ) {
 							$post_meta = array_filter(
 								get_post_meta( $post->ID ),
@@ -127,14 +142,11 @@ final class Newspack_Listings_Api {
 								},
 								ARRAY_FILTER_USE_KEY
 							);
+
+							$response['meta'] = $post_meta;
 						}
 
-						return [
-							'id'      => $post->ID,
-							'title'   => $post->post_title,
-							'content' => wpautop( get_the_excerpt( $post->ID ) ),
-							'meta'    => $post_meta,
-						];
+						return $response;
 					},
 					$query->posts
 				),

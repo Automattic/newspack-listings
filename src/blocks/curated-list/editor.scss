@@ -4,7 +4,7 @@
 		border-radius: 2px;
 		padding: 3rem 1rem 1rem;
 
-		&.show-numbers .newspack-listings__list-item-editor::before {
+		&.show-numbers .newspack-listings__listing-editor::before {
 			color: #767676;
 			color: var( --wp--preset--color--medium-gray );
 			content: counter( list ) '. ';

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
 
 /**
@@ -10,6 +9,7 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import './editor.scss';
 import { CuratedListEditor } from './edit';
+import { CuratedList } from './save';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
@@ -28,12 +28,6 @@ export const registerCuratedListBlock = () => {
 		attributes,
 
 		edit: CuratedListEditor,
-
-		// TODO: more class names based on block attributes
-		save: () => (
-			<ol className="newspack-listings__curated-list">
-				<InnerBlocks.Content />
-			</ol>
-		),
+		save: CuratedList,
 	} );
 };

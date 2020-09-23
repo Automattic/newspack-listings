@@ -3,7 +3,7 @@
 }
 
 .newspack-listings {
-	&__list-item-editor {
+	&__listing-editor {
 		border-radius: 2px;
 		box-shadow: inset 0 0 0 1px var( --wp--preset--color--medium-gray );
 		padding: 1rem;
@@ -19,7 +19,7 @@
 		}
 	}
 
-	&__list-item-label {
+	&__listing-label {
 		background-color: #eee;
 		background-color: var( --wp--preset--color--light-gray );
 		border-bottom-left-radius: 2px;
@@ -36,5 +36,10 @@
 
 	&__error {
 		margin: 1rem auto 2rem;
+	}
+
+	&__listing-featured-media {
+		margin: 1rem 0;
+		padding: 0;
 	}
 }

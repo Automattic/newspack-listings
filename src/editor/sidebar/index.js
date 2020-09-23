@@ -72,7 +72,7 @@ const SidebarComponent = ( { meta, postType, updateMetaValue } ) => {
 };
 
 const mapStateToProps = select => {
-	const { getCurrentPostType, getEditedPostAttribute } = select( 'core/editor' );
+	const { getCurrentPostType, getEditedPostAttribute } = select( 'core/block-editor' );
 
 	return {
 		meta: getEditedPostAttribute( 'meta' ),
