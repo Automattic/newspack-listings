@@ -44,6 +44,7 @@ final class Newspack_Listings_Blocks {
 	 */
 	public function __construct() {
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
+		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'register_block_patterns' ] );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
 	}
 
@@ -118,6 +119,54 @@ final class Newspack_Listings_Blocks {
 							return $content;
 						},
 					)
+				);
+			}
+		}
+	}
+
+	/**
+	 * Register custom block patterns for Newspack Listings.
+	 * These patterns are only available for certain CPTs.
+	 */
+	public static function register_block_patterns() {
+		if ( ! is_admin() || ! Core::is_listing() ) {
+			return;
+		}
+
+		// Register a custom block pattern category for Newspack Listings.
+		register_block_pattern_category(
+			'newspack-listings-patterns',
+			[ 'label' => __( 'Newspack Listings', 'newspack-listings' ) ]
+		);
+
+		// Block pattern config.
+		$block_patterns = [
+			'business' => [
+				'post_types' => [
+					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'settings'   => [
+					'title'       => __( 'Business Listing', 'newspack-listings' ),
+					'categories'  => [ 'newspack-listings-patterns' ],
+					'description' => _x(
+						'Business description, website and social media links, and hours of operation.',
+						'Block pattern description',
+						'newspack-listings'
+					),
+					'content'     => '<!-- wp:columns --><div class="wp-block-columns"><!-- wp:column {"width":66.66} --><div class="wp-block-column" style="flex-basis:66.66%"><!-- wp:paragraph --><p>Consectetur a urna hendrerit scelerisque suspendisse inceptos scelerisque neque parturient a mi adipiscing euismod mus. Ad felis morbi magna augue consectetur eleifend sit sem habitant suspendisse posuere amet felis adipiscing a himenaeos ipsum vivamus dictum vestibulum lacus consectetur vestibulum erat dignissim per sem integer. Cras class ac adipiscing inceptos a enim porta a elit scelerisque tincidunt hac ad netus accumsan parturient conubia vestibulum nec quisque parturient interdum fringilla curabitur cras sociosqu interdum. Porta aenean id a mus consectetur lacus lacus ut parturient sapien ut a sociosqu potenti ridiculus non tristique cursus a at parturient condimentum a duis convallis per. Dictum elementum ultricies ac risus vestibulum adipiscing placerat imperdiet malesuada scelerisque dictum mus adipiscing a at at fermentum scelerisque nisl a dignissim suscipit sapien taciti nulla curabitur vestibulum.</p><!-- /wp:paragraph --></div><!-- /wp:column --><!-- wp:column {"width":33.33} --><div class="wp-block-column" style="flex-basis:33.33%"><!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button {"className":"is-style-fill"} --><div class="wp-block-button is-style-fill"><a class="wp-block-button__link" href="https://newspack.pub">Visit our website</a></div><!-- /wp:button --></div><!-- /wp:buttons --><!-- wp:social-links --><ul class="wp-block-social-links"><!-- wp:social-link {"url":"https://newspack.pub","service":"wordpress"} /--><!-- wp:social-link {"url":"https://facebook.com","service":"facebook"} /--><!-- wp:social-link {"url":"https://twitter.com","service":"twitter"} /--><!-- wp:social-link {"url":"https://instagram.com","service":"instagram"} /--><!-- wp:social-link {"service":"linkedin"} /--><!-- wp:social-link {"service":"youtube"} /--></ul><!-- /wp:social-links --><!-- wp:separator {"className":"is-style-wide"} --><hr class="wp-block-separator is-style-wide"/><!-- /wp:separator --><!-- wp:heading {"level":4} --><h4>Hours of Operation</h4><!-- /wp:heading --><!-- wp:jetpack/business-hours /--></div><!-- /wp:column --></div><!-- /wp:columns -->',
+				],
+			],
+		];
+
+		// Register block patterns for particular post types.
+		$current_post_type = get_post_type();
+
+		foreach ( $block_patterns as $pattern_name => $config ) {
+			if ( in_array( $current_post_type, $config['post_types'] ) ) {
+				register_block_pattern(
+					'newspack-listings/' . $pattern_name,
+					$config['settings']
 				);
 			}
 		}

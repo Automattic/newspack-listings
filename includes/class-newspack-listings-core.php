@@ -67,6 +67,8 @@ final class Newspack_Listings_Core {
 	public function __construct() {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_styles' ] );
+		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
 	}
 
 	/**
@@ -286,6 +288,49 @@ final class Newspack_Listings_Core {
 				return in_array( $post_type, $meta_field['post_types'] );
 			}
 		);
+	}
+
+	/**
+	 * Enqueue custom styles for Newspack Listings front-end components.
+	 */
+	public static function custom_styles() {
+		if ( ! is_admin() ) {
+			wp_register_style(
+				'newspack-listings',
+				plugins_url( '../dist/front_end.css', __FILE__ ),
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+
+			wp_enqueue_style( 'newspack-listings' );
+		}
+	}
+
+	/**
+	 * If using a Newspack theme, force single listings pages to use the wide template (sans widget sidebar).
+	 *
+	 * @param String $template File path of the template to use for the current single post.
+	 * @return String Filtered template file path.
+	 */
+	public static function set_default_template( $template ) {
+		if ( self::is_listing() ) {
+			$wide_template = str_replace( 'single.php', 'single-wide.php', $template );
+
+			if ( file_exists( $wide_template ) ) {
+				$template = $wide_template;
+
+				// Add the single-wide CSS class to the body.
+				add_filter(
+					'body_class',
+					function( $classes ) {
+						$classes[] = 'post-template-single-wide';
+
+						return $classes;
+					}
+				);
+			}
+		}
+		return $template;
 	}
 }
 
