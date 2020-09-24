@@ -1,5 +1,5 @@
 .newspack-listings {
-	&__curated-list-container {
+	&__curated-list {
 		border: 1px solid var( --wp--preset--color--dark-gray );
 		border-radius: 2px;
 		padding: 3rem 1rem 1rem;
@@ -13,7 +13,7 @@
 		}
 	}
 
-	&__curated-list-container-label {
+	&__curated-list-label {
 		background-color: #36f;
 		border-bottom-left-radius: 2px;
 		color: var( --wp--preset--color--white );

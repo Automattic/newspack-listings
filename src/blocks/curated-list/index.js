@@ -3,13 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
+import { InnerBlocks } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
 import { CuratedListEditor } from './edit';
-import { CuratedList } from './save';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
@@ -19,6 +19,7 @@ export const registerCuratedListBlock = () => {
 		icon: 'list-view',
 		category,
 		keywords: [
+			__( 'curated', 'newspack-listings' ),
 			__( 'list', 'newspack-listings' ),
 			__( 'lists', 'newspack-listings' ),
 			__( 'listings', 'newspack-listings' ),
@@ -28,6 +29,6 @@ export const registerCuratedListBlock = () => {
 		attributes,
 
 		edit: CuratedListEditor,
-		save: CuratedList,
+		save: () => <InnerBlocks.Content />, // also uses view.php
 	} );
 };

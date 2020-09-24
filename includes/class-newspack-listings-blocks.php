@@ -85,8 +85,8 @@ final class Newspack_Listings_Blocks {
 	 * Enqueue front-end assets.
 	 */
 	public static function manage_view_assets() {
+		// Do nothing in editor environment.
 		if ( is_admin() ) {
-			// In editor environment, do nothing.
 			return;
 		}
 

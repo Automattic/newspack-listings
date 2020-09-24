@@ -16,7 +16,13 @@ import {
 import { withSelect } from '@wordpress/data';
 import { Fragment } from '@wordpress/element';
 
-const CuratedListEditorComponent = ( { attributes, clientId, getBlock, setAttributes } ) => {
+const CuratedListEditorComponent = ( {
+	attributes,
+	className,
+	clientId,
+	getBlock,
+	setAttributes,
+} ) => {
 	const {
 		showNumbers,
 		showMap,
@@ -34,7 +40,7 @@ const CuratedListEditorComponent = ( { attributes, clientId, getBlock, setAttrib
 		showSubtitle,
 	} = attributes;
 
-	const classes = [ 'newspack-listings__curated-list-container' ];
+	const classes = [ className, 'newspack-listings__curated-list' ];
 	if ( showNumbers ) classes.push( 'show-numbers' );
 	if ( showMap ) classes.push( 'show-map' );
 	if ( showSortByDate ) classes.push( 'has-sort-by-date-ui' );
@@ -227,7 +233,7 @@ const CuratedListEditorComponent = ( { attributes, clientId, getBlock, setAttrib
 				</PanelBody>
 			</InspectorControls>
 			<div className={ classes.join( ' ' ) }>
-				<span className="newspack-listings__curated-list-container-label">
+				<span className="newspack-listings__curated-list-label">
 					{ __( 'Curated List', 'newspack-listings' ) }
 				</span>
 				{ 0 === innerBlocks.length && (

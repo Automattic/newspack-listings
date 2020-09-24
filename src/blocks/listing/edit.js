@@ -15,6 +15,7 @@ import { QueryControls } from '../../components';
 
 const ListingEditorComponent = ( {
 	attributes,
+	className,
 	clientId,
 	getBlock,
 	getBlockRootClientId,
@@ -54,7 +55,7 @@ const ListingEditorComponent = ( {
 	}, [] );
 
 	const { post_types } = window.newspack_listings_data;
-	const classes = [ 'newspack-listings__listing' ];
+	const classes = [ className, 'newspack-listings__listing' ];
 	const listingTypeSlug = name.split( '/' ).slice( -1 );
 	const listingType = post_types[ listingTypeSlug ];
 

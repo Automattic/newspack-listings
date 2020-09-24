@@ -30,15 +30,13 @@ function register_blocks() {
 
 	// Register a block for each listing type.
 	foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $post_type ) {
-		if ( 'curated_list' !== $label ) {
-			register_block_type(
-				'newspack-listings/' . $label,
-				[
-					'attributes'      => $attributes,
-					'render_callback' => __NAMESPACE__ . '\render_block',
-				]
-			);
-		}
+		register_block_type(
+			'newspack-listings/' . $label,
+			[
+				'attributes'      => $attributes,
+				'render_callback' => __NAMESPACE__ . '\render_block',
+			]
+		);
 	}
 }
 
@@ -77,14 +75,19 @@ function render_block( $attributes ) {
 				<h3><?php echo wp_kses_post( $post->post_title ); ?></h3>
 
 				<?php if ( true === $attributes['showImage'] ) : ?>
-				<figure class="newspack-listings__listing-featured-media">
-					<?php echo wp_kses_post( get_the_post_thumbnail( $post->ID, 'large' ) ); ?>
-					<?php if ( true === $attributes['showCaption'] ) : ?>
-					<figcaption>
-						<?php echo wp_kses_post( get_the_post_thumbnail_caption( $post->ID ) ); ?>
-					</figcaption>
+					<?php
+					$featured_image = get_the_post_thumbnail( $post->ID, 'large' );
+					if ( ! empty( $featured_image ) ) :
+						?>
+						<figure class="newspack-listings__listing-featured-media">
+							<?php echo wp_kses_post( $featured_image ); ?>
+							<?php if ( true === $attributes['showCaption'] ) : ?>
+							<figcaption>
+								<?php echo wp_kses_post( get_the_post_thumbnail_caption( $post->ID ) ); ?>
+							</figcaption>
+							<?php endif; ?>
+						</figure>
 					<?php endif; ?>
-				</figure>
 				<?php endif; ?>
 
 				<?php
