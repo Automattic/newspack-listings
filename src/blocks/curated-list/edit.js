@@ -19,6 +19,7 @@ import { Fragment, useEffect, useState } from '@wordpress/element';
 
 const CuratedListEditorComponent = ( {
 	attributes,
+	canUseMapBlock,
 	className,
 	clientId,
 	innerBlocks,
@@ -56,20 +57,27 @@ const CuratedListEditorComponent = ( {
 
 	// Update locations in component state. This lets us keep the map block in sync with listing items.
 	useEffect(() => {
-		const blockLocations = list
-			? list.innerBlocks.reduce( ( acc, innerBlock ) => {
-					if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
-						innerBlock.attributes.locations.map( location => acc.push( location ) );
-					}
-					return acc;
-			  }, [] )
-			: [];
+		// Only build locations array if we have any listings, and the Jetpack Maps block exists.
+		const blockLocations =
+			canUseMapBlock && list
+				? list.innerBlocks.reduce( ( acc, innerBlock ) => {
+						if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
+							innerBlock.attributes.locations.map( location => acc.push( location ) );
+						}
+						return acc;
+				  }, [] )
+				: [];
 
 		setLocations( blockLocations );
 	}, [ JSON.stringify( list ) ]);
 
 	// Create, update, or remove map when showMap attribute or locations change.
 	useEffect(() => {
+		// Don't bother if the Jetpack Maps block doesn't exist.
+		if ( ! canUseMapBlock ) {
+			return;
+		}
+
 		// If showMap toggle is enabled, update the existing map or create a new one.
 		if ( showMap ) {
 			if ( hasMap ) {
@@ -140,13 +148,15 @@ const CuratedListEditorComponent = ( {
 						/>
 					</PanelRow>
 
-					<PanelRow>
-						<ToggleControl
-							label={ __( 'Show map', 'newspack-listings' ) }
-							checked={ showMap }
-							onChange={ () => setAttributes( { showMap: ! showMap } ) }
-						/>
-					</PanelRow>
+					{ canUseMapBlock && (
+						<PanelRow>
+							<ToggleControl
+								label={ __( 'Show map', 'newspack-listings' ) }
+								checked={ showMap }
+								onChange={ () => setAttributes( { showMap: ! showMap } ) }
+							/>
+						</PanelRow>
+					) }
 
 					<PanelRow>
 						<ToggleControl
@@ -296,9 +306,12 @@ const CuratedListEditorComponent = ( {
 
 const mapStateToProps = ( select, ownProps ) => {
 	const { getBlocksByClientId } = select( 'core/block-editor' );
+	const { getBlockType } = select( 'core/blocks' );
 	const innerBlocks = getBlocksByClientId( ownProps.clientId )[ 0 ].innerBlocks || [];
+	const canUseMapBlock = !! getBlockType( 'jetpack/map' ); // Check for existence of Jetpack Map block before enabling location-based features.
 
 	return {
+		canUseMapBlock,
 		innerBlocks,
 	};
 };
