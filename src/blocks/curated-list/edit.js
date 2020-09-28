@@ -2,27 +2,32 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { createBlock } from '@wordpress/blocks';
 import { InnerBlocks, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
 import {
 	Button,
 	ButtonGroup,
-	Notice,
 	PanelBody,
 	PanelRow,
 	RangeControl,
 	ToggleControl,
 	BaseControl,
 } from '@wordpress/components';
-import { withSelect } from '@wordpress/data';
-import { Fragment } from '@wordpress/element';
+import { compose } from '@wordpress/compose';
+import { withDispatch, withSelect } from '@wordpress/data';
+import { Fragment, useEffect, useState } from '@wordpress/element';
 
 const CuratedListEditorComponent = ( {
 	attributes,
 	className,
 	clientId,
-	getBlock,
+	innerBlocks,
+	insertBlock,
+	removeBlock,
 	setAttributes,
+	updateBlockAttributes,
 } ) => {
+	const [ locations, setLocations ] = useState( [] );
 	const {
 		showNumbers,
 		showMap,
@@ -40,12 +45,54 @@ const CuratedListEditorComponent = ( {
 		showSubtitle,
 	} = attributes;
 
+	const list = innerBlocks.find(
+		innerBlock => innerBlock.name === 'newspack-listings/list-container'
+	);
+	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
 	const classes = [ className, 'newspack-listings__curated-list' ];
 	if ( showNumbers ) classes.push( 'show-numbers' );
 	if ( showMap ) classes.push( 'show-map' );
 	if ( showSortByDate ) classes.push( 'has-sort-by-date-ui' );
 
-	const innerBlocks = getBlock( clientId ).innerBlocks;
+	// Update locations in component state. This lets us keep the map block in sync with listing items.
+	useEffect(() => {
+		const blockLocations = list
+			? list.innerBlocks.reduce( ( acc, innerBlock ) => {
+					if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
+						innerBlock.attributes.locations.map( location => acc.push( location ) );
+					}
+					return acc;
+			  }, [] )
+			: [];
+
+		setLocations( blockLocations );
+	}, [ JSON.stringify( list ) ]);
+
+	// Create, update, or remove map when showMap attribute or locations change.
+	useEffect(() => {
+		// If showMap toggle is enabled, update the existing map or create a new one.
+		if ( showMap ) {
+			if ( hasMap ) {
+				// If we already have a map, update it.
+				updateBlockAttributes( hasMap.clientId, { points: locations } );
+			} else {
+				// Don't add a new map unless we have some locations to show.
+				if ( 0 === locations.length ) {
+					return;
+				}
+
+				// Create a new map at the top of the list.
+				const newBlock = createBlock( 'jetpack/map', {
+					points: locations,
+				} );
+
+				insertBlock( newBlock, 0, clientId );
+			}
+		} else if ( hasMap ) {
+			// If disabling the showMap toggle, remove the existing map.
+			removeBlock( hasMap.clientId );
+		}
+	}, [ showMap, JSON.stringify( locations ) ]);
 
 	const imageSizeOptions = [
 		{
@@ -236,30 +283,37 @@ const CuratedListEditorComponent = ( {
 				<span className="newspack-listings__curated-list-label">
 					{ __( 'Curated List', 'newspack-listings' ) }
 				</span>
-				{ 0 === innerBlocks.length && (
-					<Notice className="newspack-listings__info" status="info" isDismissible={ false }>
-						{ __( 'This list is empty. Click the [+] button to add some listings.' ) }
-					</Notice>
-				) }
 				<InnerBlocks
-					allowedBlocks={ [
-						'newspack-listings/event',
-						'newspack-listings/generic',
-						'newspack-listings/marketplace',
-						'newspack-listings/place',
-					] }
+					allowedBlocks={ [ 'jetpack/map', 'newspack-listings/list-container' ] }
+					template={ [ [ 'newspack-listings/list-container' ] ] } // Start with an empty list only.
+					templateInsertUpdatesSelection={ false }
+					renderAppender={ () => null } // We want to discourage editors from adding blocks in this top-level wrapper, but we can't lock the template because we still need to be able to programmatically add or remove map blocks.
 				/>
 			</div>
 		</div>
 	);
 };
 
-const mapStateToProps = select => {
-	const { getBlock } = select( 'core/block-editor' );
+const mapStateToProps = ( select, ownProps ) => {
+	const { getBlocksByClientId } = select( 'core/block-editor' );
+	const innerBlocks = getBlocksByClientId( ownProps.clientId )[ 0 ].innerBlocks || [];
 
 	return {
-		getBlock,
+		innerBlocks,
 	};
 };
 
-export const CuratedListEditor = withSelect( mapStateToProps )( CuratedListEditorComponent );
+const mapDispatchToProps = dispatch => {
+	const { insertBlock, removeBlock, updateBlockAttributes } = dispatch( 'core/block-editor' );
+
+	return {
+		insertBlock,
+		removeBlock,
+		updateBlockAttributes,
+	};
+};
+
+export const CuratedListEditor = compose( [
+	withSelect( mapStateToProps ),
+	withDispatch( mapDispatchToProps ),
+] )( CuratedListEditorComponent );

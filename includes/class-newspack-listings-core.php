@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Settings as Settings;
+use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -232,9 +233,6 @@ final class Newspack_Listings_Core {
 		}
 
 		$all_meta_fields = [
-			/**
-			 * Metadata for various listing types.
-			 */
 			'newspack_listings_contact_email' => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
@@ -296,13 +294,13 @@ final class Newspack_Listings_Core {
 	public static function custom_styles() {
 		if ( ! is_admin() ) {
 			wp_register_style(
-				'newspack-listings',
+				'newspack-listings-styles',
 				plugins_url( '../dist/front_end.css', __FILE__ ),
 				[],
 				NEWSPACK_LISTINGS_VERSION
 			);
 
-			wp_enqueue_style( 'newspack-listings' );
+			wp_enqueue_style( 'newspack-listings-styles' );
 		}
 	}
 

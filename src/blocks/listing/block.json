@@ -9,6 +9,10 @@
     "listing": {
       "type": "string",
       "default": ""
+    },
+    "locations": {
+      "type": "array",
+      "default": []
     }
   }
 }

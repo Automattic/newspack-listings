@@ -13,11 +13,12 @@ const path = require( 'path' );
  * Internal variables
  */
 const editor = path.join( __dirname, 'src', 'editor' );
+const frontEnd = [ path.join( __dirname, 'src', 'listing-styles' ) ];
 
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
 	{
-		entry: { editor },
+		entry: { editor, front_end: frontEnd },
 		'output-path': path.join( __dirname, 'dist' ),
 	}
 );

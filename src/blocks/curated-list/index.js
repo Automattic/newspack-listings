@@ -3,12 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-import { InnerBlocks } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
+import { CuratedList } from './save';
 import { CuratedListEditor } from './edit';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
@@ -29,6 +29,6 @@ export const registerCuratedListBlock = () => {
 		attributes,
 
 		edit: CuratedListEditor,
-		save: () => <InnerBlocks.Content />, // also uses view.php
+		save: CuratedList,
 	} );
 };

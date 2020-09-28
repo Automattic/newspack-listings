@@ -18,7 +18,7 @@ const ListingEditorComponent = ( {
 	className,
 	clientId,
 	getBlock,
-	getBlockRootClientId,
+	getBlockParents,
 	name,
 	setAttributes,
 } ) => {
@@ -28,7 +28,7 @@ const ListingEditorComponent = ( {
 	const { listing } = attributes;
 
 	// Get the parent Curated List block.
-	const parent = getBlock( getBlockRootClientId( clientId ) );
+	const parent = getBlock( getBlockParents( clientId )[ 0 ] );
 
 	// Parent Curated List block attributes.
 	const {
@@ -81,12 +81,16 @@ const ListingEditorComponent = ( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,excerpt,media,meta',
+					_fields: 'id,title,excerpt,locations,media,meta',
 				} ),
 			} );
 
 			if ( 0 === posts.length ) {
 				throw `No posts found for ID ${ listingId }. Try refreshing or selecting a new post.`;
+			}
+
+			if ( posts[ 0 ].locations ) {
+				setAttributes( { locations: posts[ 0 ].locations } );
 			}
 
 			setPost( posts[ 0 ] );
@@ -194,11 +198,11 @@ const ListingEditorComponent = ( {
 };
 
 const mapStateToProps = select => {
-	const { getBlock, getBlockRootClientId } = select( 'core/block-editor' );
+	const { getBlock, getBlockParents } = select( 'core/block-editor' );
 
 	return {
 		getBlock,
-		getBlockRootClientId,
+		getBlockParents,
 	};
 };
 

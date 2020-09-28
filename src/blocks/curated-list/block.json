@@ -8,7 +8,7 @@
     },
     "showMap": {
       "type": "boolean",
-      "default": true
+      "default": false
     },
     "showSortByDate": {
       "type": "boolean",

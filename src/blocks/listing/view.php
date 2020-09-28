@@ -70,7 +70,7 @@ function render_block( $attributes ) {
 
 	?>
 	<li class="newspack-listings__listing">
-		<a href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
+		<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
 			<article class="newspack-listings__listing-article">
 				<h3><?php echo wp_kses_post( $post->post_title ); ?></h3>
 

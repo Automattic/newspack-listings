@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -123,6 +124,15 @@ final class Newspack_Listings_Api {
 						// If $fields includes excerpt, get the post excerpt.
 						if ( in_array( 'excerpt', $fields ) ) {
 							$response['excerpt'] = wpautop( get_the_excerpt( $post->ID ) );
+						}
+
+						// If $fields includes locations, get location data.
+						if ( in_array( 'locations', $fields ) ) {
+							$locations = Utils\get_location_data( $post->ID );
+
+							if ( ! empty( $locations ) ) {
+								$response['locations'] = $locations;
+							}
 						}
 
 						// If $fields includes media, get the featured image + caption.

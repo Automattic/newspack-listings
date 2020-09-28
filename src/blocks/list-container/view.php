@@ -1,11 +1,12 @@
 <?php
 /**
- * Front-end render functions for the Curated List block.
+ * Front-end render functions for the Curated List Container block.
+ * This is a blank wrapper block that contains listing items.
  *
  * @package Newspack_Listings
  */
 
-namespace Newspack_Listings\Curated_List_Block;
+namespace Newspack_Listings\Curated_List_Container_Block;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 
@@ -13,17 +14,11 @@ use \Newspack_Listings\Newspack_Listings_Core as Core;
  * Dynamic block registration.
  */
 function register_block() {
-	// Listings block attributes.
-	$block_json = json_decode(
-		file_get_contents( __DIR__ . '/block.json' ), // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-		true
-	);
-
-	// Register Curated List block.
+	// Register Curated List Container block.
 	register_block_type(
-		$block_json['name'],
+		'newspack-listings/list-container',
 		[
-			'attributes'      => $block_json['attributes'],
+			'attributes'      => [],
 			'render_callback' => __NAMESPACE__ . '\render_block',
 		]
 	);
@@ -46,26 +41,13 @@ function render_block( $attributes, $inner_content ) {
 		return '';
 	}
 
-	// Conditional class names based on attributes.
-	$classes = [ 'newspack-listings__curated-list' ];
-
-	if ( true === $attributes['showNumbers'] ) {
-		$classes[] = 'show-numbers';
-	}
-	if ( true === $attributes['showImage'] ) {
-		$classes[] = 'show-image';
-	}
-	if ( true === $attributes['showMap'] ) {
-		$classes[] = 'show-map';
-	}
-
 	// Begin front-end output.
 	// TODO: Templatize this output; integrate more variations based on attributes.
 
 	ob_start();
 
 	?>
-	<ol class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+	<ol class="newspack-listings__list-container">
 		<?php echo wp_kses_post( $inner_content ); ?>
 	</ol>
 	<?php
