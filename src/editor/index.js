@@ -1,12 +1,6 @@
 /**
- * WordPress dependencies
- */
-import { registerPlugin } from '@wordpress/plugins';
-
-/**
  * Internal dependencies
  */
-import { Sidebar } from './sidebar';
 import {
 	registerCuratedListBlock,
 	registerListContainerBlock,
@@ -22,11 +16,3 @@ setCustomCategory();
 registerCuratedListBlock();
 registerListContainerBlock();
 registerListingBlock();
-
-/**
- * Register sidebar editor settings.
- */
-registerPlugin( 'newspack-listings-editor', {
-	render: Sidebar,
-	icon: null,
-} );

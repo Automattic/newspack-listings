@@ -37,9 +37,9 @@ function sanitize_array( $array ) {
 }
 
 /**
- * Given an array of blocks, get all blocks (and recursively, all inner blocks) matching the given type.
+ * Given a block name, get all blocks (and recursively, all inner blocks) matching the given type.
  *
- * @param String $block_name Name of the block to match.
+ * @param String $block_name Block name to match.
  * @param Array  $blocks Array of block objects to search.
  *
  * @return Array Array of matching blocks.
@@ -64,33 +64,52 @@ function get_blocks_by_type( $block_name, $blocks ) {
 
 	return $matching_blocks;
 }
+
 /**
- * Get all Mapbox locations associated with the given $post_id.
- * Searches the content of the post for instances of the jetpack/map block,
- * then returns all location points for all map block instances.
+ * Get data from content blocks within the given $post_id.
+ * Searches the content of the post for instances of the source block,
+ * then returns the given attributes for all block instances.
  *
- * @param Boolean|Int $post_id ID of the post, or false if the post lacks location data.
+ * @param Array $blocks Array of block objects to get data from.
+ * @param Array $source Info for the block to source the data from.
+ *              ['blockName'] Name of the block to search for.
+ *              ['attrs']     (Optional) Specific block attributes to get.
+ *                            If not provided, all attributes will be returned.
  *
- * @return Array Array of map locations with labels and coordinates.
+ * @return Array|Boolean Array of block data, or false if there are no blocks matching the given source (or no data to return).
  */
-function get_location_data( $post_id ) {
-	$location_data = false;
+function get_data_from_blocks( $blocks, $source ) {
+	$data = [];
 
-	$has_location_data = has_block( 'jetpack/map', $post_id );
+	if ( ! empty( $source ) && ! empty( $source['blockName'] ) ) {
+		$matching_blocks = get_blocks_by_type( $source['blockName'], $blocks );
 
-	if ( $has_location_data ) {
-		$location_data = [];
+		// Return false if there are no matching blocks of the given source type.
+		if ( empty( $matching_blocks ) ) {
+			return false;
+		}
 
-		$blocks = parse_blocks( get_the_content( null, false, $post_id ) );
+		// Gather data from all matching block instances.
+		foreach ( $matching_blocks as $matching_block ) {
+			// If we have a source `attr` key, sync only that attribute, otherwise sync all attributes.
+			if ( ! empty( $source['attr'] ) ) {
+				$block_data = $matching_block['attrs'][ $source['attr'] ];
+			} else {
+				$block_data = [ $matching_block['attrs'] ];
+			}
 
-		$map_blocks = get_blocks_by_type( 'jetpack/map', $blocks );
-
-		foreach ( $map_blocks as $map_block ) {
-			if ( ! empty( $map_block['attrs']['points'] ) ) {
-				$location_data = array_merge( $location_data, $map_block['attrs']['points'] );
+			if ( is_array( $block_data ) ) {
+				$data = array_merge( $data, $block_data );
+			} else {
+				$data[] = $block_data;
 			}
 		}
 	}
 
-	return $location_data;
+	// Return false instead of an empty array, if there's no data to return.
+	if ( empty( $data ) ) {
+		return false;
+	}
+
+	return $data;
 }

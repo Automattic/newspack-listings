@@ -70,6 +70,7 @@ final class Newspack_Listings_Core {
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_styles' ] );
 		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
+		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
 	}
 
 	/**
@@ -98,10 +99,16 @@ final class Newspack_Listings_Core {
 	/**
 	 * Is the current post a listings post type?
 	 *
+	 * @param String|null $post_type (Optional) Post type to check. If not given, will use the current global post object.
+	 *
 	 * @returns Boolean Whether or not the current post type matches one of the listings CPTs.
 	 */
-	public static function is_listing() {
-		if ( in_array( get_post_type(), self::NEWSPACK_LISTINGS_POST_TYPES ) ) {
+	public static function is_listing( $post_type = null ) {
+		if ( null === $post_type ) {
+			$post_type = get_post_type();
+		}
+
+		if ( in_array( $post_type, self::NEWSPACK_LISTINGS_POST_TYPES ) ) {
 			return true;
 		}
 
@@ -208,10 +215,10 @@ final class Newspack_Listings_Core {
 
 			// Register meta fields for this post type.
 			$meta_fields = self::get_meta_fields( $post_type );
-			foreach ( $meta_fields as $name => $meta_field ) {
+			foreach ( $meta_fields as $field_name => $meta_field ) {
 				register_meta(
 					'post',
-					$name,
+					$field_name,
 					$meta_field['settings']
 				);
 			}
@@ -233,45 +240,223 @@ final class Newspack_Listings_Core {
 		}
 
 		$all_meta_fields = [
-			'newspack_listings_contact_email' => [
+			'newspack_listings_contact_email'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
-				'label'      => __( 'Email address', 'newspack-listings' ),
+				'label'      => __( 'Contact email address', 'newspack-listings' ),
 				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/email',
+					'attr'      => 'email',
+				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
 					'default'           => '',
 					'description'       => __( 'Email address to contact for this listing.', 'newspack-listings' ),
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'single'            => true,
-					'show_in_rest'      => true,
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type' => 'string',
+							],
+						],
+					],
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
 				],
 			],
-			'newspack_listings_contact_phone' => [
+			'newspack_listings_contact_phone'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
-				'label'      => __( 'Phone number', 'newspack-listings' ),
+				'label'      => __( 'Contact phone number', 'newspack-listings' ),
 				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/phone',
+					'attr'      => 'phone',
+				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
 					'default'           => '',
 					'description'       => __( 'Phone number to contact for this listing.', 'newspack-listings' ),
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'single'            => true,
-					'show_in_rest'      => true,
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type' => 'string',
+							],
+						],
+					],
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_contact_address' => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Contact Address', 'newspack-listings' ),
+				'type'       => 'input',
+				'source'     => [ 'blockName' => 'jetpack/address' ],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Contact address for this listing.', 'newspack-listings' ),
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'address'      => [
+										'type' => 'string',
+									],
+									'addressLine2' => [
+										'type' => 'string',
+									],
+									'addressLine3' => [
+										'type' => 'string',
+									],
+									'city'         => [
+										'type' => 'string',
+									],
+									'region'       => [
+										'type' => 'string',
+									],
+									'postal'       => [
+										'type' => 'string',
+									],
+									'country'      => [
+										'type' => 'string',
+									],
+								],
+							],
+						],
+					],
+				],
+			],
+			'newspack_listings_business_hours'  => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Hours of Operation', 'newspack-listings' ),
+				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/business-hours',
+					'attr'      => 'days',
+				],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Hours of operation for this listing.', 'newspack-listings' ),
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'name'  => [
+										'type' => 'string',
+									],
+									'hours' => [
+										'type'  => 'array',
+										'items' => [
+											'type'       => 'object',
+											'properties' => [
+												'opening' => [
+													'type' => 'string',
+												],
+												'closing' => [
+													'type' => 'string',
+												],
+											],
+										],
+									],
+								],
+							],
+						],
+					],
+				],
+			],
+			'newspack_listings_locations'       => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Locations', 'newspack-listings' ),
+				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/map',
+					'attr'      => 'points',
+				],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Geolocation data for this listing.', 'newspack-listings' ),
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'placeTitle'  => [
+										'type' => 'string',
+									],
+									'title'       => [
+										'type' => 'string',
+									],
+									'caption'     => [
+										'type' => 'string',
+									],
+									'id'          => [
+										'type' => 'string',
+									],
+									'coordinates' => [
+										'type'       => 'object',
+										'properties' => [
+											'latitude'  => [
+												'type' => 'number',
+											],
+											'longitude' => [
+												'type' => 'number',
+											],
+										],
+									],
+								],
+							],
+						],
+					],
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
@@ -286,6 +471,38 @@ final class Newspack_Listings_Core {
 				return in_array( $post_type, $meta_field['post_types'] );
 			}
 		);
+	}
+
+	/**
+	 * Sync data from specific content blocks to post meta.
+	 * Source blocks for each meta field are set in the meta config above.
+	 *
+	 * @param Int   $post_id ID of the post being created or updated.
+	 * @param Array $post Post object of the post being created or updated.
+	 */
+	public static function sync_post_meta( $post_id, $post ) {
+		if ( ! self::is_listing( $post->post_type ) ) {
+			return;
+		}
+
+		$blocks      = parse_blocks( $post->post_content );
+		$meta_fields = self::get_meta_fields( $post->post_type );
+
+		foreach ( $meta_fields as $field_name => $meta_field ) {
+			$source       = $meta_field['source'];
+			$data_to_sync = Utils\get_data_from_blocks( $blocks, $source );
+
+			/*
+			 * If there are no blocks matching the source, clear the field.
+			 * This prevents garbage data from persisting if a block is removed
+			 * after its data has already been saved as post meta.
+			 */
+			if ( false === $data_to_sync ) {
+				delete_post_meta( $post_id, $field_name );
+			} else {
+				update_post_meta( $post_id, $field_name, $data_to_sync );
+			}
+		}
 	}
 
 	/**
@@ -328,6 +545,7 @@ final class Newspack_Listings_Core {
 				);
 			}
 		}
+
 		return $template;
 	}
 }
