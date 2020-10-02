@@ -99,7 +99,7 @@ final class Newspack_Listings_Core {
 	/**
 	 * Is the current post a listings post type?
 	 *
-	 * @param String|null $post_type (Optional) Post type to check. If not given, will use the current global post object.
+	 * @param string|null $post_type (Optional) Post type to check. If not given, will use the current global post object.
 	 *
 	 * @returns Boolean Whether or not the current post type matches one of the listings CPTs.
 	 */
@@ -231,9 +231,9 @@ final class Newspack_Listings_Core {
 	/**
 	 * Define and return meta fields for any Newspack Listings CPTs.
 	 *
-	 * @param String  $post_type Post type to get corresponding meta fields.
-	 * @param Boolean $field_names_only (Optional) If true, return an array of just the field names without config.
-	 * @return Array Array of meta fields for the given $post_type.
+	 * @param string  $post_type Post type to get corresponding meta fields.
+	 * @param boolean $field_names_only (Optional) If true, return an array of just the field names without config.
+	 * @return array Array of meta fields for the given $post_type.
 	 */
 	public static function get_meta_fields( $post_type = null, $field_names_only = false ) {
 		if ( empty( $post_type ) ) {
@@ -483,10 +483,10 @@ final class Newspack_Listings_Core {
 	/**
 	 * Given a post ID and post type, get values for all corresponding Listings meta fields.
 	 *
-	 * @param Int|null    $post_id (Optional) ID for the listing post.
-	 * @param String|null $post_type (Optional) Post type.
+	 * @param int|null    $post_id (Optional) ID for the listing post.
+	 * @param string|null $post_type (Optional) Post type.
 	 *
-	 * @return Array|Boolean Post meta data, or false if post given is not a listing.
+	 * @return array|boolean Post meta data, or false if post given is not a listing.
 	 */
 	public static function get_meta_values( $post_id = null, $post_type = null ) {
 		if ( null === $post_id ) {
@@ -519,8 +519,8 @@ final class Newspack_Listings_Core {
 	 * Sync data from specific content blocks to post meta.
 	 * Source blocks for each meta field are set in the meta config above.
 	 *
-	 * @param Int   $post_id ID of the post being created or updated.
-	 * @param Array $post Post object of the post being created or updated.
+	 * @param int   $post_id ID of the post being created or updated.
+	 * @param array $post Post object of the post being created or updated.
 	 */
 	public static function sync_post_meta( $post_id, $post ) {
 		if ( ! self::is_listing( $post->post_type ) ) {
@@ -566,8 +566,8 @@ final class Newspack_Listings_Core {
 	/**
 	 * If using a Newspack theme, force single listings pages to use the wide template (sans widget sidebar).
 	 *
-	 * @param String $template File path of the template to use for the current single post.
-	 * @return String Filtered template file path.
+	 * @param string $template File path of the template to use for the current single post.
+	 * @return string Filtered template file path.
 	 */
 	public static function set_default_template( $template ) {
 		if ( self::is_listing() ) {

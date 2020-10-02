@@ -43,7 +43,7 @@ function register_blocks() {
 /**
  * Block render callback.
  *
- * @param Array $attributes Block attributes (including parent attributes inherited from Curated List container block).
+ * @param array $attributes Block attributes (including parent attributes inherited from Curated List container block).
  */
 function render_block( $attributes ) {
 	// Don't output the block inside RSS feeds.

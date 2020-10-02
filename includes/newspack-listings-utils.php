@@ -17,8 +17,8 @@ function activate() {
 /**
  * Sanitize an array of text values.
  *
- * @param Array $array Array of text or float values to be sanitized.
- * @return Array Sanitized array.
+ * @param array $array Array of text or float values to be sanitized.
+ * @return array Sanitized array.
  */
 function sanitize_array( $array ) {
 	foreach ( $array as $key => $value ) {
@@ -39,10 +39,10 @@ function sanitize_array( $array ) {
 /**
  * Given a block name, get all blocks (and recursively, all inner blocks) matching the given type.
  *
- * @param String $block_name Block name to match.
- * @param Array  $blocks Array of block objects to search.
+ * @param string $block_name Block name to match.
+ * @param array  $blocks Array of block objects to search.
  *
- * @return Array Array of matching blocks.
+ * @return array Array of matching blocks.
  */
 function get_blocks_by_type( $block_name, $blocks ) {
 	$matching_blocks = [];
@@ -70,13 +70,13 @@ function get_blocks_by_type( $block_name, $blocks ) {
  * Searches the content of the post for instances of the source block,
  * then returns the given attributes for all block instances.
  *
- * @param Array $blocks Array of block objects to get data from.
- * @param Array $source Info for the block to source the data from.
+ * @param array $blocks Array of block objects to get data from.
+ * @param array $source Info for the block to source the data from.
  *              ['blockName'] Name of the block to search for.
  *              ['attrs']     (Optional) Specific block attributes to get.
  *                            If not provided, all attributes will be returned.
  *
- * @return Array|Boolean Array of block data, or false if there are no blocks matching the given source (or no data to return).
+ * @return array|Boolean Array of block data, or false if there are no blocks matching the given source (or no data to return).
  */
 function get_data_from_blocks( $blocks, $source ) {
 	$data = [];

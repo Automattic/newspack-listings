@@ -27,8 +27,8 @@ function register_block() {
 /**
  * Block render callback.
  *
- * @param Array  $attributes Block attributes.
- * @param String $inner_content InnerBlock content.
+ * @param array  $attributes Block attributes.
+ * @param string $inner_content InnerBlock content.
  */
 function render_block( $attributes, $inner_content ) {
 	// Don't output the block inside RSS feeds.
