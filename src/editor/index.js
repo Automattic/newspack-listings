@@ -7,12 +7,16 @@ import {
 	registerListingBlock,
 	setCustomCategory,
 } from '../blocks';
+import { isListing } from './utils';
 import './style.scss';
 
 /**
- * Register blocks.
+ * Register Curated List blocks. Don't register if we're in a listing already
+ * (to avoid possibly infinitely nesting lists within list items).
  */
-setCustomCategory();
-registerCuratedListBlock();
-registerListContainerBlock();
-registerListingBlock();
+if ( ! isListing() ) {
+	setCustomCategory();
+	registerCuratedListBlock();
+	registerListContainerBlock();
+	registerListingBlock();
+}

@@ -66,9 +66,10 @@ final class Newspack_Listings_Blocks {
 			'newspack-listings-editor',
 			'newspack_listings_data',
 			[
-				'post_type'   => get_post_type_object( $post_type )->labels->singular_name,
-				'post_types'  => Core::NEWSPACK_LISTINGS_POST_TYPES,
-				'meta_fields' => Core::get_meta_fields( $post_type ),
+				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
+				'post_type'       => $post_type,
+				'post_types'      => Core::NEWSPACK_LISTINGS_POST_TYPES,
+				'meta_fields'     => Core::get_meta_fields( $post_type ),
 			]
 		);
 
