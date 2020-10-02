@@ -91,9 +91,13 @@ function get_data_from_blocks( $blocks, $source ) {
 
 		// Gather data from all matching block instances.
 		foreach ( $matching_blocks as $matching_block ) {
+			$block_data = false;
+
 			// If we have a source `attr` key, sync only that attribute, otherwise sync all attributes.
 			if ( ! empty( $source['attr'] ) ) {
-				$block_data = $matching_block['attrs'][ $source['attr'] ];
+				if ( ! empty( $matching_block['attrs'][ $source['attr'] ] ) ) {
+					$block_data = $matching_block['attrs'][ $source['attr'] ];
+				}
 			} else {
 				$block_data = [ $matching_block['attrs'] ];
 			}

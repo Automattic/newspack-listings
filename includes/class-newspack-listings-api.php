@@ -126,15 +126,6 @@ final class Newspack_Listings_Api {
 							$response['excerpt'] = wpautop( get_the_excerpt( $post->ID ) );
 						}
 
-						// If $fields includes locations, get location data.
-						if ( in_array( 'locations', $fields ) ) {
-							$locations = Utils\get_location_data( $post->ID );
-
-							if ( ! empty( $locations ) ) {
-								$response['locations'] = $locations;
-							}
-						}
-
 						// If $fields includes media, get the featured image + caption.
 						if ( in_array( 'media', $fields ) ) {
 							$response['media'] = [
@@ -145,15 +136,11 @@ final class Newspack_Listings_Api {
 
 						// If $fields includes meta, get all Newspack Listings meta fields.
 						if ( in_array( 'meta', $fields ) ) {
-							$post_meta = array_filter(
-								get_post_meta( $post->ID ),
-								function( $key ) {
-									return is_numeric( strpos( $key, 'newspack_listings_' ) );
-								},
-								ARRAY_FILTER_USE_KEY
-							);
+							$post_meta = Core::get_meta_values( $post->ID, $post->post_type );
 
-							$response['meta'] = $post_meta;
+							if ( ! empty( $post_meta ) ) {
+								$response['meta'] = $post_meta;
+							}
 						}
 
 						return $response;

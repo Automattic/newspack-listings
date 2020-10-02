@@ -81,7 +81,7 @@ const ListingEditorComponent = ( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,excerpt,locations,media,meta',
+					_fields: 'id,title,excerpt,media,meta',
 				} ),
 			} );
 
@@ -89,11 +89,13 @@ const ListingEditorComponent = ( {
 				throw `No posts found for ID ${ listingId }. Try refreshing or selecting a new post.`;
 			}
 
-			if ( posts[ 0 ].locations ) {
-				setAttributes( { locations: posts[ 0 ].locations } );
+			const foundPost = posts[ 0 ];
+
+			if ( foundPost.meta && foundPost.meta.newspack_listings_locations ) {
+				setAttributes( { locations: foundPost.meta.newspack_listings_locations } );
 			}
 
-			setPost( posts[ 0 ] );
+			setPost( foundPost );
 		} catch ( e ) {
 			setError( e );
 		}

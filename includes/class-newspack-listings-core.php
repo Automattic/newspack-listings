@@ -231,10 +231,11 @@ final class Newspack_Listings_Core {
 	/**
 	 * Define and return meta fields for any Newspack Listings CPTs.
 	 *
-	 * @param String $post_type Post type to get corresponding meta fields.
+	 * @param String  $post_type Post type to get corresponding meta fields.
+	 * @param Boolean $field_names_only (Optional) If true, return an array of just the field names without config.
 	 * @return Array Array of meta fields for the given $post_type.
 	 */
-	public static function get_meta_fields( $post_type = null ) {
+	public static function get_meta_fields( $post_type = null, $field_names_only = false ) {
 		if ( empty( $post_type ) ) {
 			return [];
 		}
@@ -465,12 +466,53 @@ final class Newspack_Listings_Core {
 		];
 
 		// Return only the fields that are associated with the given $post_type.
-		return array_filter(
+		$matching_fields = array_filter(
 			$all_meta_fields,
 			function( $meta_field ) use ( $post_type ) {
 				return in_array( $post_type, $meta_field['post_types'] );
 			}
 		);
+
+		if ( false === $field_names_only ) {
+			return $matching_fields;
+		} else {
+			return array_keys( $matching_fields );
+		}
+	}
+
+	/**
+	 * Given a post ID and post type, get values for all corresponding Listings meta fields.
+	 *
+	 * @param Int|null    $post_id (Optional) ID for the listing post.
+	 * @param String|null $post_type (Optional) Post type.
+	 *
+	 * @return Array|Boolean Post meta data, or false if post given is not a listing.
+	 */
+	public static function get_meta_values( $post_id = null, $post_type = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		if ( null === $post_type ) {
+			$post_type = get_post_type( $post_id );
+		}
+
+		if ( ! self::is_listing( $post_type ) ) {
+			return false;
+		}
+
+		$meta_fields = self::get_meta_fields( $post_type, true );
+		$meta_values = [];
+
+		foreach ( $meta_fields as $meta_field ) {
+			$data = get_post_meta( $post_id, $meta_field, true );
+
+			if ( ! empty( $data ) ) {
+				$meta_values[ $meta_field ] = $data;
+			}
+		}
+
+		return $meta_values;
 	}
 
 	/**
