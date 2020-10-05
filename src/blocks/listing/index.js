@@ -23,7 +23,7 @@ export const registerListingBlock = () => {
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
 				icon: 'list-view',
 				category,
-				parent: [ parentData.name ],
+				parent: [ 'newspack-listings/list-container' ],
 				keywords: [
 					__( 'lists', 'newspack-listings' ),
 					__( 'listings', 'newspack-listings' ),
