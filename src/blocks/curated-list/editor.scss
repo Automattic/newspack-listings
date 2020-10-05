@@ -1,22 +1,28 @@
 .newspack-listings {
 	&__curated-list {
-		border: 1px solid var( --wp--preset--color--dark-gray );
-		border-radius: 2px;
-		padding: 3rem 1rem 1rem;
-
 		&.show-numbers .newspack-listings__listing-editor::before {
 			color: #767676;
-			color: var( --wp--preset--color--medium-gray );
+			color: var( --newspack-listings--grey-medium );
 			content: counter( list ) '. ';
 			counter-increment: list;
 			font-weight: bold;
 		}
 	}
 
+	&__curated-list-editor {
+		border: 1px solid var( --newspack-listings--grey-dark );
+		border-radius: 2px;
+		padding: 3rem 1rem 1rem;
+
+		[data-type='jetpack/map'] {
+			pointer-events: none;
+		}
+	}
+
 	&__curated-list-label {
 		background-color: #36f;
 		border-bottom-left-radius: 2px;
-		color: var( --wp--preset--color--white );
+		color: var( --newspack-listings--white );
 		display: block;
 		font-size: 0.75rem;
 		font-weight: bold;
