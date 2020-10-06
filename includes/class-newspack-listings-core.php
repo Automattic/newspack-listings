@@ -92,7 +92,7 @@ final class Newspack_Listings_Core {
 			__( 'Settings', 'newspack-listings' ),
 			'manage_options',
 			'newspack-listings-settings-admin',
-			[ __CLASS__, 'create_admin_page' ]
+			[ '\Newspack_Listings\Newspack_Listings_Settings', 'create_admin_page' ]
 		);
 	}
 
