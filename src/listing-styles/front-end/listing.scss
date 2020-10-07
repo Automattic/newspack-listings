@@ -1,3 +1,5 @@
+@import '../shared/listing';
+
 .newspack-listings {
 	// Target only .newspack-listings* when it's an `a` element
 	@at-root a#{&} {

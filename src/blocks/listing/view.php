@@ -71,9 +71,7 @@ function render_block( $attributes ) {
 	?>
 	<li class="newspack-listings__listing">
 		<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
-			<article class="newspack-listings__listing-article">
-				<h3><?php echo wp_kses_post( $post->post_title ); ?></h3>
-
+			<article class="newspack-listings__listing-post">
 				<?php if ( true === $attributes['showImage'] ) : ?>
 					<?php
 					$featured_image = get_the_post_thumbnail( $post->ID, 'large' );
@@ -90,11 +88,15 @@ function render_block( $attributes ) {
 					<?php endif; ?>
 				<?php endif; ?>
 
-				<?php
-				if ( true === $attributes['showExcerpt'] ) {
-					echo wp_kses_post( wpautop( get_the_excerpt( $post->ID ) ) );
-				}
-				?>
+				<div class="newspack-listings__listing-meta">
+					<h3 class="newspack-listings__listing-title"><?php echo wp_kses_post( $post->post_title ); ?></h3>
+
+					<?php
+					if ( true === $attributes['showExcerpt'] ) {
+						echo wp_kses_post( wpautop( get_the_excerpt( $post->ID ) ) );
+					}
+					?>
+				</div>
 			</article>
 		</a>
 	</li>

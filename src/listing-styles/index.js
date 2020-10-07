@@ -1,4 +1,4 @@
 /**
  * Custom styles for listings pages.
  */
-import './listings/view.scss';
+import './front-end/view.scss';

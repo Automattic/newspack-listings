@@ -1,3 +1,5 @@
+@import '../../listing-styles/shared/listing';
+
 .block-editor-block-list__layout {
 	counter-reset: list;
 }
@@ -36,10 +38,5 @@
 
 	&__error {
 		margin: 1rem auto 2rem;
-	}
-
-	&__listing-featured-media {
-		margin: 1rem 0;
-		padding: 0;
 	}
 }

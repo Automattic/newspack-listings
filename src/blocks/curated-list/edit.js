@@ -5,17 +5,23 @@ import { __ } from '@wordpress/i18n';
 import { createBlock } from '@wordpress/blocks';
 import { InnerBlocks, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
 import {
+	BaseControl,
 	Button,
 	ButtonGroup,
 	PanelBody,
 	PanelRow,
 	RangeControl,
+	SelectControl,
 	ToggleControl,
-	BaseControl,
 } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { Fragment, useEffect, useState } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
+import { getCuratedListClasses } from '../../editor/utils';
 
 const CuratedListEditorComponent = ( {
 	attributes,
@@ -50,10 +56,7 @@ const CuratedListEditorComponent = ( {
 		innerBlock => innerBlock.name === 'newspack-listings/list-container'
 	);
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
-	const classes = [ className, 'newspack-listings__curated-list' ];
-	if ( showNumbers ) classes.push( 'show-numbers' );
-	if ( showMap ) classes.push( 'show-map' );
-	if ( showSortByDate ) classes.push( 'has-sort-by-date-ui' );
+	const classes = getCuratedListClasses( className, attributes );
 
 	// Update locations in component state. This lets us keep the map block in sync with listing items.
 	useEffect(() => {
@@ -176,13 +179,26 @@ const CuratedListEditorComponent = ( {
 					</PanelRow>
 
 					{ showImage && (
-						<PanelRow>
-							<ToggleControl
-								label={ __( 'Show Featured Image Caption', 'newspack-listings' ) }
-								checked={ showCaption }
-								onChange={ () => setAttributes( { showCaption: ! showCaption } ) }
+						<Fragment>
+							<PanelRow>
+								<ToggleControl
+									label={ __( 'Show Featured Image Caption', 'newspack-listings' ) }
+									checked={ showCaption }
+									onChange={ () => setAttributes( { showCaption: ! showCaption } ) }
+								/>
+							</PanelRow>
+							<SelectControl
+								label={ __( 'Featured Image Position', 'newspack-listings' ) }
+								value={ mediaPosition }
+								onChange={ value => setAttributes( { mediaPosition: value } ) }
+								options={ [
+									{ label: __( 'Top', 'newspack-listings' ), value: 'top' },
+									{ label: __( 'Left', 'newspack-listings' ), value: 'left' },
+									{ label: __( 'Right', 'newspack-listings' ), value: 'right' },
+									{ label: __( 'Behind', 'newspack-listings' ), value: 'behind' },
+								] }
 							/>
-						</PanelRow>
+						</Fragment>
 					) }
 
 					{ showImage && mediaPosition !== 'top' && mediaPosition !== 'behind' && (

@@ -1,0 +1,43 @@
+.newspack-listings {
+	&__listing-post {
+		.media-position-left &,
+		.media-position-right & {
+			display: flex;
+		}
+	}
+
+	&__listing-featured-media {
+		flex-basis: 100%;
+		margin: 1rem 0;
+		max-width: 100%;
+		padding: 0;
+
+		.media-position-right & {
+			order: 2;
+		}
+
+		.media-size-1 & {
+			flex-basis: 25%;
+		}
+
+		.media-size-2 & {
+			flex-basis: 50%;
+		}
+
+		.media-size-3 & {
+			flex-basis: 75%;
+		}
+	}
+
+	&__listing-meta {
+		flex-basis: 100%;
+
+		.media-position-left & {
+			margin-left: 1rem;
+		}
+
+		.media-position-right & {
+			margin-right: 1rem;
+		}
+	}
+}

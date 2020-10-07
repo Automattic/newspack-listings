@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { withSelect } from '@wordpress/data';
-import { RawHTML, useEffect, useState } from '@wordpress/element';
+import { Fragment, RawHTML, useEffect, useState } from '@wordpress/element';
 import { Button, Notice, Spinner } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -27,8 +27,19 @@ const ListingEditorComponent = ( {
 	const [ isEditingPost, setIsEditingPost ] = useState( false );
 	const { listing } = attributes;
 
-	// Get the parent Curated List block.
-	const parent = getBlock( getBlockParents( clientId )[ 0 ] );
+	// Get the parent List Container block.
+	const parents = getBlockParents( clientId );
+	const parent = parents.reduce( ( acc, outerBlock ) => {
+		const blockInfo = getBlock( outerBlock );
+
+		if ( 'newspack-listings/list-container' === blockInfo.name ) {
+			acc.listContainer = blockInfo;
+		} else if ( 'newspack-listings/curated-list' === blockInfo.name ) {
+			acc.curatedList = blockInfo;
+		}
+
+		return acc;
+	}, {} );
 
 	// Parent Curated List block attributes.
 	const {
@@ -43,10 +54,10 @@ const ListingEditorComponent = ( {
 		// mobileStack,
 		// textColor,
 		// showSubtitle,
-	} = parent.attributes;
+	} = parent.curatedList.attributes;
 
 	// Build an array of just the listing post IDs that exist in the parent Curated List block.
-	const listItems = parent.innerBlocks.reduce( ( acc, innerBlock ) => {
+	const listItems = parent.listContainer.innerBlocks.reduce( ( acc, innerBlock ) => {
 		if ( innerBlock.attributes.listing ) {
 			acc.push( innerBlock.attributes.listing );
 		}
@@ -70,8 +81,8 @@ const ListingEditorComponent = ( {
 
 	// Sync parent attributes to listing attributes, so that we can use parent attributes in the PHP render callback.
 	useEffect(() => {
-		setAttributes( { ...parent.attributes } );
-	}, [ JSON.stringify( parent.attributes ) ]);
+		setAttributes( { ...parent.curatedList.attributes } );
+	}, [ JSON.stringify( parent.curatedList.attributes ) ]);
 
 	// Fetch listing post by listingId.
 	const fetchPost = async listingId => {
@@ -104,7 +115,7 @@ const ListingEditorComponent = ( {
 	// Renders the autocomplete search field to select listings. Will only show listings of the type that matches the block.
 	const renderSearch = () => {
 		return (
-			<div className="newspack-listings__listing-post">
+			<div className="newspack-listings__listing-search">
 				<QueryControls
 					label={
 						isEditingPost && post && post.title
@@ -147,32 +158,36 @@ const ListingEditorComponent = ( {
 		}
 
 		return (
-			<div className="newspack-listings__listing-post">
-				{ error && (
-					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
-						{ error }
-					</Notice>
-				) }
-				{ post && post.title && (
-					<h3 className="newspack-listings__listing-title">
-						<RawHTML>{ post.title }</RawHTML>
-					</h3>
-				) }
-				{ showImage && post && post.media && post.media.image && (
-					<figure className="newspack-listings__listing-featured-media">
-						<img
-							className="newspack-listings__listing-thumbnail"
-							src={ post.media.image }
-							alt={ post.media.caption || post.title }
-						/>
-						{ showCaption && post.media.caption && (
-							<figcaption className="newspack-listings__listing-caption">
-								{ post.media.caption }
-							</figcaption>
-						) }
-					</figure>
-				) }
-				{ showExcerpt && post && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
+			<Fragment>
+				<div className="newspack-listings__listing-post">
+					{ error && (
+						<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
+							{ error }
+						</Notice>
+					) }
+					{ showImage && post && post.media && post.media.image && (
+						<figure className="newspack-listings__listing-featured-media">
+							<img
+								className="newspack-listings__listing-thumbnail"
+								src={ post.media.image }
+								alt={ post.media.caption || post.title }
+							/>
+							{ showCaption && post.media.caption && (
+								<figcaption className="newspack-listings__listing-caption">
+									{ post.media.caption }
+								</figcaption>
+							) }
+						</figure>
+					) }
+					{ post && post.title && (
+						<div className="newspack-listings__listing-meta">
+							<h3 className="newspack-listings__listing-title">
+								<RawHTML>{ post.title }</RawHTML>
+							</h3>
+							{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
+						</div>
+					) }
+				</div>
 				<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
 					{ __( 'Replace listing', 'newspack-listing' ) }
 				</Button>
@@ -185,7 +200,7 @@ const ListingEditorComponent = ( {
 						{ __( 'Edit this listing', 'newspack-listing' ) }
 					</Button>
 				) }
-			</div>
+			</Fragment>
 		);
 	};
 
