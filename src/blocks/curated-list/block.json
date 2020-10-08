@@ -14,6 +14,10 @@
       "type": "boolean",
       "default": false
     },
+    "showAuthor": {
+      "type": "boolean",
+      "default": false
+    },
     "showExcerpt": {
       "type": "boolean",
       "default": true
@@ -76,10 +80,6 @@
     "customTextColor": {
       "type": "string",
       "default": ""
-    },
-    "showSubtitle": {
-      "type": "boolean",
-      "default": false
     }
   }
 }

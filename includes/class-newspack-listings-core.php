@@ -125,7 +125,7 @@ final class Newspack_Listings_Core {
 			'show_in_menu' => 'newspack-listings',
 			'show_in_rest' => true,
 			'show_ui'      => true,
-			'supports'     => [ 'editor', 'excerpt', 'title', 'custom-fields', 'thumbnail' ],
+			'supports'     => [ 'editor', 'excerpt', 'title', 'author', 'custom-fields', 'thumbnail' ],
 		];
 		$post_types_config = [
 			'event'       => [

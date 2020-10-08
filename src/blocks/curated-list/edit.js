@@ -39,6 +39,7 @@ const CuratedListEditorComponent = ( {
 		showNumbers,
 		showMap,
 		showSortByDate,
+		showAuthor,
 		showExcerpt,
 		showImage,
 		showCaption,
@@ -49,7 +50,6 @@ const CuratedListEditorComponent = ( {
 		imageScale,
 		mobileStack,
 		textColor,
-		showSubtitle,
 	} = attributes;
 
 	const list = innerBlocks.find(
@@ -134,11 +134,6 @@ const CuratedListEditorComponent = ( {
 		},
 	];
 
-	const subtitleIsSupportedInTheme =
-		typeof window === 'object' &&
-		window.newspackIsPostSubtitleSupported &&
-		window.newspackIsPostSubtitleSupported.post_subtitle;
-
 	return (
 		<div className="newspack-listings__curated-list-editor">
 			<InspectorControls>
@@ -195,7 +190,6 @@ const CuratedListEditorComponent = ( {
 									{ label: __( 'Top', 'newspack-listings' ), value: 'top' },
 									{ label: __( 'Left', 'newspack-listings' ), value: 'left' },
 									{ label: __( 'Right', 'newspack-listings' ), value: 'right' },
-									{ label: __( 'Behind', 'newspack-listings' ), value: 'behind' },
 								] }
 							/>
 						</Fragment>
@@ -256,15 +250,13 @@ const CuratedListEditorComponent = ( {
 					) }
 				</PanelBody>
 				<PanelBody title={ __( 'Post Control Settings', 'newspack-listings' ) }>
-					{ subtitleIsSupportedInTheme && (
-						<PanelRow>
-							<ToggleControl
-								label={ __( 'Show Subtitle', 'newspack-listings' ) }
-								checked={ showSubtitle }
-								onChange={ () => setAttributes( { showSubtitle: ! showSubtitle } ) }
-							/>
-						</PanelRow>
-					) }
+					<PanelRow>
+						<ToggleControl
+							label={ __( 'Show Author', 'newspack-listings' ) }
+							checked={ showAuthor }
+							onChange={ () => setAttributes( { showAuthor: ! showAuthor } ) }
+						/>
+					</PanelRow>
 					<PanelRow>
 						<ToggleControl
 							label={ __( 'Show Excerpt', 'newspack-listings' ) }

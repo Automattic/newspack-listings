@@ -43,17 +43,11 @@ const ListingEditorComponent = ( {
 
 	// Parent Curated List block attributes.
 	const {
+		showAuthor,
 		showExcerpt,
 		showImage,
 		showCaption,
-		// minHeight,
-		// showCategory,
-		// mediaPosition,
-		// typeScale,
-		// imageScale,
-		// mobileStack,
-		// textColor,
-		// showSubtitle,
+		textColor,
 	} = parent.curatedList.attributes;
 
 	// Build an array of just the listing post IDs that exist in the parent Curated List block.
@@ -92,7 +86,7 @@ const ListingEditorComponent = ( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,excerpt,media,meta',
+					_fields: 'id,title,author,excerpt,media,meta',
 				} ),
 			} );
 
@@ -159,7 +153,12 @@ const ListingEditorComponent = ( {
 
 		return (
 			<Fragment>
-				<div className="newspack-listings__listing-post">
+				<div
+					className="newspack-listings__listing-post"
+					style={ {
+						color: textColor || '#000',
+					} }
+				>
 					{ error && (
 						<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
 							{ error }
@@ -184,6 +183,11 @@ const ListingEditorComponent = ( {
 							<h3 className="newspack-listings__listing-title">
 								<RawHTML>{ post.title }</RawHTML>
 							</h3>
+							{ showAuthor && post.author && (
+								<cite>
+									<RawHTML>{ __( 'By', 'newpack-listings' ) + ' ' + post.author }</RawHTML>
+								</cite>
+							) }
 							{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
 						</div>
 					) }
