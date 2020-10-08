@@ -1,9 +1,5 @@
 @import '../../listing-styles/shared/listing';
 
-.block-editor-block-list__layout {
-	counter-reset: list;
-}
-
 .newspack-listings {
 	&__listing-editor {
 		border-radius: 2px;

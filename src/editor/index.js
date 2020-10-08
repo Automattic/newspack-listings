@@ -8,7 +8,6 @@ import {
 	setCustomCategory,
 } from '../blocks';
 import { isListing } from './utils';
-import './style.scss';
 
 /**
  * Register Curated List blocks. Don't register if we're in a listing already

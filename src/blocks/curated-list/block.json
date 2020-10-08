@@ -80,6 +80,10 @@
     "customTextColor": {
       "type": "string",
       "default": ""
+    },
+    "queryMode": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

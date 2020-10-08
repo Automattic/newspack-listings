@@ -1,3 +1,12 @@
+// Colors.
+:root {
+	--newspack-listings--grey-dark: #111;
+	--newspack-listings--grey-medium: #666;
+	--newspack-listings--grey-light: #ddd;
+	--newspack-listings--white: #fff;
+}
+
+// Media queries.
 $mobile_width: 600px;
 $tablet_width: 782px;
 $desktop_width: 1168px;

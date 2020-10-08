@@ -1,14 +1,6 @@
-.newspack-listings {
-	&__curated-list {
-		&.show-numbers .newspack-listings__listing-editor::before {
-			color: #767676;
-			color: var( --newspack-listings--grey-medium );
-			content: counter( list ) '. ';
-			counter-increment: list;
-			font-weight: bold;
-		}
-	}
+@import '../../listing-styles/shared/curated-list';
 
+.newspack-listings {
 	&__curated-list-editor {
 		border: 1px solid var( --newspack-listings--grey-dark );
 		border-radius: 2px;
