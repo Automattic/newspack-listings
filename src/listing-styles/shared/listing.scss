@@ -56,9 +56,17 @@
 		}
 	}
 
+	&__listing-title {
+		margin-top: 0.5em;
+
+		.editor-styles-wrapper & {
+			margin-top: 0.5em;
+		}
+	}
+
 	&__listing-featured-media {
 		flex-basis: 100%;
-		margin: 1rem 0;
+		margin: 0 0 1rem;
 		max-width: 100%;
 		padding: 0;
 
@@ -84,7 +92,12 @@
 		}
 	}
 
+	&__listing-caption {
+		padding-top: 0.5rem;
+	}
+
 	&__listing-meta {
+		display: block;
 		flex-basis: 100%;
 
 		.media-position-left & {
@@ -93,6 +106,12 @@
 
 		.media-position-right & {
 			margin-right: 1rem;
+		}
+
+		.cat-links a {
+			font-size: 0.75em;
+			font-weight: 700;
+			text-decoration: none;
 		}
 	}
 }

@@ -1,11 +1,14 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
+
 /**
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import { Button, Notice, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
 import { Fragment, RawHTML, useEffect, useState } from '@wordpress/element';
-import { Button, Notice, Spinner } from '@wordpress/components';
+import { decodeEntities } from '@wordpress/html-entities';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -44,6 +47,7 @@ const ListingEditorComponent = ( {
 	// Parent Curated List block attributes.
 	const {
 		showAuthor,
+		showCategory,
 		showExcerpt,
 		showImage,
 		showCaption,
@@ -86,7 +90,7 @@ const ListingEditorComponent = ( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,author,excerpt,media,meta',
+					_fields: 'id,title,author,category,excerpt,media,meta',
 				} ),
 			} );
 
@@ -154,7 +158,7 @@ const ListingEditorComponent = ( {
 		return (
 			<Fragment>
 				<div
-					className="newspack-listings__listing-post"
+					className="newspack-listings__listing-post entry-wrapper"
 					style={ {
 						color: textColor || '#000',
 					} }
@@ -180,12 +184,20 @@ const ListingEditorComponent = ( {
 					) }
 					{ post && post.title && (
 						<div className="newspack-listings__listing-meta">
-							<h3 className="newspack-listings__listing-title">
-								<RawHTML>{ post.title }</RawHTML>
-							</h3>
+							{ showCategory && post.category.length && ! post.newspack_post_sponsors && (
+								<div className="cat-links">
+									{ post.category.map( ( category, index ) => (
+										<Fragment key="index">
+											<a href="#">{ decodeEntities( category.name ) }</a>
+											{ index + 1 < post.category.length && ', ' }
+										</Fragment>
+									) ) }
+								</div>
+							) }
+							<h3 className="newspack-listings__listing-title">{ decodeEntities( post.title ) }</h3>
 							{ showAuthor && post.author && (
 								<cite>
-									<RawHTML>{ __( 'By', 'newpack-listings' ) + ' ' + post.author }</RawHTML>
+									{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( post.author ) }
 								</cite>
 							) }
 							{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }

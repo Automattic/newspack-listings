@@ -252,13 +252,6 @@ const CuratedListEditorComponent = ( {
 				<PanelBody title={ __( 'Post Control Settings', 'newspack-listings' ) }>
 					<PanelRow>
 						<ToggleControl
-							label={ __( 'Show Author', 'newspack-listings' ) }
-							checked={ showAuthor }
-							onChange={ () => setAttributes( { showAuthor: ! showAuthor } ) }
-						/>
-					</PanelRow>
-					<PanelRow>
-						<ToggleControl
 							label={ __( 'Show Excerpt', 'newspack-listings' ) }
 							checked={ showExcerpt }
 							onChange={ () => setAttributes( { showExcerpt: ! showExcerpt } ) }
@@ -288,6 +281,13 @@ const CuratedListEditorComponent = ( {
 					] }
 				/>
 				<PanelBody title={ __( 'Post Meta Settings', 'newspack-listings' ) }>
+					<PanelRow>
+						<ToggleControl
+							label={ __( 'Show Author', 'newspack-listings' ) }
+							checked={ showAuthor }
+							onChange={ () => setAttributes( { showAuthor: ! showAuthor } ) }
+						/>
+					</PanelRow>
 					<PanelRow>
 						<ToggleControl
 							label={ __( 'Show Category', 'newspack-listings' ) }

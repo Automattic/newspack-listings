@@ -121,6 +121,11 @@ final class Newspack_Listings_Api {
 							'title' => $post->post_title,
 						];
 
+						// If $fields includes category, get the post categories.
+						if ( in_array( 'category', $fields ) ) {
+							$response['category'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
+						}
+
 						// If $fields includes author, get the post author.
 						if ( in_array( 'author', $fields ) ) {
 							$response['author'] = get_the_author_meta( 'display_name', $post->post_author );
