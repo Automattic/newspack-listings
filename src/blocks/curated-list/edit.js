@@ -50,6 +50,7 @@ const CuratedListEditorComponent = ( {
 		imageScale,
 		mobileStack,
 		textColor,
+		queryMode,
 	} = attributes;
 
 	const list = innerBlocks.find(
@@ -137,6 +138,15 @@ const CuratedListEditorComponent = ( {
 	return (
 		<div className="newspack-listings__curated-list-editor">
 			<InspectorControls>
+				<PanelBody title={ __( 'Query Settings', 'newspack-listings' ) }>
+					<PanelRow>
+						<ToggleControl
+							label={ __( 'Query mode', 'newspack-listings' ) }
+							checked={ queryMode }
+							onChange={ () => setAttributes( { queryMode: ! queryMode } ) }
+						/>
+					</PanelRow>
+				</PanelBody>
 				<PanelBody title={ __( 'Curated List Settings', 'newspack-listings' ) }>
 					<PanelRow>
 						<ToggleControl

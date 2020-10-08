@@ -1,0 +1,15 @@
+.newspack-listings {
+	&__curated-list {
+		counter-reset: list;
+
+		&.show-numbers .newspack-listings__listing::before {
+			color: #767676;
+			color: var( --newspack-listings--grey-medium );
+			content: counter( list ) '. ';
+			counter-increment: list;
+			display: block;
+			font-weight: bold;
+			margin-bottom: 0.5rem;
+		}
+	}
+}
