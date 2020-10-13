@@ -1,12 +1,6 @@
 .autocomplete-tokenfield {
 	position: relative;
 
-	.components-spinner {
-		position: absolute;
-		right: 1rem;
-		top: 1rem;
-	}
-
 	/* Workaround for hard-coded help text in FormTokenField. */
 	.components-form-token-field {
 		> .components-form-token-field__help {

@@ -2,8 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { registerBlockType } from '@wordpress/blocks';
 import { InnerBlocks } from '@wordpress/block-editor';
+import { registerBlockType } from '@wordpress/blocks';
 
 /**
  * Internal dependencies
@@ -15,6 +15,7 @@ export const registerListContainerBlock = () => {
 		title: __( 'Curated List Container', 'newspack-listing' ),
 		icon: 'list-view',
 		category: 'newspack',
+		parent: [ 'newspack-listings/curated-list' ],
 		keywords: [
 			__( 'curated', 'newspack-listings' ),
 			__( 'list', 'newspack-listings' ),

@@ -52,7 +52,7 @@ final class Newspack_Listings_Api {
 	 */
 	public static function register_routes() {
 
-		// GET listings posts by ID or title search term.
+		// GET listings posts by ID, query args, or title search term.
 		register_rest_route(
 			'newspack-listings/v1',
 			'listings',
@@ -60,6 +60,19 @@ final class Newspack_Listings_Api {
 				[
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => [ __CLASS__, 'get_items' ],
+					'permission_callback' => '__return_true',
+				],
+			]
+		);
+
+		// GET listings taxonomy terms by name search term.
+		register_rest_route(
+			'newspack-listings/v1',
+			'terms',
+			[
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ __CLASS__, 'get_terms' ],
 					'permission_callback' => '__return_true',
 				],
 			]
@@ -76,11 +89,17 @@ final class Newspack_Listings_Api {
 		$params     = $request->get_params();
 		$fields     = explode( ',', $params['_fields'] );
 		$search     = ! empty( $params['search'] ) ? $params['search'] : null;
+		$query      = ! empty( $params['query'] ) ? $params['query'] : null;
 		$id         = ! empty( $params['id'] ) ? $params['id'] : null;
 		$post_types = ! empty( $params['type'] ) ? $params['type'] : [];
 		$per_page   = ! empty( $params['per_page'] ) ? $params['per_page'] : 20;
 
-		if ( empty( $search ) && empty( $id ) ) {
+		if ( ! empty( $query ) && ! empty( $query['type'] ) && 'any' !== $query['type'] ) {
+			$post_types = $query['type'];
+		}
+
+		// Bail if one of the required args isn't present.
+		if ( empty( $search ) && empty( $id ) && empty( $query ) ) {
 			return new \WP_REST_Response( [] );
 		}
 
@@ -100,9 +119,64 @@ final class Newspack_Listings_Api {
 			'posts_per_page' => $per_page,
 		];
 
-		// Look up by title only if provided with a search term and not an ID.
-		if ( ! empty( $search ) && empty( $id ) ) {
+		// Look up by title only if provided with a search term and not an ID or query terms.
+		if ( ! empty( $search ) && empty( $id ) && empty( $query ) ) {
 			$args['s'] = esc_sql( $search );
+		}
+
+		// If given query terms but not an ID, search using those terms.
+		if ( ! empty( $query ) && empty( $id ) ) {
+			if ( ! empty( $query['authors'] ) ) {
+				$args['author__in'] = $query['authors'];
+			}
+			if ( ! empty( $query['order'] ) ) {
+				$args['order'] = $query['order'];
+			}
+			if ( ! empty( $query['sortBy'] ) ) {
+				$args['orderby'] = $query['sortBy'];
+			}
+
+			if (
+				! empty( $query['categories'] ) ||
+				! empty( $query['tags'] ) ||
+				! empty( $query['categoryExclusions'] ) ||
+				! empty( $query['tagExclusions'] )
+			) {
+				$args['tax_query'] = []; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+			}
+			if ( ! empty( $query['categories'] ) ) {
+				$args['tax_query'][] = [
+					'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+					'field'    => 'term_id',
+					'terms'    => $query['categories'],
+				];
+			}
+			if ( ! empty( $query['tags'] ) ) {
+				$args['tax_query'][] = [
+					'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+					'field'    => 'term_id',
+					'terms'    => $query['tags'],
+				];
+			}
+			if ( ! empty( $query['categoryExclusions'] ) ) {
+				$args['tax_query'][] = [
+					'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+					'field'    => 'term_id',
+					'terms'    => $query['categoryExclusions'],
+					'operator' => 'NOT IN',
+				];
+			}
+			if ( ! empty( $query['tagExclusions'] ) ) {
+				$args['tax_query'][] = [
+					'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+					'field'    => 'term_id',
+					'terms'    => $query['tagExclusions'],
+					'operator' => 'NOT IN',
+				];
+			}
+			if ( ! empty( $args['tax_query'] ) && 1 < count( $args['tax_query'] ) ) {
+				$args['tax_query']['relation'] = 'AND';
+			}
 		}
 
 		// If given an ID, just look up that post.
@@ -153,9 +227,47 @@ final class Newspack_Listings_Api {
 							}
 						}
 
+						// If $fields includes type, get the post type.
+						if ( in_array( 'type', $fields ) ) {
+							$response['type'] = $post->post_type;
+						}
+
 						return $response;
 					},
 					$query->posts
+				),
+				200
+			);
+		}
+
+		return new \WP_REST_Response( [] );
+	}
+
+	/**
+	 * Look up Listing taxonomy terms by name.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function get_terms( $request ) {
+		$params = $request->get_params();
+
+		if ( empty( $params['taxonomy'] ) ) {
+			$params['taxonomy'] = Core::NEWSPACK_LISTINGS_CAT;
+		}
+
+		$terms = get_terms( $params );
+
+		if ( is_array( $terms ) ) {
+			return new \WP_REST_Response(
+				array_map(
+					function( $term ) {
+						return [
+							'id'   => $term->term_id,
+							'name' => $term->name,
+						];
+					},
+					$terms
 				),
 				200
 			);

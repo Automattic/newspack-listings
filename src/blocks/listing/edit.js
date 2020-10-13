@@ -1,24 +1,21 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-
 /**
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Notice, Spinner } from '@wordpress/components';
+import { Button, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
-import { Fragment, RawHTML, useEffect, useState } from '@wordpress/element';
-import { decodeEntities } from '@wordpress/html-entities';
+import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
+import { Listing } from './listing';
 import { QueryControls } from '../../components';
 
 const ListingEditorComponent = ( {
 	attributes,
-	className,
 	clientId,
 	getBlock,
 	getBlockParents,
@@ -45,14 +42,7 @@ const ListingEditorComponent = ( {
 	}, {} );
 
 	// Parent Curated List block attributes.
-	const {
-		showAuthor,
-		showCategory,
-		showExcerpt,
-		showImage,
-		showCaption,
-		textColor,
-	} = parent.curatedList.attributes;
+	const { queryMode } = parent.curatedList.attributes;
 
 	// Build an array of just the listing post IDs that exist in the parent Curated List block.
 	const listItems = parent.listContainer.innerBlocks.reduce( ( acc, innerBlock ) => {
@@ -64,11 +54,8 @@ const ListingEditorComponent = ( {
 	}, [] );
 
 	const { post_types } = window.newspack_listings_data;
-	const classes = [ className, 'newspack-listings__listing' ];
 	const listingTypeSlug = name.split( '/' ).slice( -1 );
 	const listingType = post_types[ listingTypeSlug ];
-
-	classes.push( listingTypeSlug );
 
 	// Fetch listing post data if we have a listing post ID.
 	useEffect(() => {
@@ -157,60 +144,16 @@ const ListingEditorComponent = ( {
 
 		return (
 			<Fragment>
-				<div
-					className="newspack-listings__listing-post entry-wrapper"
-					style={ {
-						color: textColor || '#000',
-					} }
-				>
-					{ error && (
-						<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
-							{ error }
-						</Notice>
-					) }
-					{ showImage && post && post.media && post.media.image && (
-						<figure className="newspack-listings__listing-featured-media">
-							<img
-								className="newspack-listings__listing-thumbnail"
-								src={ post.media.image }
-								alt={ post.media.caption || post.title }
-							/>
-							{ showCaption && post.media.caption && (
-								<figcaption className="newspack-listings__listing-caption">
-									{ post.media.caption }
-								</figcaption>
-							) }
-						</figure>
-					) }
-					{ post && post.title && (
-						<div className="newspack-listings__listing-meta">
-							{ showCategory && post.category.length && ! post.newspack_post_sponsors && (
-								<div className="cat-links">
-									{ post.category.map( ( category, index ) => (
-										<Fragment key="index">
-											<a href="#">{ decodeEntities( category.name ) }</a>
-											{ index + 1 < post.category.length && ', ' }
-										</Fragment>
-									) ) }
-								</div>
-							) }
-							<h3 className="newspack-listings__listing-title">{ decodeEntities( post.title ) }</h3>
-							{ showAuthor && post.author && (
-								<cite>
-									{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( post.author ) }
-								</cite>
-							) }
-							{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
-						</div>
-					) }
-				</div>
-				<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
-					{ __( 'Replace listing', 'newspack-listing' ) }
-				</Button>
-				{ post && (
+				<Listing attributes={ parent.curatedList.attributes } error={ error } post={ post } />
+				{ ! queryMode && (
+					<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
+						{ __( 'Replace listing', 'newspack-listing' ) }
+					</Button>
+				) }
+				{ ! queryMode && post && (
 					<Button
 						isLink
-						href={ `/wp-admin/post.php?post=${ listing }&action=edit` }
+						href={ `/wp-admin/post.php?post=${ post.id }&action=edit` }
 						target="_blank"
 					>
 						{ __( 'Edit this listing', 'newspack-listing' ) }
@@ -221,11 +164,9 @@ const ListingEditorComponent = ( {
 	};
 
 	return (
-		<div className="newspack-listings__listing-editor">
-			<div className={ classes.join( ' ' ) }>
-				<span className="newspack-listings__listing-label">{ listingTypeSlug }</span>
-				{ ! listing || isEditingPost ? renderSearch() : renderPost() }
-			</div>
+		<div className="newspack-listings__listing-editor newspack-listings__listing">
+			<span className="newspack-listings__listing-label">{ listingTypeSlug }</span>
+			{ ! listing || isEditingPost ? renderSearch() : renderPost() }
 		</div>
 	);
 };

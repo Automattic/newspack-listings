@@ -84,6 +84,25 @@
     "queryMode": {
       "type": "boolean",
       "default": false
+    },
+    "queryOptions": {
+      "type": "object",
+      "default": {
+        "type": null,
+        "authors": [],
+        "categories": [],
+        "tags": [],
+        "categoryExclusions": [],
+        "tagExclusions": [],
+        "maxItems": 10,
+        "showLoadMore": false,
+        "sortBy": "date",
+        "order": "DESC"
+      }
+    },
+    "queriedListings": {
+      "type": "array",
+      "default": []
     }
   }
 }

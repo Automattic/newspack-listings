@@ -2,26 +2,34 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { createBlock } from '@wordpress/blocks';
 import { InnerBlocks, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
 import {
 	BaseControl,
 	Button,
 	ButtonGroup,
+	Modal,
+	Notice,
 	PanelBody,
 	PanelRow,
+	Placeholder,
 	RangeControl,
 	SelectControl,
+	Spinner,
 	ToggleControl,
 } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { Fragment, useEffect, useState } from '@wordpress/element';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { getCuratedListClasses } from '../../editor/utils';
+import { Listing } from '../listing/listing';
+import { SidebarQueryControls } from '../../components/';
+import { getCuratedListClasses, getKey } from '../../editor/utils';
 
 const CuratedListEditorComponent = ( {
 	attributes,
@@ -29,12 +37,15 @@ const CuratedListEditorComponent = ( {
 	className,
 	clientId,
 	innerBlocks,
-	insertBlock,
-	removeBlock,
+	insertBlocks,
+	removeBlocks,
 	setAttributes,
 	updateBlockAttributes,
 } ) => {
+	const [ error, setError ] = useState( null );
+	const [ isFetching, setIsFetching ] = useState( false );
 	const [ locations, setLocations ] = useState( [] );
+	const [ showModal, setShowModal ] = useState( false );
 	const {
 		showNumbers,
 		showMap,
@@ -51,19 +62,42 @@ const CuratedListEditorComponent = ( {
 		mobileStack,
 		textColor,
 		queryMode,
+		queryOptions,
+		queriedListings,
 	} = attributes;
 
 	const list = innerBlocks.find(
 		innerBlock => innerBlock.name === 'newspack-listings/list-container'
 	);
+	const listingBlocks = list ? list.innerBlocks.map( innerBlock => innerBlock.clientId ) : [];
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
 	const classes = getCuratedListClasses( className, attributes );
+	const { post_types } = window.newspack_listings_data;
+
+	// If changing query options, fetch listing posts that match the query.
+	useEffect(() => {
+		fetchPosts( queryOptions );
+	}, [ JSON.stringify( queryOptions ) ]);
 
 	// Update locations in component state. This lets us keep the map block in sync with listing items.
 	useEffect(() => {
+		if ( ! canUseMapBlock ) {
+			return;
+		}
+
+		let newLocations = [];
+
 		// Only build locations array if we have any listings, and the Jetpack Maps block exists.
-		const blockLocations =
-			canUseMapBlock && list
+		if ( queryMode ) {
+			newLocations = queriedListings.reduce( ( acc, queriedListing ) => {
+				if ( queriedListing.meta && queriedListing.meta.newspack_listings_locations ) {
+					queriedListing.meta.newspack_listings_locations.map( location => acc.push( location ) );
+				}
+
+				return acc;
+			}, [] );
+		} else {
+			newLocations = list
 				? list.innerBlocks.reduce( ( acc, innerBlock ) => {
 						if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
 							innerBlock.attributes.locations.map( location => acc.push( location ) );
@@ -71,9 +105,10 @@ const CuratedListEditorComponent = ( {
 						return acc;
 				  }, [] )
 				: [];
+		}
 
-		setLocations( blockLocations );
-	}, [ JSON.stringify( list ) ]);
+		setLocations( newLocations );
+	}, [ queryMode, JSON.stringify( list ), JSON.stringify( queriedListings ) ]);
 
 	// Create, update, or remove map when showMap attribute or locations change.
 	useEffect(() => {
@@ -83,7 +118,7 @@ const CuratedListEditorComponent = ( {
 		}
 
 		// If showMap toggle is enabled, update the existing map or create a new one.
-		if ( showMap ) {
+		if ( showMap && 0 < locations.length ) {
 			if ( hasMap ) {
 				// If we already have a map, update it.
 				updateBlockAttributes( hasMap.clientId, { points: locations } );
@@ -98,13 +133,69 @@ const CuratedListEditorComponent = ( {
 					points: locations,
 				} );
 
-				insertBlock( newBlock, 0, clientId );
+				insertBlocks( [ newBlock ], 0, clientId );
 			}
 		} else if ( hasMap ) {
 			// If disabling the showMap toggle, remove the existing map.
-			removeBlock( hasMap.clientId );
+			removeBlocks( [ hasMap.clientId ] );
 		}
 	}, [ showMap, JSON.stringify( locations ) ]);
+
+	// If we have listings that might be lost, warn the user. Otherwise, just swtich modes.
+	const maybeShowModal = () => {
+		if (
+			( ! queryMode && 0 === listingBlocks.length ) ||
+			( queryMode && 0 === queriedListings.length )
+		) {
+			setAttributes( { queryMode: ! queryMode } );
+			return;
+		}
+
+		setShowModal( true );
+	};
+
+	// Use current query options to get listing posts.
+	const fetchPosts = async query => {
+		setIsFetching( true );
+
+		// Remove blocks from prior queries.
+		if ( 0 < listingBlocks.length ) {
+			removeBlocks( listingBlocks );
+		}
+
+		try {
+			setError( null );
+			const posts = await apiFetch( {
+				path: addQueryArgs( '/newspack-listings/v1/listings', {
+					per_page: query.maxItems || 10,
+					query,
+					_fields: 'id,title,author,category,excerpt,media,meta,type',
+				} ),
+			} );
+
+			setAttributes( { queriedListings: posts } );
+
+			if ( 0 === posts.length ) {
+				throw 'No posts matching query options. Try selecting different or less specific query options.';
+			}
+		} catch ( e ) {
+			setError( e );
+		}
+
+		setIsFetching( false );
+	};
+
+	// Render the results of the listing query.
+	const renderQueriedListings = ( listing, index ) => {
+		return (
+			<div className="newspack-listings__listing-editor newspack-listings__listing">
+				<span className="newspack-listings__listing-label">
+					{ getKey( post_types, listing.type ) }
+				</span>
+				<Listing key={ index } attributes={ attributes } error={ error } post={ listing } />
+			</div>
+		);
+	};
 
 	const imageSizeOptions = [
 		{
@@ -143,11 +234,18 @@ const CuratedListEditorComponent = ( {
 						<ToggleControl
 							label={ __( 'Query mode', 'newspack-listings' ) }
 							checked={ queryMode }
-							onChange={ () => setAttributes( { queryMode: ! queryMode } ) }
+							onChange={ () => maybeShowModal() }
 						/>
 					</PanelRow>
+					{ queryMode && (
+						<SidebarQueryControls
+							disabled={ isFetching }
+							setAttributes={ setAttributes }
+							queryOptions={ queryOptions }
+						/>
+					) }
 				</PanelBody>
-				<PanelBody title={ __( 'Curated List Settings', 'newspack-listings' ) }>
+				<PanelBody title={ __( 'List Settings', 'newspack-listings' ) }>
 					<PanelRow>
 						<ToggleControl
 							label={ __( 'Show list item numbers', 'newspack-listings' ) }
@@ -311,13 +409,63 @@ const CuratedListEditorComponent = ( {
 				<span className="newspack-listings__curated-list-label">
 					{ __( 'Curated List', 'newspack-listings' ) }
 				</span>
+				{ queryMode && error && (
+					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
+						{ error }
+					</Notice>
+				) }
 				<InnerBlocks
 					allowedBlocks={ [ 'jetpack/map', 'newspack-listings/list-container' ] }
 					template={ [ [ 'newspack-listings/list-container' ] ] } // Start with an empty list only.
 					templateInsertUpdatesSelection={ false }
 					renderAppender={ () => null } // We want to discourage editors from adding blocks in this top-level wrapper, but we can't lock the template because we still need to be able to programmatically add or remove map blocks.
 				/>
+				{ // If in query mode and while fetching posts.
+				isFetching && queryMode && (
+					<Placeholder>
+						<Spinner />
+					</Placeholder>
+				) }
+				{ // If in query mode, show the queried listings.
+				! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
 			</div>
+			{ showModal && (
+				<Modal
+					className="newspack-listings__modal"
+					title={ __( 'Change query mode?' ) }
+					onRequestClose={ () => setShowModal( false ) }
+				>
+					<p>
+						{ __(
+							'Are you sure you want to change the query mode? Doing so will delete the existing items in this list.',
+							'newspack-listings'
+						) }
+					</p>
+					<Button
+						isPrimary
+						onClick={ () => {
+							// Confirm: delete all listing item and map blocks, if applicable.
+							if ( hasMap ) {
+								listingBlocks.push( hasMap.clientId );
+							}
+							removeBlocks( listingBlocks );
+							setAttributes( { queryMode: ! queryMode } );
+							setShowModal( false );
+						} }
+					>
+						{ __( 'OK', 'newspack-listings' ) }
+					</Button>
+					<Button
+						isSecondary
+						onClick={ () => {
+							// Cancel: reset query mode without deleting inner listing item or map blocks.
+							setShowModal( false );
+						} }
+					>
+						{ __( 'Cancel', 'newspack-listings' ) }
+					</Button>
+				</Modal>
+			) }
 		</div>
 	);
 };
@@ -335,11 +483,11 @@ const mapStateToProps = ( select, ownProps ) => {
 };
 
 const mapDispatchToProps = dispatch => {
-	const { insertBlock, removeBlock, updateBlockAttributes } = dispatch( 'core/block-editor' );
+	const { insertBlocks, removeBlocks, updateBlockAttributes } = dispatch( 'core/block-editor' );
 
 	return {
-		insertBlock,
-		removeBlock,
+		insertBlocks,
+		removeBlocks,
 		updateBlockAttributes,
 	};
 };

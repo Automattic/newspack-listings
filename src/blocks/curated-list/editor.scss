@@ -25,4 +25,10 @@
 		text-transform: uppercase;
 		top: 1px;
 	}
+
+	&__modal {
+		button + button {
+			margin-left: 0.5rem;
+		}
+	}
 }
