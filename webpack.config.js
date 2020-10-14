@@ -14,12 +14,11 @@ const path = require( 'path' );
  */
 const editor = path.join( __dirname, 'src', 'editor' );
 const assets = [ path.join( __dirname, 'src', 'assets' ) ];
-const amp = [ path.join( __dirname, 'src', 'assets', 'amp' ) ];
 
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
 	{
-		entry: { editor, assets, amp },
+		entry: { editor, assets },
 		'output-path': path.join( __dirname, 'dist' ),
 	}
 );
