@@ -135,18 +135,18 @@ function is_amp() {
  * @return string
  */
 function generate_amp_partial( $html ) {
-	$dom = AMP_DOM_Utils::get_dom_from_content( $html );
+	$dom = \AMP_DOM_Utils::get_dom_from_content( $html );
 
-	AMP_Content_Sanitizer::sanitize_document(
+	\AMP_Content_Sanitizer::sanitize_document(
 		$dom,
 		amp_get_content_sanitizers(),
 		[
 			'use_document_element' => false,
 		]
 	);
-	$xpath = new DOMXPath( $dom );
+	$xpath = new \DOMXPath( $dom );
 	foreach ( iterator_to_array( $xpath->query( '//noscript | //comment()' ) ) as $node ) {
 		$node->parentNode->removeChild( $node ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}
-	return AMP_DOM_Utils::get_content_from_dom( $dom );
+	return \AMP_DOM_Utils::get_content_from_dom( $dom );
 }

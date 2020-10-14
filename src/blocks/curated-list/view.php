@@ -142,6 +142,9 @@ function render_block( $attributes, $inner_content ) {
 	ob_start();
 
 	?>
+	<?php if ( $has_more_pages && Utils\is_amp() ) : ?>
+		<amp-script layout="container" src="<?php echo esc_url( NEWSPACK_LISTINGS_URL . 'src/assets/amp/curated-list.js' ); ?>">
+	<?php endif; ?>
 	<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
 		<?php echo wp_kses( $inner_content, $allowed_elements ); ?>
 		<?php if ( $attributes['queryMode'] && $has_more_pages ) : ?>
@@ -161,8 +164,10 @@ function render_block( $attributes, $inner_content ) {
 				<?php _e( 'Something went wrong. Please refresh the page and/or try again.', 'newspack-listings' ); ?>
 			</p>
 		<?php endif; ?>
-
 	</div>
+	<?php if ( $has_more_pages && Utils\is_amp() ) : ?>
+		</amp-script>
+	<?php endif; ?>
 	<?php
 
 	$content = ob_get_clean();
