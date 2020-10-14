@@ -45,6 +45,8 @@ final class Newspack_Listings_Blocks {
 	public function __construct() {
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'register_block_patterns' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_styles' ] );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
 	}
 
@@ -126,6 +128,39 @@ final class Newspack_Listings_Blocks {
 					)
 				);
 			}
+		}
+	}
+
+	/**
+	 * Enqueue custom scripts for Newspack Listings front-end components.
+	 */
+	public static function custom_scripts() {
+		if ( ! Utils\is_amp() ) {
+			wp_register_script(
+				'newspack-listings',
+				NEWSPACK_LISTINGS_URL . 'dist/assets.js',
+				[],
+				NEWSPACK_LISTINGS_VERSION,
+				true
+			);
+
+			wp_enqueue_script( 'newspack-listings' );
+		}
+	}
+
+	/**
+	 * Enqueue custom styles for Newspack Listings front-end components.
+	 */
+	public static function custom_styles() {
+		if ( ! is_admin() ) {
+			wp_register_style(
+				'newspack-listings-styles',
+				NEWSPACK_LISTINGS_URL . 'dist/assets.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+
+			wp_enqueue_style( 'newspack-listings-styles' );
 		}
 	}
 

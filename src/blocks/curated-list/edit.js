@@ -64,6 +64,8 @@ const CuratedListEditorComponent = ( {
 		queryMode,
 		queryOptions,
 		queriedListings,
+		showLoadMore,
+		loadMoreText,
 	} = attributes;
 
 	const list = innerBlocks.find(
@@ -167,7 +169,6 @@ const CuratedListEditorComponent = ( {
 			setError( null );
 			const posts = await apiFetch( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
-					per_page: query.maxItems || 10,
 					query,
 					_fields: 'id,title,author,category,excerpt,media,meta,type',
 				} ),
@@ -242,6 +243,8 @@ const CuratedListEditorComponent = ( {
 							disabled={ isFetching }
 							setAttributes={ setAttributes }
 							queryOptions={ queryOptions }
+							showLoadMore={ showLoadMore }
+							loadMoreText={ loadMoreText }
 						/>
 					) }
 				</PanelBody>
@@ -428,6 +431,11 @@ const CuratedListEditorComponent = ( {
 				) }
 				{ // If in query mode, show the queried listings.
 				! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
+				{ ! isFetching && queryMode && showLoadMore && (
+					<Button className="newspack-listings__load-more" isPrimary>
+						{ loadMoreText }
+					</Button>
+				) }
 			</div>
 			{ showModal && (
 				<Modal

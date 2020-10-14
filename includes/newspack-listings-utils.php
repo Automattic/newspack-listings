@@ -117,3 +117,36 @@ function get_data_from_blocks( $blocks, $source ) {
 
 	return $data;
 }
+
+/**
+ * Checks whether the current view is served in AMP context.
+ *
+ * @return bool True if AMP, false otherwise.
+ */
+function is_amp() {
+	return ! is_admin() && function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+}
+
+
+/**
+ * Use AMP Plugin functions to render markup as valid AMP.
+ *
+ * @param string $html Markup to convert to AMP.
+ * @return string
+ */
+function generate_amp_partial( $html ) {
+	$dom = AMP_DOM_Utils::get_dom_from_content( $html );
+
+	AMP_Content_Sanitizer::sanitize_document(
+		$dom,
+		amp_get_content_sanitizers(),
+		[
+			'use_document_element' => false,
+		]
+	);
+	$xpath = new DOMXPath( $dom );
+	foreach ( iterator_to_array( $xpath->query( '//noscript | //comment()' ) ) as $node ) {
+		$node->parentNode->removeChild( $node ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+	}
+	return AMP_DOM_Utils::get_content_from_dom( $dom );
+}

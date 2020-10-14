@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
 use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
@@ -80,6 +81,97 @@ final class Newspack_Listings_Api {
 	}
 
 	/**
+	 * Gets all listing post types.
+	 *
+	 * @return array Array of post type slugs.
+	 */
+	public static function get_listing_post_types() {
+		return array_values( Core::NEWSPACK_LISTINGS_POST_TYPES );
+	}
+
+	/**
+	 * Build query args for listings.
+	 *
+	 * @param array $query Query options given as block attributes from Curated List block.
+	 * @param array $args (Optional) Args to overwrite defaults with.
+	 *
+	 * @return array WP_Query args array.
+	 */
+	public static function build_listings_query( $query, $args = [] ) {
+		$default_args = [
+			'post_type'      => [],
+			'post_status'    => 'publish',
+			'posts_per_page' => 10,
+			'paged'          => 1,
+		];
+
+		$args = wp_parse_args( $args, $default_args );
+
+		if ( ! empty( $query['type'] ) && 'any' !== $query['type'] ) {
+			$args['post_type'] = $query['type'];
+		} else {
+			// If not given a post type, look up posts of any listing type.
+			$args['post_type'] = self::get_listing_post_types();
+		}
+		if ( ! empty( $query['maxItems'] ) ) {
+			$args['posts_per_page'] = $query['maxItems'];
+		}
+		if ( ! empty( $query['authors'] ) ) {
+			$args['author__in'] = $query['authors'];
+		}
+		if ( ! empty( $query['order'] ) ) {
+			$args['order'] = $query['order'];
+		}
+		if ( ! empty( $query['sortBy'] ) ) {
+			$args['orderby'] = $query['sortBy'];
+		}
+
+		if (
+			! empty( $query['categories'] ) ||
+			! empty( $query['tags'] ) ||
+			! empty( $query['categoryExclusions'] ) ||
+			! empty( $query['tagExclusions'] )
+		) {
+			$args['tax_query'] = []; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+		}
+		if ( ! empty( $query['categories'] ) ) {
+			$args['tax_query'][] = [
+				'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+				'field'    => 'term_id',
+				'terms'    => $query['categories'],
+			];
+		}
+		if ( ! empty( $query['tags'] ) ) {
+			$args['tax_query'][] = [
+				'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+				'field'    => 'term_id',
+				'terms'    => $query['tags'],
+			];
+		}
+		if ( ! empty( $query['categoryExclusions'] ) ) {
+			$args['tax_query'][] = [
+				'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+				'field'    => 'term_id',
+				'terms'    => $query['categoryExclusions'],
+				'operator' => 'NOT IN',
+			];
+		}
+		if ( ! empty( $query['tagExclusions'] ) ) {
+			$args['tax_query'][] = [
+				'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+				'field'    => 'term_id',
+				'terms'    => $query['tagExclusions'],
+				'operator' => 'NOT IN',
+			];
+		}
+		if ( ! empty( $args['tax_query'] ) && 1 < count( $args['tax_query'] ) ) {
+			$args['tax_query']['relation'] = 'AND';
+		}
+
+		return $args;
+	}
+
+	/**
 	 * Lookup individual posts by title search or post ID.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -92,11 +184,11 @@ final class Newspack_Listings_Api {
 		$query      = ! empty( $params['query'] ) ? $params['query'] : null;
 		$id         = ! empty( $params['id'] ) ? $params['id'] : null;
 		$post_types = ! empty( $params['type'] ) ? $params['type'] : [];
-		$per_page   = ! empty( $params['per_page'] ) ? $params['per_page'] : 20;
-
-		if ( ! empty( $query ) && ! empty( $query['type'] ) && 'any' !== $query['type'] ) {
-			$post_types = $query['type'];
-		}
+		$per_page   = ! empty( $params['per_page'] ) ? $params['per_page'] : 10;
+		$page       = ! empty( $params['page'] ) ? $params['page'] : 1;
+		$next_page  = $page + 1;
+		$attributes = ! empty( $params['attributes'] ) ? $params['attributes'] : [];
+		$is_amp     = $request->get_param( 'amp' );
 
 		// Bail if one of the required args isn't present.
 		if ( empty( $search ) && empty( $id ) && empty( $query ) ) {
@@ -105,11 +197,7 @@ final class Newspack_Listings_Api {
 
 		// If not given a post type, look up posts of any listing type.
 		if ( empty( $post_types ) ) {
-			foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $post_type ) {
-				if ( 'curated_list' !== $label ) {
-					$post_types[] = $post_type;
-				}
-			}
+			$post_types = self::get_listing_post_types();
 		}
 
 		// Query args.
@@ -117,6 +205,7 @@ final class Newspack_Listings_Api {
 			'post_type'      => $post_types,
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
+			'paged'          => $page,
 		];
 
 		// Look up by title only if provided with a search term and not an ID or query terms.
@@ -126,57 +215,7 @@ final class Newspack_Listings_Api {
 
 		// If given query terms but not an ID, search using those terms.
 		if ( ! empty( $query ) && empty( $id ) ) {
-			if ( ! empty( $query['authors'] ) ) {
-				$args['author__in'] = $query['authors'];
-			}
-			if ( ! empty( $query['order'] ) ) {
-				$args['order'] = $query['order'];
-			}
-			if ( ! empty( $query['sortBy'] ) ) {
-				$args['orderby'] = $query['sortBy'];
-			}
-
-			if (
-				! empty( $query['categories'] ) ||
-				! empty( $query['tags'] ) ||
-				! empty( $query['categoryExclusions'] ) ||
-				! empty( $query['tagExclusions'] )
-			) {
-				$args['tax_query'] = []; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-			}
-			if ( ! empty( $query['categories'] ) ) {
-				$args['tax_query'][] = [
-					'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
-					'field'    => 'term_id',
-					'terms'    => $query['categories'],
-				];
-			}
-			if ( ! empty( $query['tags'] ) ) {
-				$args['tax_query'][] = [
-					'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
-					'field'    => 'term_id',
-					'terms'    => $query['tags'],
-				];
-			}
-			if ( ! empty( $query['categoryExclusions'] ) ) {
-				$args['tax_query'][] = [
-					'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
-					'field'    => 'term_id',
-					'terms'    => $query['categoryExclusions'],
-					'operator' => 'NOT IN',
-				];
-			}
-			if ( ! empty( $query['tagExclusions'] ) ) {
-				$args['tax_query'][] = [
-					'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
-					'field'    => 'term_id',
-					'terms'    => $query['tagExclusions'],
-					'operator' => 'NOT IN',
-				];
-			}
-			if ( ! empty( $args['tax_query'] ) && 1 < count( $args['tax_query'] ) ) {
-				$args['tax_query']['relation'] = 'AND';
-			}
+			$args = self::build_listings_query( $query, $args );
 		}
 
 		// If given an ID, just look up that post.
@@ -184,35 +223,53 @@ final class Newspack_Listings_Api {
 			$args['p'] = esc_sql( $id );
 		}
 
-		$query = new \WP_Query( $args );
+		$listings_query = new \WP_Query( $args );
 
-		if ( $query->have_posts() ) {
-			return new \WP_REST_Response(
+		if ( $listings_query->have_posts() ) {
+			$response = new \WP_REST_Response(
 				array_map(
-					function( $post ) use ( $fields ) {
-						$response = [
+					function( $post ) use ( $attributes, $fields, $is_amp, $next_page, $query ) {
+						$item = [
 							'id'    => $post->ID,
 							'title' => $post->post_title,
 						];
 
+						// if $fields includes html, get rendered HTML for the post.
+						if ( in_array( 'html', $fields ) && ! empty( $attributes ) ) {
+							$html = Blocks::template_include(
+								'listing',
+								[
+									'attributes' => $attributes,
+									'post'       => $post,
+								]
+							);
+
+							// If an AMP page, convert to valid AMP HTML.
+							if ( $is_amp ) {
+								$html = Utils\generate_amp_partial( $html );
+							}
+
+							$item['html'] = $html;
+						}
+
 						// If $fields includes category, get the post categories.
 						if ( in_array( 'category', $fields ) ) {
-							$response['category'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
+							$item['category'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
 						}
 
 						// If $fields includes author, get the post author.
 						if ( in_array( 'author', $fields ) ) {
-							$response['author'] = get_the_author_meta( 'display_name', $post->post_author );
+							$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
 						}
 
 						// If $fields includes excerpt, get the post excerpt.
 						if ( in_array( 'excerpt', $fields ) ) {
-							$response['excerpt'] = wpautop( get_the_excerpt( $post->ID ) );
+							$item['excerpt'] = wpautop( get_the_excerpt( $post->ID ) );
 						}
 
 						// If $fields includes media, get the featured image + caption.
 						if ( in_array( 'media', $fields ) ) {
-							$response['media'] = [
+							$item['media'] = [
 								'image'   => get_the_post_thumbnail_url( $post->ID, 'medium' ),
 								'caption' => get_the_post_thumbnail_caption( $post->ID ),
 							];
@@ -223,21 +280,41 @@ final class Newspack_Listings_Api {
 							$post_meta = Core::get_meta_values( $post->ID, $post->post_type );
 
 							if ( ! empty( $post_meta ) ) {
-								$response['meta'] = $post_meta;
+								$item['meta'] = $post_meta;
 							}
 						}
 
 						// If $fields includes type, get the post type.
 						if ( in_array( 'type', $fields ) ) {
-							$response['type'] = $post->post_type;
+							$item['type'] = $post->post_type;
 						}
 
-						return $response;
+						return $item;
 					},
-					$query->posts
+					$listings_query->posts
 				),
 				200
 			);
+
+			// Provide next URL if there are more pages.
+			if ( $next_page <= $listings_query->max_num_pages ) {
+				$next_url = add_query_arg(
+					[
+						'attributes' => $attributes,
+						'query'      => $query,
+						'page'       => $next_page,
+						'amp'        => $is_amp,
+						'_fields'    => 'html',
+					],
+					rest_url( '/newspack-listings/v1/listings' )
+				);
+			}
+
+			if ( ! empty( $next_url ) ) {
+				$response->header( 'next-url', esc_url( $next_url ) );
+			}
+
+			return $response;
 		}
 
 		return new \WP_REST_Response( [] );

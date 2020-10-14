@@ -25,7 +25,7 @@ call_user_func(
 		}
 		?>
 	>
-		<?php if ( true === $attributes['showImage'] ) : ?>
+		<?php if ( $attributes['showImage'] ) : ?>
 			<?php
 			$featured_image = get_the_post_thumbnail( $post->ID, 'large' );
 			if ( ! empty( $featured_image ) ) :
@@ -33,7 +33,7 @@ call_user_func(
 				<figure class="newspack-listings__listing-featured-media">
 					<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
 						<?php echo wp_kses_post( $featured_image ); ?>
-						<?php if ( true === $attributes['showCaption'] ) : ?>
+						<?php if ( $attributes['showCaption'] ) : ?>
 						<figcaption class="newspack-listings__listing-caption">
 							<?php echo wp_kses_post( get_the_post_thumbnail_caption( $post->ID ) ); ?>
 						</figcaption>
@@ -44,7 +44,7 @@ call_user_func(
 		<?php endif; ?>
 
 		<div class="newspack-listings__listing-meta">
-			<?php if ( true === $attributes['showCategory'] ) : ?>
+			<?php if ( $attributes['showCategory'] ) : ?>
 			<div class="cat-links">
 				<?php
 				$categories = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
@@ -66,14 +66,14 @@ call_user_func(
 
 			<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
 				<h3 class="newspack-listings__listing-title"><?php echo wp_kses_post( $post->post_title ); ?></h3>
-				<?php if ( true === $attributes['showAuthor'] ) : ?>
+				<?php if ( $attributes['showAuthor'] ) : ?>
 				<cite>
 					<?php echo wp_kses_post( __( 'By', 'newspack-listings' ) . ' ' . get_the_author_meta( 'display_name', $post->post_author ) ); ?>
 				</cite>
 				<?php endif; ?>
 
 				<?php
-				if ( true === $attributes['showExcerpt'] ) {
+				if ( $attributes['showExcerpt'] ) {
 					echo wp_kses_post( wpautop( get_the_excerpt( $post->ID ) ) );
 				}
 				?>

@@ -9,6 +9,7 @@ import {
 	RadioControl,
 	RangeControl,
 	SelectControl,
+	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
@@ -141,7 +142,7 @@ class QueryControls extends Component {
 	};
 
 	render = () => {
-		const { disabled, queryOptions, setAttributes } = this.props;
+		const { disabled, loadMoreText, queryOptions, setAttributes, showLoadMore } = this.props;
 
 		if ( ! queryOptions || ! setAttributes ) {
 			return null;
@@ -155,7 +156,6 @@ class QueryControls extends Component {
 			tags,
 			tagExclusions,
 			maxItems,
-			showLoadMore,
 			sortBy,
 			order,
 		} = queryOptions;
@@ -228,10 +228,17 @@ class QueryControls extends Component {
 				disabled={ disabled }
 				label={ __( 'Show "load more" button', 'newspack-listings' ) }
 				checked={ showLoadMore }
-				onChange={ () =>
-					setAttributes( { queryOptions: { ...queryOptions, showLoadMore: ! showLoadMore } } )
-				}
+				onChange={ () => setAttributes( { showLoadMore: ! showLoadMore } ) }
 			/>,
+			showLoadMore && (
+				<TextControl
+					key="loadMoreText"
+					disabled={ disabled }
+					label={ __( '"Load more" button text', 'newspack-listings' ) }
+					value={ loadMoreText }
+					onChange={ value => setAttributes( { loadMoreText: value } ) }
+				/>
+			),
 			<p key="toggle-advanced-filters">
 				<Button
 					isLink
