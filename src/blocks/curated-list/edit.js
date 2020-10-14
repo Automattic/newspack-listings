@@ -46,6 +46,7 @@ const CuratedListEditorComponent = ( {
 	const [ isFetching, setIsFetching ] = useState( false );
 	const [ locations, setLocations ] = useState( [] );
 	const [ showModal, setShowModal ] = useState( false );
+	const [ hasMorePages, setHasMorePages ] = useState( false );
 	const {
 		showNumbers,
 		showMap,
@@ -167,14 +168,24 @@ const CuratedListEditorComponent = ( {
 
 		try {
 			setError( null );
-			const posts = await apiFetch( {
+			const response = await apiFetch( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					query,
 					_fields: 'id,title,author,category,excerpt,media,meta,type',
 				} ),
+				parse: false,
 			} );
 
+			const nextUrl = response.headers.get( 'next-url' );
+			const posts = await response.json();
+
 			setAttributes( { queriedListings: posts } );
+
+			if ( nextUrl && showLoadMore ) {
+				setHasMorePages( true );
+			} else {
+				setHasMorePages( false );
+			}
 
 			if ( 0 === posts.length ) {
 				throw 'No posts matching query options. Try selecting different or less specific query options.';
@@ -431,7 +442,7 @@ const CuratedListEditorComponent = ( {
 				) }
 				{ // If in query mode, show the queried listings.
 				! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
-				{ ! isFetching && queryMode && showLoadMore && (
+				{ ! isFetching && queryMode && hasMorePages && (
 					<Button className="newspack-listings__load-more" isPrimary>
 						{ loadMoreText }
 					</Button>
