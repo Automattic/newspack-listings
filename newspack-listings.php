@@ -16,9 +16,10 @@ defined( 'ABSPATH' ) || exit;
 
 // Define NEWSPACK_LISTINGS_PLUGIN_FILE.
 if ( ! defined( 'NEWSPACK_LISTINGS_PLUGIN_FILE' ) ) {
-	define( 'NEWSPACK_LISTINGS_PLUGIN_FILE', plugin_dir_path( __FILE__ ) );
-	define( 'NEWSPACK_LISTINGS_URL', plugin_dir_url( __FILE__ ) );
-	define( 'NEWSPACK_LISTINGS_VERSION', '0.0.2' );
+	define( 'NEWSPACK_LISTINGS_FILE', __FILE__ );
+	define( 'NEWSPACK_LISTINGS_PLUGIN_FILE', plugin_dir_path( NEWSPACK_LISTINGS_FILE ) );
+	define( 'NEWSPACK_LISTINGS_URL', plugin_dir_url( NEWSPACK_LISTINGS_FILE ) );
+	define( 'NEWSPACK_LISTINGS_VERSION', '0.0.1' );
 }
 
 // Include plugin resources.
@@ -27,7 +28,3 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/newspack-listings-utils.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-settings.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-core.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-blocks.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-api.php';
-
-// On plugin activation/deactivation.
-register_activation_hook( __FILE__, '\Newspack_Listings\Utils\activate' );

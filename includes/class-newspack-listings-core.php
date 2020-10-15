@@ -78,6 +78,7 @@ final class Newspack_Listings_Core {
 		add_action( 'init', [ __CLASS__, 'register_taxonomies' ] );
 		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
+		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
 	/**
@@ -656,6 +657,14 @@ final class Newspack_Listings_Core {
 		}
 
 		return $template;
+	}
+
+	/**
+	 * Flush permalinks on plugin activation, ensuring that post types and taxonomies are registered first.
+	 */
+	public static function activation_hook() {
+		self::register_post_types();
+		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
 	}
 }
 
