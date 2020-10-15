@@ -75,7 +75,12 @@
 			vertical-align: top;
 		}
 
+		.media-position-left & {
+			margin-right: 1rem;
+		}
+
 		.media-position-right & {
+			margin-left: 1rem;
 			order: 2;
 		}
 
@@ -99,14 +104,6 @@
 	&__listing-meta {
 		display: block;
 		flex-basis: 100%;
-
-		.media-position-left & {
-			margin-left: 1rem;
-		}
-
-		.media-position-right & {
-			margin-right: 1rem;
-		}
 
 		.cat-links a {
 			font-size: 0.75em;
