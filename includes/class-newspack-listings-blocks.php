@@ -134,7 +134,6 @@ final class Newspack_Listings_Blocks {
 	 * Register custom block pattern category for Newspack Listings.
 	 */
 	public static function register_block_pattern_category() {
-		// Register a custom block pattern category for Newspack Listings.
 		return register_block_pattern_category(
 			self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY,
 			[ 'label' => __( 'Newspack Listings', 'newspack-listings' ) ]
