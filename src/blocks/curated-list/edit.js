@@ -205,6 +205,15 @@ const CuratedListEditorComponent = ( {
 					{ getKey( post_types, listing.type ) }
 				</span>
 				<Listing key={ index } attributes={ attributes } error={ error } post={ listing } />
+				{
+					<Button
+						isLink
+						href={ `/wp-admin/post.php?post=${ listing.id }&action=edit` }
+						target="_blank"
+					>
+						{ __( 'Edit this listing', 'newspack-listing' ) }
+					</Button>
+				}
 			</div>
 		);
 	};

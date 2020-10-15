@@ -41,9 +41,6 @@ const ListingEditorComponent = ( {
 		return acc;
 	}, {} );
 
-	// Parent Curated List block attributes.
-	const { queryMode } = parent.curatedList.attributes;
-
 	// Build an array of just the listing post IDs that exist in the parent Curated List block.
 	const listItems = parent.listContainer.innerBlocks.reduce( ( acc, innerBlock ) => {
 		if ( innerBlock.attributes.listing ) {
@@ -145,12 +142,12 @@ const ListingEditorComponent = ( {
 		return (
 			<Fragment>
 				<Listing attributes={ parent.curatedList.attributes } error={ error } post={ post } />
-				{ ! queryMode && (
+				{
 					<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
 						{ __( 'Replace listing', 'newspack-listing' ) }
 					</Button>
-				) }
-				{ ! queryMode && post && (
+				}
+				{ post && (
 					<Button
 						isLink
 						href={ `/wp-admin/post.php?post=${ post.id }&action=edit` }
