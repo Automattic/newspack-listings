@@ -6,6 +6,7 @@
  * @package WordPress
  */
 
+use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Utils as Utils;
 
 call_user_func(

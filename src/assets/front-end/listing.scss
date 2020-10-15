@@ -1,13 +1,10 @@
 @import '../shared/listing';
 
-.newspack-listings {
-	// Target only .newspack-listings* when it's an `a` element
-	@at-root a#{&} {
-		&__listing-link {
-			.entry-content & {
-				display: block;
-				text-decoration: none;
-			}
-		}
+.entry-content {
+	a.newspack-listings__listing-link,
+	a:visited.newspack-listings__listing-link {
+		color: currentColor;
+		display: block;
+		text-decoration: none;
 	}
 }
