@@ -8,13 +8,6 @@
 namespace Newspack_Listings\Utils;
 
 /**
- * On plugin activation, flush permalinks.
- */
-function activate() {
-	flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
-}
-
-/**
  * Sanitize an array of text values.
  *
  * @param array $array Array of text or float values to be sanitized.
