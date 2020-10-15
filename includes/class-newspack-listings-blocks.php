@@ -18,6 +18,10 @@ defined( 'ABSPATH' ) || exit;
  * Sets up custom blocks for listings.
  */
 final class Newspack_Listings_Blocks {
+	/**
+	 * Slug for the block pattern category.
+	 */
+	const NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY = 'newspack-listings-patterns';
 
 	/**
 	 * The single instance of the class.
@@ -44,7 +48,8 @@ final class Newspack_Listings_Blocks {
 	 */
 	public function __construct() {
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
-		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'register_block_patterns' ] );
+		add_action( 'admin_init', [ __CLASS__, 'register_block_pattern_category' ], 10 );
+		add_action( 'admin_init', [ __CLASS__, 'register_block_patterns' ], 11 );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
 	}
 
@@ -126,20 +131,21 @@ final class Newspack_Listings_Blocks {
 	}
 
 	/**
-	 * Register custom block patterns for Newspack Listings.
-	 * These patterns are only available for certain CPTs.
+	 * Register custom block pattern category for Newspack Listings.
 	 */
-	public static function register_block_patterns() {
-		if ( ! is_admin() || ! Core::is_listing() ) {
-			return;
-		}
-
+	public static function register_block_pattern_category() {
 		// Register a custom block pattern category for Newspack Listings.
-		register_block_pattern_category(
-			'newspack-listings-patterns',
+		return register_block_pattern_category(
+			self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY,
 			[ 'label' => __( 'Newspack Listings', 'newspack-listings' ) ]
 		);
+	}
 
+	/**
+	 * Register custom block patterns for Newspack Listings.
+	 * These patterns should only be available for certain CPTs.
+	 */
+	public static function register_block_patterns() {
 		// Block pattern config.
 		$block_patterns = [
 			'business' => [
@@ -149,7 +155,7 @@ final class Newspack_Listings_Blocks {
 				],
 				'settings'   => [
 					'title'       => __( 'Business Listing', 'newspack-listings' ),
-					'categories'  => [ 'newspack-listings-patterns' ],
+					'categories'  => [ self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY ],
 					'description' => _x(
 						'Business description, website and social media links, and hours of operation.',
 						'Block pattern description',
@@ -162,12 +168,17 @@ final class Newspack_Listings_Blocks {
 			],
 		];
 
-		// Register block patterns for particular post types.
-		$current_post_type = get_post_type();
+		/**
+		 * Register block patterns for particular post types. We need to get the post type using the
+		 * post ID from $_REQUEST since the global $post is not available inside the admin_init hook.
+		 * If we can't determine the current post type, just register the patterns anyway.
+		 */
+		$post_id           = isset( $_REQUEST['post'] ) ? sanitize_text_field( $_REQUEST['post'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$current_post_type = ! empty( $post_id ) && function_exists( 'get_post_type' ) ? get_post_type( $post_id ) : null;
 
 		foreach ( $block_patterns as $pattern_name => $config ) {
-			if ( in_array( $current_post_type, $config['post_types'] ) ) {
-				register_block_pattern(
+			if ( empty( $current_post_type ) || in_array( $current_post_type, $config['post_types'] ) ) {
+				$pattern = register_block_pattern(
 					'newspack-listings/' . $pattern_name,
 					$config['settings']
 				);
