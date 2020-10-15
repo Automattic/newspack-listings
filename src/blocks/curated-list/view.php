@@ -87,6 +87,9 @@ function render_block( $attributes, $inner_content ) {
 		$allowed_elements['div']['placeholder'] = true;
 	}
 
+	// Default: we can't have more pages unless a.) the block is in query mode, and b.) the number of queried posts exceeds max_num_pages.
+	$has_more_pages = false;
+
 	// If in query mode, dynamically build the list based on query terms.
 	if ( $attributes['queryMode'] && ! empty( $attributes['queryOptions'] ) ) {
 		$args           = Api::build_listings_query( $attributes['queryOptions'] );

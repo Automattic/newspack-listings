@@ -6,6 +6,8 @@
  * @package WordPress
  */
 
+use \Newspack_Listings\Utils as Utils;
+
 call_user_func(
 	function( $data ) {
 		$attributes = $data['attributes'];
@@ -74,7 +76,7 @@ call_user_func(
 
 				<?php
 				if ( $attributes['showExcerpt'] ) {
-					echo wp_kses_post( wpautop( get_the_excerpt( $post->ID ) ) );
+					echo wp_kses_post( Utils\get_listing_excerpt( $post ) );
 				}
 				?>
 			</a>

@@ -19,11 +19,11 @@
 		margin: 1rem 0;
 		padding: 0;
 
-		li {
+		.newspack-listings__listing {
 			padding: 1rem 0;
 		}
 
-		li + li {
+		.newspack-listings__listing + .newspack-listings__listing {
 			border-top: 1px solid var( --newspack-listings--grey-light );
 		}
 	}

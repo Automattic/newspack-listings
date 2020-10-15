@@ -264,7 +264,7 @@ final class Newspack_Listings_Api {
 
 						// If $fields includes excerpt, get the post excerpt.
 						if ( in_array( 'excerpt', $fields ) ) {
-							$item['excerpt'] = wpautop( get_the_excerpt( $post->ID ) );
+							$item['excerpt'] = Utils\get_listing_excerpt( $post );
 						}
 
 						// If $fields includes media, get the featured image + caption.

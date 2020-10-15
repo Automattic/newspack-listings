@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 if ( ! defined( 'NEWSPACK_LISTINGS_PLUGIN_FILE' ) ) {
 	define( 'NEWSPACK_LISTINGS_PLUGIN_FILE', plugin_dir_path( __FILE__ ) );
 	define( 'NEWSPACK_LISTINGS_URL', plugin_dir_url( __FILE__ ) );
-	define( 'NEWSPACK_LISTINGS_VERSION', '0.0.1' );
+	define( 'NEWSPACK_LISTINGS_VERSION', '0.0.2' );
 }
 
 // Include plugin resources.
