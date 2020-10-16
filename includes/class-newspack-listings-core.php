@@ -664,6 +664,7 @@ final class Newspack_Listings_Core {
 	 */
 	public static function activation_hook() {
 		self::register_post_types();
+		self::register_taxonomies();
 		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
 	}
 }
