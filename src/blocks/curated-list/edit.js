@@ -180,12 +180,7 @@ const CuratedListEditorComponent = ( {
 			const posts = await response.json();
 
 			setAttributes( { queriedListings: posts } );
-
-			if ( nextUrl && showLoadMore ) {
-				setHasMorePages( true );
-			} else {
-				setHasMorePages( false );
-			}
+			setHasMorePages( !! nextUrl );
 
 			if ( 0 === posts.length ) {
 				throw 'No posts matching query options. Try selecting different or less specific query options.';
@@ -451,7 +446,7 @@ const CuratedListEditorComponent = ( {
 				) }
 				{ // If in query mode, show the queried listings.
 				! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
-				{ ! isFetching && queryMode && hasMorePages && (
+				{ ! isFetching && queryMode && showLoadMore && hasMorePages && (
 					<Button className="newspack-listings__load-more" isPrimary>
 						{ loadMoreText }
 					</Button>
