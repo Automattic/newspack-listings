@@ -92,7 +92,7 @@ final class Newspack_Listings_Core {
 			'edit_posts',
 			'newspack-listings',
 			'',
-			'dashicons-list-view',
+			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0Ij48cGF0aCBkPSJNMTkgNXYxNEg1VjVoMTRtMS4xLTJIMy45Yy0uNSAwLS45LjQtLjkuOXYxNi4yYzAgLjQuNC45LjkuOWgxNi4yYy40IDAgLjktLjUuOS0uOVYzLjljMC0uNS0uNS0uOS0uOS0uOXpNMTEgN2g2djJoLTZWN3ptMCA0aDZ2MmgtNnYtMnptMCA0aDZ2MmgtNnpNNyA3aDJ2Mkg3em0wIDRoMnYySDd6bTAgNGgydjJIN3oiIGZpbGw9IndoaXRlIi8+PC9zdmc+Cg==',
 			35
 		);
 

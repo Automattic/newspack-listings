@@ -59,7 +59,3 @@ export const getCuratedListClasses = ( className, attributes ) => {
 
 	return classes;
 };
-
-export const getKey = ( obj, val ) => {
-	return Object.keys( obj ).find( key => obj[ key ] === val );
-};
