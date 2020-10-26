@@ -99,11 +99,7 @@ const ListingEditorComponent = ( {
 		return (
 			<div className="newspack-listings__listing-search">
 				<QueryControls
-					label={
-						isEditingPost && post && post.title
-							? __( 'Select a new listing to replace “', 'newspack-listings' ) + post.title + '”'
-							: __( 'Select a listing.', 'newspack-listings' )
-					}
+					label={ isEditingPost && __( 'Select a listing.', 'newspack-listings' ) }
 					listingType={ listingType }
 					maxLength={ 1 }
 					onChange={ _listing => {
@@ -142,11 +138,6 @@ const ListingEditorComponent = ( {
 		return (
 			<Fragment>
 				<Listing attributes={ parent.curatedList.attributes } error={ error } post={ post } />
-				{
-					<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
-						{ __( 'Replace listing', 'newspack-listing' ) }
-					</Button>
-				}
 				{ post && (
 					<Button
 						isLink
