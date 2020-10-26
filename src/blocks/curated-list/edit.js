@@ -29,7 +29,7 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components/';
-import { getCuratedListClasses, getKey } from '../../editor/utils';
+import { getCuratedListClasses } from '../../editor/utils';
 
 const CuratedListEditorComponent = ( {
 	attributes,
@@ -75,7 +75,6 @@ const CuratedListEditorComponent = ( {
 	const listingBlocks = list ? list.innerBlocks.map( innerBlock => innerBlock.clientId ) : [];
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
 	const classes = getCuratedListClasses( className, attributes );
-	const { post_types } = window.newspack_listings_data;
 
 	// If changing query options, fetch listing posts that match the query.
 	useEffect(() => {
@@ -196,9 +195,6 @@ const CuratedListEditorComponent = ( {
 	const renderQueriedListings = ( listing, index ) => {
 		return (
 			<div className="newspack-listings__listing-editor newspack-listings__listing">
-				<span className="newspack-listings__listing-label">
-					{ getKey( post_types, listing.type ) }
-				</span>
 				<Listing key={ index } attributes={ attributes } error={ error } post={ listing } />
 				{
 					<Button
@@ -424,9 +420,6 @@ const CuratedListEditorComponent = ( {
 				</PanelBody>
 			</InspectorControls>
 			<div className={ classes.join( ' ' ) }>
-				<span className="newspack-listings__curated-list-label">
-					{ __( 'Curated List', 'newspack-listings' ) }
-				</span>
 				{ queryMode && error && (
 					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
 						{ error }

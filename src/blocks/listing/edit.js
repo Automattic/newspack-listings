@@ -162,7 +162,6 @@ const ListingEditorComponent = ( {
 
 	return (
 		<div className="newspack-listings__listing-editor newspack-listings__listing">
-			<span className="newspack-listings__listing-label">{ listingTypeSlug }</span>
 			{ ! listing || isEditingPost ? renderSearch() : renderPost() }
 		</div>
 	);
