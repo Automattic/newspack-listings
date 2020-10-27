@@ -8,7 +8,7 @@ import { withDispatch, withSelect } from '@wordpress/data';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 
 const SidebarComponent = ( { meta, postType, updateMetaValue } ) => {
-	const { meta_fields, post_type, post_types } = window.newspack_listings_data;
+	const { meta_fields, post_type_label, post_types } = window.newspack_listings_data;
 	let isValidPostType = false;
 
 	if ( ! post_types ) {
@@ -64,7 +64,7 @@ const SidebarComponent = ( { meta, postType, updateMetaValue } ) => {
 		<PluginDocumentSettingPanel
 			className="newspack-listings__editor-sidebar"
 			name="newspack-listings"
-			title={ post_type + ' ' + __( 'Settings', 'newspack-listings' ) }
+			title={ post_type_label + ' ' + __( 'Settings', 'newspack-listings' ) }
 		>
 			{ Object.keys( meta_fields ).map( renderMetaField ) }
 		</PluginDocumentSettingPanel>

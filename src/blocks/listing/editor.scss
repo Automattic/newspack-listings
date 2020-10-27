@@ -3,9 +3,9 @@
 }
 
 .newspack-listings {
-	&__list-item-editor {
+	&__listing-editor {
 		border-radius: 2px;
-		box-shadow: inset 0 0 0 1px #1e1e1e;
+		box-shadow: inset 0 0 0 1px var( --newspack-listings--grey-medium );
 		padding: 1rem;
 
 		.components-spinner {
@@ -19,9 +19,9 @@
 		}
 	}
 
-	&__list-item-label {
+	&__listing-label {
 		background-color: #eee;
-		background-color: var( --wp--preset--color--light-gray );
+		background-color: var( --newspack-listings--grey-light );
 		border-bottom-left-radius: 2px;
 		display: block;
 		font-size: 0.75rem;
@@ -34,15 +34,12 @@
 		top: 1px;
 	}
 
-	&__show-numbers::before {
-		color: #767676;
-		color: var( --wp--preset--color--medium-gray );
-		content: counter( list ) '. ';
-		counter-increment: list;
-		font-weight: bold;
-	}
-
 	&__error {
 		margin: 1rem auto 2rem;
+	}
+
+	&__listing-featured-media {
+		margin: 1rem 0;
+		padding: 0;
 	}
 }

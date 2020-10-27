@@ -4,19 +4,8 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { withSelect } from '@wordpress/data';
-import { Fragment, RawHTML, useEffect, useState } from '@wordpress/element';
-import { InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
-import {
-	Button,
-	ButtonGroup,
-	Notice,
-	PanelBody,
-	PanelRow,
-	RangeControl,
-	ToggleControl,
-	Spinner,
-	BaseControl,
-} from '@wordpress/components';
+import { RawHTML, useEffect, useState } from '@wordpress/element';
+import { Button, Notice, Spinner } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -24,71 +13,53 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { QueryControls } from '../../components';
 
-const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttributes } ) => {
+const ListingEditorComponent = ( {
+	attributes,
+	className,
+	clientId,
+	getBlock,
+	getBlockParents,
+	name,
+	setAttributes,
+} ) => {
 	const [ post, setPost ] = useState( null );
 	const [ error, setError ] = useState( null );
 	const [ isEditingPost, setIsEditingPost ] = useState( false );
+	const { listing } = attributes;
+
+	// Get the parent Curated List block.
+	const parent = getBlock( getBlockParents( clientId )[ 0 ] );
+
+	// Parent Curated List block attributes.
 	const {
-		listing,
 		showExcerpt,
 		showImage,
 		showCaption,
-		minHeight,
-		showCategory,
-		mediaPosition,
-		typeScale,
-		imageScale,
-		mobileStack,
-		textColor,
-		showSubtitle,
-	} = attributes;
+		// minHeight,
+		// showCategory,
+		// mediaPosition,
+		// typeScale,
+		// imageScale,
+		// mobileStack,
+		// textColor,
+		// showSubtitle,
+	} = parent.attributes;
 
-	const { newspack_listings_show_map, newspack_listings_show_numbers } = meta;
+	// Build an array of just the listing post IDs that exist in the parent Curated List block.
+	const listItems = parent.innerBlocks.reduce( ( acc, innerBlock ) => {
+		if ( innerBlock.attributes.listing ) {
+			acc.push( innerBlock.attributes.listing );
+		}
+
+		return acc;
+	}, [] );
+
 	const { post_types } = window.newspack_listings_data;
-	const classes = [ 'newspack-listings__list-item' ];
-
+	const classes = [ className, 'newspack-listings__listing' ];
 	const listingTypeSlug = name.split( '/' ).slice( -1 );
 	const listingType = post_types[ listingTypeSlug ];
 
 	classes.push( listingTypeSlug );
-
-	if ( newspack_listings_show_map ) classes.push( 'newspack-listings__show-map' );
-
-	if ( newspack_listings_show_numbers ) classes.push( 'newspack-listings__show-numbers' );
-
-	const imageSizeOptions = [
-		{
-			value: 1,
-			label: /* translators: label for small size option */ __( 'Small', 'newspack-listings' ),
-			shortName: /* translators: abbreviation for small size */ __( 'S', 'newspack-listings' ),
-		},
-		{
-			value: 2,
-			label: /* translators: label for medium size option */ __( 'Medium', 'newspack-listings' ),
-			shortName: /* translators: abbreviation for medium size */ __( 'M', 'newspack-listings' ),
-		},
-		{
-			value: 3,
-			label: /* translators: label for large size option */ __( 'Large', 'newspack-listings' ),
-			shortName: /* translators: abbreviation for large size */ __( 'L', 'newspack-listings' ),
-		},
-		{
-			value: 4,
-			label: /* translators: label for extra large size option */ __(
-				'Extra Large',
-				'newspack-listings'
-			),
-			shortName: /* translators: abbreviation for extra large size */ __(
-				'XL',
-				'newspack-listings'
-			),
-		},
-	];
-
-	const subtitleIsSupportedInTheme =
-		typeof window === 'object' &&
-		window.newspackIsPostSubtitleSupported &&
-		window.newspackIsPostSubtitleSupported.post_subtitle;
 
 	// Fetch listing post data if we have a listing post ID.
 	useEffect(() => {
@@ -97,7 +68,12 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 		}
 	}, [ listing ]);
 
-	// Fetch listing post title and content by listingId.
+	// Sync parent attributes to listing attributes, so that we can use parent attributes in the PHP render callback.
+	useEffect(() => {
+		setAttributes( { ...parent.attributes } );
+	}, [ JSON.stringify( parent.attributes ) ]);
+
+	// Fetch listing post by listingId.
 	const fetchPost = async listingId => {
 		try {
 			setError( null );
@@ -105,7 +81,7 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,content,meta',
+					_fields: 'id,title,excerpt,media,meta',
 				} ),
 			} );
 
@@ -113,7 +89,13 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 				throw `No posts found for ID ${ listingId }. Try refreshing or selecting a new post.`;
 			}
 
-			setPost( posts[ 0 ] );
+			const foundPost = posts[ 0 ];
+
+			if ( foundPost.meta && foundPost.meta.newspack_listings_locations ) {
+				setAttributes( { locations: foundPost.meta.newspack_listings_locations } );
+			}
+
+			setPost( foundPost );
 		} catch ( e ) {
 			setError( e );
 		}
@@ -122,7 +104,7 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 	// Renders the autocomplete search field to select listings. Will only show listings of the type that matches the block.
 	const renderSearch = () => {
 		return (
-			<div className="newspack-listings__list-item-post">
+			<div className="newspack-listings__listing-post">
 				<QueryControls
 					label={
 						isEditingPost && post && post.title
@@ -165,18 +147,32 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 		}
 
 		return (
-			<div className="newspack-listings__list-item-post">
+			<div className="newspack-listings__listing-post">
 				{ error && (
 					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
 						{ error }
 					</Notice>
 				) }
 				{ post && post.title && (
-					<h3 className="newspack-listings__list-item-title">
+					<h3 className="newspack-listings__listing-title">
 						<RawHTML>{ post.title }</RawHTML>
 					</h3>
 				) }
-				{ post && post.content && <RawHTML>{ post.content }</RawHTML> }
+				{ showImage && post && post.media && post.media.image && (
+					<figure className="newspack-listings__listing-featured-media">
+						<img
+							className="newspack-listings__listing-thumbnail"
+							src={ post.media.image }
+							alt={ post.media.caption || post.title }
+						/>
+						{ showCaption && post.media.caption && (
+							<figcaption className="newspack-listings__listing-caption">
+								{ post.media.caption }
+							</figcaption>
+						) }
+					</figure>
+				) }
+				{ showExcerpt && post && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
 				<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
 					{ __( 'Replace listing', 'newspack-listing' ) }
 				</Button>
@@ -194,134 +190,9 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 	};
 
 	return (
-		<div className="newspack-listings__list-item-editor">
-			<InspectorControls>
-				<PanelBody title={ __( 'Featured Image Settings', 'newspack-listings' ) }>
-					<PanelRow>
-						<ToggleControl
-							label={ __( 'Show Featured Image', 'newspack-listings' ) }
-							checked={ showImage }
-							onChange={ () => setAttributes( { showImage: ! showImage } ) }
-						/>
-					</PanelRow>
-
-					{ showImage && (
-						<PanelRow>
-							<ToggleControl
-								label={ __( 'Show Featured Image Caption', 'newspack-listings' ) }
-								checked={ showCaption }
-								onChange={ () => setAttributes( { showCaption: ! showCaption } ) }
-							/>
-						</PanelRow>
-					) }
-
-					{ showImage && mediaPosition !== 'top' && mediaPosition !== 'behind' && (
-						<Fragment>
-							<PanelRow>
-								<ToggleControl
-									label={ __( 'Stack on mobile', 'newspack-listings' ) }
-									checked={ mobileStack }
-									onChange={ () => setAttributes( { mobileStack: ! mobileStack } ) }
-								/>
-							</PanelRow>
-							<BaseControl
-								label={ __( 'Featured Image Size', 'newspack-listings' ) }
-								id="newspackfeatured-image-size"
-							>
-								<PanelRow>
-									<ButtonGroup
-										id="newspackfeatured-image-size"
-										aria-label={ __( 'Featured Image Size', 'newspack-listings' ) }
-									>
-										{ imageSizeOptions.map( option => {
-											const isCurrent = imageScale === option.value;
-											return (
-												<Button
-													isLarge
-													isPrimary={ isCurrent }
-													aria-pressed={ isCurrent }
-													aria-label={ option.label }
-													key={ option.value }
-													onClick={ () => setAttributes( { imageScale: option.value } ) }
-												>
-													{ option.shortName }
-												</Button>
-											);
-										} ) }
-									</ButtonGroup>
-								</PanelRow>
-							</BaseControl>
-						</Fragment>
-					) }
-
-					{ showImage && mediaPosition === 'behind' && (
-						<RangeControl
-							label={ __( 'Minimum height', 'newspack-listings' ) }
-							help={ __(
-								"Sets a minimum height for the block, using a percentage of the screen's current height.",
-								'newspack-listings'
-							) }
-							value={ minHeight }
-							onChange={ _minHeight => setAttributes( { minHeight: _minHeight } ) }
-							min={ 0 }
-							max={ 100 }
-							required
-						/>
-					) }
-				</PanelBody>
-				<PanelBody title={ __( 'Post Control Settings', 'newspack-listings' ) }>
-					{ subtitleIsSupportedInTheme && (
-						<PanelRow>
-							<ToggleControl
-								label={ __( 'Show Subtitle', 'newspack-listings' ) }
-								checked={ showSubtitle }
-								onChange={ () => setAttributes( { showSubtitle: ! showSubtitle } ) }
-							/>
-						</PanelRow>
-					) }
-					<PanelRow>
-						<ToggleControl
-							label={ __( 'Show Excerpt', 'newspack-listings' ) }
-							checked={ showExcerpt }
-							onChange={ () => setAttributes( { showExcerpt: ! showExcerpt } ) }
-						/>
-					</PanelRow>
-					<RangeControl
-						className="type-scale-slider"
-						label={ __( 'Type Scale', 'newspack-listings' ) }
-						value={ typeScale }
-						onChange={ _typeScale => setAttributes( { typeScale: _typeScale } ) }
-						min={ 1 }
-						max={ 10 }
-						beforeIcon="editor-textcolor"
-						afterIcon="editor-textcolor"
-						required
-					/>
-				</PanelBody>
-				<PanelColorSettings
-					title={ __( 'Color Settings', 'newspack-listings' ) }
-					initialOpen={ true }
-					colorSettings={ [
-						{
-							value: textColor,
-							onChange: value => setAttributes( { textColor: value } ),
-							label: __( 'Text Color', 'newspack-listings' ),
-						},
-					] }
-				/>
-				<PanelBody title={ __( 'Post Meta Settings', 'newspack-listings' ) }>
-					<PanelRow>
-						<ToggleControl
-							label={ __( 'Show Category', 'newspack-listings' ) }
-							checked={ showCategory }
-							onChange={ () => setAttributes( { showCategory: ! showCategory } ) }
-						/>
-					</PanelRow>
-				</PanelBody>
-			</InspectorControls>
-
+		<div className="newspack-listings__listing-editor">
 			<div className={ classes.join( ' ' ) }>
-				<span className="newspack-listings__list-item-label">{ listingTypeSlug }</span>
+				<span className="newspack-listings__listing-label">{ listingTypeSlug }</span>
 				{ ! listing || isEditingPost ? renderSearch() : renderPost() }
 			</div>
 		</div>
@@ -329,20 +200,11 @@ const ListingEditorComponent = ( { attributes, listItems, meta, name, setAttribu
 };
 
 const mapStateToProps = select => {
-	const { getBlocks, getEditedPostAttribute } = select( 'core/editor' );
-	const blocks = getBlocks();
-
-	// Build an array of just the list item post IDs.
-	const listItems = blocks.reduce( ( acc, item ) => {
-		if ( item.attributes.listing ) {
-			acc.push( item.attributes.listing );
-		}
-		return acc;
-	}, [] );
+	const { getBlock, getBlockParents } = select( 'core/block-editor' );
 
 	return {
-		meta: getEditedPostAttribute( 'meta' ),
-		listItems,
+		getBlock,
+		getBlockParents,
 	};
 };
 

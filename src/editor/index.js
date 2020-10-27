@@ -1,24 +1,22 @@
 /**
- * WordPress dependencies
- */
-import { registerPlugin } from '@wordpress/plugins';
-
-/**
  * Internal dependencies
  */
-import { Sidebar } from './sidebar';
-import { registerListingBlock } from '../blocks';
+import {
+	registerCuratedListBlock,
+	registerListContainerBlock,
+	registerListingBlock,
+	setCustomCategory,
+} from '../blocks';
+import { isListing } from './utils';
 import './style.scss';
 
 /**
- * Register blocks.
+ * Register Curated List blocks. Don't register if we're in a listing already
+ * (to avoid possibly infinitely nesting lists within list items).
  */
-registerListingBlock();
-
-/**
- * Register sidebar editor settings.
- */
-registerPlugin( 'newspack-listings-editor', {
-	render: Sidebar,
-	icon: null,
-} );
+if ( ! isListing() ) {
+	setCustomCategory();
+	registerCuratedListBlock();
+	registerListContainerBlock();
+	registerListingBlock();
+}

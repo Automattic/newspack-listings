@@ -69,7 +69,7 @@ class AutocompleteTokenField extends Component {
 	 * Get a list of labels for input values.
 	 *
 	 * @param {Array} values Array of values (ids, etc.).
-	 * @return {Array} array of valid labels corresponding to the values.
+	 * {Array} array of valid labels corresponding to the values.
 	 */
 	getLabelsForValues( values ) {
 		const { validValues } = this.state;

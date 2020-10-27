@@ -10,6 +10,9 @@ import { registerBlockType } from '@wordpress/blocks';
 import './editor.scss';
 import { ListingEditor } from './edit';
 import metadata from './block.json';
+import parentData from '../curated-list/block.json';
+
+const parentAttributes = parentData.attributes;
 const { attributes, category } = metadata;
 const { post_types } = window.newspack_listings_data;
 
@@ -20,13 +23,15 @@ export const registerListingBlock = () => {
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
 				icon: 'list-view',
 				category,
+				parent: [ 'newspack-listings/list-container' ],
 				keywords: [
 					__( 'lists', 'newspack-listings' ),
 					__( 'listings', 'newspack-listings' ),
 					__( 'latest', 'newspack-listings' ),
 				],
 
-				attributes,
+				// Combine attributes with parent attributes, so parent can pass data to InnerBlocks without relying on contexts.
+				attributes: Object.assign( attributes, parentAttributes ),
 
 				edit: ListingEditor,
 				save: () => null, // uses view.php

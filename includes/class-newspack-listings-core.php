@@ -2,7 +2,7 @@
 /**
  * Newspack Listings Core.
  *
- * Registers custom post types and taxonomies.
+ * Registers custom post types and metadata.
  *
  * @package Newspack_Listings
  */
@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Settings as Settings;
+use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,11 +24,10 @@ final class Newspack_Listings_Core {
 	 * Custom post type slugs for Newspack Listings.
 	 */
 	const NEWSPACK_LISTINGS_POST_TYPES = [
-		'curated_list' => 'newspack_lst_curated',
-		'event'        => 'newspack_lst_event',
-		'generic'      => 'newspack_lst_generic',
-		'marketplace'  => 'newspack_lst_mktplce',
-		'place'        => 'newspack_lst_place',
+		'event'       => 'newspack_lst_event',
+		'generic'     => 'newspack_lst_generic',
+		'marketplace' => 'newspack_lst_mktplce',
+		'place'       => 'newspack_lst_place',
 
 	];
 
@@ -35,11 +35,10 @@ final class Newspack_Listings_Core {
 	 * Permalink slugs for Newspack Listings CPTs.
 	 */
 	const NEWSPACK_LISTINGS_PERMALINK_SLUGS = [
-		'curated_list' => 'lists',
-		'event'        => 'events',
-		'generic'      => 'items',
-		'marketplace'  => 'markeptlace',
-		'place'        => 'places',
+		'event'       => 'events',
+		'generic'     => 'items',
+		'marketplace' => 'marketplace',
+		'place'       => 'places',
 
 	];
 
@@ -69,8 +68,10 @@ final class Newspack_Listings_Core {
 	public function __construct() {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
-		add_filter( 'allowed_block_types', [ __CLASS__, 'restrict_block_types' ] );
-		add_filter( 'the_content', [ __CLASS__, 'add_list_wrapper_tags' ], 20 );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_styles' ] );
+		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
+		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
+		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
 	/**
@@ -92,30 +93,23 @@ final class Newspack_Listings_Core {
 			__( 'Settings', 'newspack-listings' ),
 			'manage_options',
 			'newspack-listings-settings-admin',
-			[ __CLASS__, 'create_admin_page' ]
+			[ '\Newspack_Listings\Newspack_Listings_Settings', 'create_admin_page' ]
 		);
-	}
-
-	/**
-	 * Is the current post a curated list post type?
-	 *
-	 * @return Boolean Whehter or not the post is a Curated List.
-	 */
-	public static function is_curated_list() {
-		return get_post_type() === self::NEWSPACK_LISTINGS_POST_TYPES['curated_list'];
 	}
 
 	/**
 	 * Is the current post a listings post type?
 	 *
+	 * @param string|null $post_type (Optional) Post type to check. If not given, will use the current global post object.
+	 *
 	 * @returns Boolean Whether or not the current post type matches one of the listings CPTs.
 	 */
-	public static function is_listing() {
-		if ( self::is_curated_list() ) {
-			return false;
+	public static function is_listing( $post_type = null ) {
+		if ( null === $post_type ) {
+			$post_type = get_post_type();
 		}
 
-		if ( in_array( get_post_type(), self::NEWSPACK_LISTINGS_POST_TYPES ) ) {
+		if ( in_array( $post_type, self::NEWSPACK_LISTINGS_POST_TYPES ) ) {
 			return true;
 		}
 
@@ -135,26 +129,7 @@ final class Newspack_Listings_Core {
 			'supports'     => [ 'editor', 'excerpt', 'title', 'custom-fields', 'thumbnail' ],
 		];
 		$post_types_config = [
-			'curated_list' => [
-				'labels'  => [
-					'name'               => _x( 'Curated Lists', 'post type general name', 'newspack-listings' ),
-					'singular_name'      => _x( 'Curated List', 'post type singular name', 'newspack-listings' ),
-					'menu_name'          => _x( 'Curated Lists', 'admin menu', 'newspack-listings' ),
-					'name_admin_bar'     => _x( 'Curated List', 'add new on admin bar', 'newspack-listings' ),
-					'add_new'            => _x( 'Add New', 'popup', 'newspack-listings' ),
-					'add_new_item'       => __( 'Add New Curated List', 'newspack-listings' ),
-					'new_item'           => __( 'New Curated List', 'newspack-listings' ),
-					'edit_item'          => __( 'Edit Curated List', 'newspack-listings' ),
-					'view_item'          => __( 'View Curated List', 'newspack-listings' ),
-					'all_items'          => __( 'Curated Lists', 'newspack-listings' ),
-					'search_items'       => __( 'Search Curated Lists', 'newspack-listings' ),
-					'parent_item_colon'  => __( 'Parent curated list:', 'newspack-listings' ),
-					'not_found'          => __( 'No curated lists found.', 'newspack-listings' ),
-					'not_found_in_trash' => __( 'No curated lists found in Trash.', 'newspack-listings' ),
-				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['curated_list'] ],
-			],
-			'event'        => [
+			'event'       => [
 				'labels'  => [
 					'name'               => _x( 'Events', 'post type general name', 'newspack-listings' ),
 					'singular_name'      => _x( 'Event', 'post type singular name', 'newspack-listings' ),
@@ -173,7 +148,7 @@ final class Newspack_Listings_Core {
 				],
 				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
 			],
-			'generic'      => [
+			'generic'     => [
 				'labels'  => [
 					'name'               => _x( 'Generic Listings', 'post type general name', 'newspack-listings' ),
 					'singular_name'      => _x( 'Listing', 'post type singular name', 'newspack-listings' ),
@@ -192,7 +167,7 @@ final class Newspack_Listings_Core {
 				],
 				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
 			],
-			'marketplace'  => [
+			'marketplace' => [
 				'labels'  => [
 					'name'               => _x( 'Marketplace', 'post type general name', 'newspack-listings' ),
 					'singular_name'      => _x( 'Marketplace Listing', 'post type singular name', 'newspack-listings' ),
@@ -211,7 +186,7 @@ final class Newspack_Listings_Core {
 				],
 				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
 			],
-			'place'        => [
+			'place'       => [
 				'labels'  => [
 					'name'               => _x( 'Places', 'post type general name', 'newspack-listings' ),
 					'singular_name'      => _x( 'Place', 'post type singular name', 'newspack-listings' ),
@@ -241,10 +216,10 @@ final class Newspack_Listings_Core {
 
 			// Register meta fields for this post type.
 			$meta_fields = self::get_meta_fields( $post_type );
-			foreach ( $meta_fields as $name => $meta_field ) {
+			foreach ( $meta_fields as $field_name => $meta_field ) {
 				register_meta(
 					'post',
-					$name,
+					$field_name,
 					$meta_field['settings']
 				);
 			}
@@ -255,134 +230,235 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * Restrict block types allowed for Curated Lists.
-	 *
-	 * @param Array|Boolean $allowed_blocks Array of allowed block types, or true for all core blocks.
-	 * @return Array Array of only the allowed blocks for this post type.
-	 */
-	public static function restrict_block_types( $allowed_blocks ) {
-		if ( self::is_curated_list() ) {
-			return [
-				'newspack-listings/event',
-				'newspack-listings/generic',
-				'newspack-listings/marketplace',
-				'newspack-listings/place',
-			];
-		}
-
-		return $allowed_blocks;
-	}
-
-	/**
 	 * Define and return meta fields for any Newspack Listings CPTs.
 	 *
-	 * @param String $post_type Post type to get corresponding meta fields.
-	 * @return Array Array of meta fields for the given $post_type.
+	 * @param string  $post_type Post type to get corresponding meta fields.
+	 * @param boolean $field_names_only (Optional) If true, return an array of just the field names without config.
+	 * @return array Array of meta fields for the given $post_type.
 	 */
-	public static function get_meta_fields( $post_type = null ) {
+	public static function get_meta_fields( $post_type = null, $field_names_only = false ) {
 		if ( empty( $post_type ) ) {
 			return [];
 		}
 
 		$all_meta_fields = [
-			/**
-			 * Curated List metadata.
-			 */
-			'newspack_listings_show_numbers'      => [
-				'post_types' => [ self::NEWSPACK_LISTINGS_POST_TYPES['curated_list'] ],
-				'label'      => __( 'Show numbers?', 'newspack-listings' ),
-				'type'       => 'toggle',
-				'settings'   => [
-					'object_subtype'    => $post_type,
-					'default'           => true,
-					'description'       => __( 'Display numbers for the items in this list.', 'newspack-listings' ),
-					'type'              => 'boolean',
-					'sanitize_callback' => 'rest_sanitize_boolean',
-					'single'            => true,
-					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				],
-			],
-			'newspack_listings_show_map'          => [
-				'post_types' => [ self::NEWSPACK_LISTINGS_POST_TYPES['curated_list'] ],
-				'label'      => __( 'Show map?', 'newspack-listings' ),
-				'type'       => 'toggle',
-				'settings'   => [
-					'object_subtype'    => $post_type,
-					'default'           => true,
-					'description'       => __( 'Display a map with this list if at least one listing has geolocation data.', 'newspack-listings' ),
-					'type'              => 'boolean',
-					'sanitize_callback' => 'rest_sanitize_boolean',
-					'single'            => true,
-					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				],
-				'type'       => 'toggle',
-			],
-			'newspack_listings_show_sort_by_date' => [
-				'post_types' => [ self::NEWSPACK_LISTINGS_POST_TYPES['curated_list'] ],
-				'label'      => __( 'Show sort-by-date UI?', 'newspack-listings' ),
-				'type'       => 'toggle',
-				'settings'   => [
-					'object_subtype'    => $post_type,
-					'default'           => false,
-					'description'       => __( 'Display sort-by-date controls (only applicable to lists of events).', 'newspack-listings' ),
-					'type'              => 'boolean',
-					'sanitize_callback' => 'rest_sanitize_boolean',
-					'single'            => true,
-					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				],
-			],
-
-			/**
-			 * Metadata for various listing types.
-			 */
-			'newspack_listings_contact_email'     => [
+			'newspack_listings_contact_email'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
-				'label'      => __( 'Email address', 'newspack-listings' ),
+				'label'      => __( 'Contact email address', 'newspack-listings' ),
 				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/email',
+					'attr'      => 'email',
+				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
 					'default'           => '',
 					'description'       => __( 'Email address to contact for this listing.', 'newspack-listings' ),
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'single'            => true,
-					'show_in_rest'      => true,
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type' => 'string',
+							],
+						],
+					],
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
 				],
 			],
-			'newspack_listings_contact_phone'     => [
+			'newspack_listings_contact_phone'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
-				'label'      => __( 'Phone number', 'newspack-listings' ),
+				'label'      => __( 'Contact phone number', 'newspack-listings' ),
 				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/phone',
+					'attr'      => 'phone',
+				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
 					'default'           => '',
 					'description'       => __( 'Phone number to contact for this listing.', 'newspack-listings' ),
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'single'            => true,
-					'show_in_rest'      => true,
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type' => 'string',
+							],
+						],
+					],
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_contact_address' => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Contact Address', 'newspack-listings' ),
+				'type'       => 'input',
+				'source'     => [ 'blockName' => 'jetpack/address' ],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Contact address for this listing.', 'newspack-listings' ),
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'address'      => [
+										'type' => 'string',
+									],
+									'addressLine2' => [
+										'type' => 'string',
+									],
+									'addressLine3' => [
+										'type' => 'string',
+									],
+									'city'         => [
+										'type' => 'string',
+									],
+									'region'       => [
+										'type' => 'string',
+									],
+									'postal'       => [
+										'type' => 'string',
+									],
+									'country'      => [
+										'type' => 'string',
+									],
+								],
+							],
+						],
+					],
+				],
+			],
+			'newspack_listings_business_hours'  => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Hours of Operation', 'newspack-listings' ),
+				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/business-hours',
+					'attr'      => 'days',
+				],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Hours of operation for this listing.', 'newspack-listings' ),
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'name'  => [
+										'type' => 'string',
+									],
+									'hours' => [
+										'type'  => 'array',
+										'items' => [
+											'type'       => 'object',
+											'properties' => [
+												'opening' => [
+													'type' => 'string',
+												],
+												'closing' => [
+													'type' => 'string',
+												],
+											],
+										],
+									],
+								],
+							],
+						],
+					],
+				],
+			],
+			'newspack_listings_locations'       => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Locations', 'newspack-listings' ),
+				'type'       => 'input',
+				'source'     => [
+					'blockName' => 'jetpack/map',
+					'attr'      => 'points',
+				],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Geolocation data for this listing.', 'newspack-listings' ),
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'placeTitle'  => [
+										'type' => 'string',
+									],
+									'title'       => [
+										'type' => 'string',
+									],
+									'caption'     => [
+										'type' => 'string',
+									],
+									'id'          => [
+										'type' => 'string',
+									],
+									'coordinates' => [
+										'type'       => 'object',
+										'properties' => [
+											'latitude'  => [
+												'type' => 'number',
+											],
+											'longitude' => [
+												'type' => 'number',
+											],
+										],
+									],
+								],
+							],
+						],
+					],
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
@@ -391,39 +467,137 @@ final class Newspack_Listings_Core {
 		];
 
 		// Return only the fields that are associated with the given $post_type.
-		return array_filter(
+		$matching_fields = array_filter(
 			$all_meta_fields,
 			function( $meta_field ) use ( $post_type ) {
 				return in_array( $post_type, $meta_field['post_types'] );
 			}
 		);
+
+		if ( false === $field_names_only ) {
+			return $matching_fields;
+		} else {
+			return array_keys( $matching_fields );
+		}
 	}
 
 	/**
-	 * Wrap post content with <ol></ol> tags.
+	 * Given a post ID and post type, get values for all corresponding Listings meta fields.
 	 *
-	 * @param string $content Content to be filtered.
-	 * @return string Filtered content.
+	 * @param int|null    $post_id (Optional) ID for the listing post.
+	 * @param string|null $post_type (Optional) Post type.
+	 *
+	 * @return array|boolean Post meta data, or false if post given is not a listing.
 	 */
-	public static function add_list_wrapper_tags( $content ) {
-		if ( self::is_curated_list() && is_singular() && in_the_loop() && is_main_query() ) {
-			$post_id      = get_the_ID();
-			$show_map     = get_post_meta( $post_id, 'newspack_listings_show_map', true );
-			$show_numbers = get_post_meta( $post_id, 'newspack_listings_show_numbers', true );
-			$classes      = 'newspack-listings__curated-list';
-
-			if ( ! empty( $show_map ) ) {
-				$classes .= ' newspack-listings__show-map';
-			}
-
-			if ( ! empty( $show_numbers ) ) {
-				$classes .= ' newspack-listings__show-numbers';
-			}
-
-			$content = '<ol class="' . $classes . '">' . $content . '</ol>';
+	public static function get_meta_values( $post_id = null, $post_type = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
 		}
 
-		return $content;
+		if ( null === $post_type ) {
+			$post_type = get_post_type( $post_id );
+		}
+
+		if ( ! self::is_listing( $post_type ) ) {
+			return false;
+		}
+
+		$meta_fields = self::get_meta_fields( $post_type, true );
+		$meta_values = [];
+
+		foreach ( $meta_fields as $meta_field ) {
+			$data = get_post_meta( $post_id, $meta_field, true );
+
+			if ( ! empty( $data ) ) {
+				$meta_values[ $meta_field ] = $data;
+			}
+		}
+
+		return $meta_values;
+	}
+
+	/**
+	 * Sync data from specific content blocks to post meta.
+	 * Source blocks for each meta field are set in the meta config above.
+	 *
+	 * @param int   $post_id ID of the post being created or updated.
+	 * @param array $post Post object of the post being created or updated.
+	 */
+	public static function sync_post_meta( $post_id, $post ) {
+		if ( ! self::is_listing( $post->post_type ) ) {
+			return;
+		}
+
+		$blocks      = parse_blocks( $post->post_content );
+		$meta_fields = self::get_meta_fields( $post->post_type );
+
+		foreach ( $meta_fields as $field_name => $meta_field ) {
+			$source       = $meta_field['source'];
+			$data_to_sync = Utils\get_data_from_blocks( $blocks, $source );
+
+			/*
+			 * If there are no blocks matching the source, clear the field.
+			 * This prevents garbage data from persisting if a block is removed
+			 * after its data has already been saved as post meta.
+			 */
+			if ( false === $data_to_sync ) {
+				delete_post_meta( $post_id, $field_name );
+			} else {
+				update_post_meta( $post_id, $field_name, $data_to_sync );
+			}
+		}
+	}
+
+	/**
+	 * Enqueue custom styles for Newspack Listings front-end components.
+	 */
+	public static function custom_styles() {
+		if ( ! is_admin() ) {
+			wp_register_style(
+				'newspack-listings-styles',
+				plugins_url( '../dist/front_end.css', __FILE__ ),
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+
+			wp_enqueue_style( 'newspack-listings-styles' );
+		}
+	}
+
+	/**
+	 * If using a Newspack theme, force single listings pages to use the wide template (sans widget sidebar).
+	 *
+	 * @param string $template File path of the template to use for the current single post.
+	 * @return string Filtered template file path.
+	 */
+	public static function set_default_template( $template ) {
+		if ( self::is_listing() ) {
+			$wide_template = str_replace( 'single.php', 'single-wide.php', $template );
+
+			if ( file_exists( $wide_template ) ) {
+				$template = $wide_template;
+
+				// Add the single-wide CSS class to the body.
+				add_filter(
+					'body_class',
+					function( $classes ) {
+						$classes[] = 'post-template-single-wide';
+
+						return $classes;
+					}
+				);
+			}
+		}
+
+		return $template;
+	}
+
+	/**
+	 * Flush permalinks on plugin activation, ensuring that post types and taxonomies are registered first.
+	 */
+	public static function activation_hook() {
+		self::register_post_types();
+		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
 	}
 }
 

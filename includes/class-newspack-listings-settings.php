@@ -23,7 +23,7 @@ final class Newspack_Listings_Settings {
 	/**
 	 * Default values for site-wide settings.
 	 *
-	 * @return Array Array of default settings.
+	 * @return array Array of default settings.
 	 */
 	public static function get_default_settings() {
 		$defaults = [
@@ -36,8 +36,8 @@ final class Newspack_Listings_Settings {
 	/**
 	 * Get current site-wide settings, or defaults if not set.
 	 *
-	 * @param String|null $option (Optional) Key name of a single setting to get. If not given, will return all settings.
-	 * @return Array|Boolean Array of current site-wide settings, or false if returning a single option with no value.
+	 * @param string|null $option (Optional) Key name of a single setting to get. If not given, will return all settings.
+	 * @return array|Boolean Array of current site-wide settings, or false if returning a single option with no value.
 	 */
 	public static function get_settings( $option = null ) {
 		$defaults = self::get_default_settings();
@@ -64,7 +64,7 @@ final class Newspack_Listings_Settings {
 	/**
 	 * Get list of settings fields.
 	 *
-	 * @return Array Settings list.
+	 * @return array Settings list.
 	 */
 	public static function get_settings_list() {
 		$defaults = self::get_default_settings();
@@ -126,7 +126,7 @@ final class Newspack_Listings_Settings {
 	/**
 	 * Render settings fields.
 	 *
-	 * @param Array $setting Settings array.
+	 * @param array $setting Settings array.
 	 */
 	public static function newspack_listings_settings_callback( $setting ) {
 		$key   = $setting['key'];

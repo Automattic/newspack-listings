@@ -1,8 +1,8 @@
 <?php
 /**
- * Newspack Listings Core.
+ * Newspack Listings API.
  *
- * Registers custom post types and taxonomies.
+ * Custom API endpoints for Newspack Listings.
  *
  * @package Newspack_Listings
  */
@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -115,26 +116,34 @@ final class Newspack_Listings_Api {
 			return new \WP_REST_Response(
 				array_map(
 					function( $post ) use ( $fields ) {
+						$response = [
+							'id'    => $post->ID,
+							'title' => $post->post_title,
+						];
 
-						// If $fields includes meta, get all Newspack Listings meta fields.
-						$post_meta = [];
-
-						if ( in_array( 'meta', $fields ) ) {
-							$post_meta = array_filter(
-								get_post_meta( $post->ID ),
-								function( $key ) {
-									return is_numeric( strpos( $key, 'newspack_listings_' ) );
-								},
-								ARRAY_FILTER_USE_KEY
-							);
+						// If $fields includes excerpt, get the post excerpt.
+						if ( in_array( 'excerpt', $fields ) ) {
+							$response['excerpt'] = wpautop( get_the_excerpt( $post->ID ) );
 						}
 
-						return [
-							'id'      => $post->ID,
-							'title'   => $post->post_title,
-							'content' => wpautop( get_the_excerpt( $post->ID ) ),
-							'meta'    => $post_meta,
-						];
+						// If $fields includes media, get the featured image + caption.
+						if ( in_array( 'media', $fields ) ) {
+							$response['media'] = [
+								'image'   => get_the_post_thumbnail_url( $post->ID, 'medium' ),
+								'caption' => get_the_post_thumbnail_caption( $post->ID ),
+							];
+						}
+
+						// If $fields includes meta, get all Newspack Listings meta fields.
+						if ( in_array( 'meta', $fields ) ) {
+							$post_meta = Core::get_meta_values( $post->ID, $post->post_type );
+
+							if ( ! empty( $post_meta ) ) {
+								$response['meta'] = $post_meta;
+							}
+						}
+
+						return $response;
 					},
 					$query->posts
 				),
