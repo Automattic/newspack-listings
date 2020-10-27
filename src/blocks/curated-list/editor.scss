@@ -5,10 +5,6 @@
 		border: 1px solid var( --newspack-listings--grey-dark );
 		border-radius: 2px;
 		padding: 1em;
-
-		[data-type='jetpack/map'] {
-			pointer-events: none;
-		}
 	}
 
 	&__modal {
