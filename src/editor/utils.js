@@ -3,6 +3,11 @@
  */
 
 /**
+ * External dependencies
+ */
+import { useEffect, useRef } from '@wordpress/element';
+
+/**
  * Check if the current post in the editor is a listing CPT.
  *
  * @return {boolean} Whether or not the current post is a listing CPT.
@@ -58,4 +63,21 @@ export const getCuratedListClasses = ( className, attributes ) => {
 	classes.push( `type-scale-${ typeScale }` );
 
 	return classes;
+};
+
+/**
+ * Hook to tell us whether the current render is the initial render
+ * (immediately after mount, with default props) or a subsequent render.
+ * Useful so we don't fire side effects before block attributes are ready.
+ *
+ * return {boolean} True if this is the initial render, false if subsequent.
+ */
+export const useDidMount = () => {
+	const didMount = useRef( true );
+
+	useEffect(() => {
+		didMount.current = false;
+	}, []);
+
+	return didMount.current;
 };

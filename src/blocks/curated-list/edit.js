@@ -29,7 +29,7 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components/';
-import { getCuratedListClasses } from '../../editor/utils';
+import { getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 const CuratedListEditorComponent = ( {
 	attributes,
@@ -75,10 +75,18 @@ const CuratedListEditorComponent = ( {
 	const listingBlocks = list ? list.innerBlocks.map( innerBlock => innerBlock.clientId ) : [];
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
 	const classes = getCuratedListClasses( className, attributes );
+	const initialRender = useDidMount();
 
 	// If changing query options, fetch listing posts that match the query.
 	useEffect(() => {
-		fetchPosts( queryOptions );
+		// Don't run on the initial render.
+		if ( initialRender ) {
+			return;
+		}
+
+		if ( queryMode ) {
+			fetchPosts( queryOptions );
+		}
 	}, [ JSON.stringify( queryOptions ) ]);
 
 	// Update locations in component state. This lets us keep the map block in sync with listing items.
@@ -114,6 +122,11 @@ const CuratedListEditorComponent = ( {
 
 	// Create, update, or remove map when showMap attribute or locations change.
 	useEffect(() => {
+		// Don't run on the initial render.
+		if ( initialRender ) {
+			return;
+		}
+
 		// Don't bother if the Jetpack Maps block doesn't exist.
 		if ( ! canUseMapBlock ) {
 			return;

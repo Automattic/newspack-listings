@@ -16,6 +16,10 @@
 		.components-button + .components-button {
 			margin-left: 0.5rem;
 		}
+
+		+ .newspack-listings__listing-editor {
+			margin-top: 1.75rem;
+		}
 	}
 
 	&__listing-search {
