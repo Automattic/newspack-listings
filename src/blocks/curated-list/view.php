@@ -63,9 +63,6 @@ function render_block( $attributes, $inner_content ) {
 	}
 	$classes[] = 'type-scale-' . $attributes['typeScale'];
 
-	// Begin front-end output.
-	// TODO: Templatize this output; integrate more variations based on attributes.
-
 	// Extend wp_kses_post to allow jetpack/map required elements and attributes.
 	$allowed_elements = wp_kses_allowed_html( 'post' );
 
@@ -142,6 +139,7 @@ function render_block( $attributes, $inner_content ) {
 		}
 	}
 
+	// Begin front-end output.
 	ob_start();
 
 	?>
