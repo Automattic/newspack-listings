@@ -135,7 +135,7 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 	$excerpt = $post->post_content;
 	$excerpt = strip_shortcodes( $excerpt );
 	$excerpt = excerpt_remove_blocks( $excerpt );
-	$excerpt = apply_filters( 'the_content', $excerpt );
+	$excerpt = wpautop( $excerpt );
 	$excerpt = str_replace( ']]>', ']]&gt;', $excerpt );
 
 	// Strip HTML tags except for the explicitly allowed tags.
