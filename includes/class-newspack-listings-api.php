@@ -190,11 +190,6 @@ final class Newspack_Listings_Api {
 		$attributes = ! empty( $params['attributes'] ) ? $params['attributes'] : [];
 		$is_amp     = $request->get_param( 'amp' );
 
-		// Bail if one of the required args isn't present.
-		if ( empty( $search ) && empty( $id ) && empty( $query ) ) {
-			return new \WP_REST_Response( [] );
-		}
-
 		// If not given a post type, look up posts of any listing type.
 		if ( empty( $post_types ) ) {
 			$post_types = self::get_listing_post_types();

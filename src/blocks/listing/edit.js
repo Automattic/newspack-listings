@@ -99,8 +99,13 @@ const ListingEditorComponent = ( {
 		return (
 			<div className="newspack-listings__listing-search">
 				<QueryControls
-					label={ isEditingPost && __( 'Select a listing.', 'newspack-listings' ) }
+					label={
+						__( 'Search for a ', 'newspack-listings' ) +
+						listingTypeSlug +
+						__( ' listing to display.', 'newspack-listings' )
+					}
 					listingType={ listingType }
+					listingTypeSlug={ listingTypeSlug }
 					maxLength={ 1 }
 					onChange={ _listing => {
 						if ( _listing.length ) {
@@ -117,14 +122,6 @@ const ListingEditorComponent = ( {
 						{ __( 'Cancel', 'newspack-listings' ) }
 					</Button>
 				) }
-
-				<Button
-					isSecondary
-					href={ `/wp-admin/post-new.php?post_type=${ listingType }` }
-					target="_blank"
-				>
-					{ __( 'Create new listing', 'newspack-listing' ) }
-				</Button>
 			</div>
 		);
 	};

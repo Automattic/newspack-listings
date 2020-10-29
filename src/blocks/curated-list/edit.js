@@ -87,7 +87,7 @@ const CuratedListEditorComponent = ( {
 		if ( queryMode ) {
 			fetchPosts( queryOptions );
 		}
-	}, [ JSON.stringify( queryOptions ) ]);
+	}, [ JSON.stringify( queryOptions ), queryMode ]);
 
 	// Update locations in component state. This lets us keep the map block in sync with listing items.
 	useEffect(() => {
