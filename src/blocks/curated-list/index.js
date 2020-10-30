@@ -10,13 +10,14 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import './editor.scss';
 import { CuratedListEditor } from './edit';
+import { List } from '../../svg';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
 export const registerCuratedListBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Curated List', 'newspack-listing' ),
-		icon: 'list-view',
+		icon: <List />,
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),

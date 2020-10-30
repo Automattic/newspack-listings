@@ -67,7 +67,18 @@ final class Newspack_Listings_Blocks {
 			true
 		);
 
-		$post_type = get_post_type();
+		$total_count = 0;
+		$post_type   = get_post_type();
+		$post_types  = [];
+
+		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
+			$post_count           = wp_count_posts( $name )->publish;
+			$total_count         .= $post_count;
+			$post_types[ $label ] = [
+				'name'             => $name,
+				'show_in_inserter' => 0 < $post_count,
+			];
+		}
 
 		wp_localize_script(
 			'newspack-listings-editor',
@@ -75,12 +86,15 @@ final class Newspack_Listings_Blocks {
 			[
 				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
-				'post_types'      => Core::NEWSPACK_LISTINGS_POST_TYPES,
+				'post_types'      => $post_types,
 				'meta_fields'     => Core::get_meta_fields( $post_type ),
 				'taxonomies'      => [
 					'category' => Core::NEWSPACK_LISTINGS_CAT,
 					'tag'      => Core::NEWSPACK_LISTINGS_TAG,
 				],
+
+				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
+				'no_listings'     => 0 === $total_count,
 			]
 		);
 

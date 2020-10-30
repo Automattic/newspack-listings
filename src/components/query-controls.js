@@ -91,7 +91,7 @@ class QueryControls extends Component {
 	renderSuggestion( suggestion, index ) {
 		const { onChange } = this.props;
 		return (
-			<Button isLink key={ index } onClick={ () => onChange( [ suggestion.value ] ) }>
+			<Button isLink key={ index } onClick={ () => onChange( [ suggestion.value.toString() ] ) }>
 				{ suggestion.label }
 			</Button>
 		);
@@ -107,7 +107,7 @@ class QueryControls extends Component {
 		return (
 			<Fragment>
 				<hr />
-				<span className="newspack-listings__search-suggestions-label">
+				<span className="newspack-listings__label">
 					{ __( 'Or, select a recent ', 'newspack-listings' ) +
 						listingTypeSlug +
 						__( ' listing:', 'newspack-listings' ) }

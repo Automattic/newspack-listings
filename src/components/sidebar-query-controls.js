@@ -172,10 +172,10 @@ class QueryControls extends Component {
 				onChange={ value => setAttributes( { queryOptions: { ...queryOptions, type: value } } ) }
 				options={ [
 					{ label: __( 'Any', 'newspack-listings' ), value: 'any' },
-					{ label: __( 'Event', 'newspack-listings' ), value: post_types.event },
-					{ label: __( 'Generic', 'newspack-listings' ), value: post_types.generic },
-					{ label: __( 'Marketplace', 'newspack-listings' ), value: post_types.marketplace },
-					{ label: __( 'Place', 'newspack-listings' ), value: post_types.place },
+					{ label: __( 'Event', 'newspack-listings' ), value: post_types.event.name },
+					{ label: __( 'Generic', 'newspack-listings' ), value: post_types.generic.name },
+					{ label: __( 'Marketplace', 'newspack-listings' ), value: post_types.marketplace.name },
+					{ label: __( 'Place', 'newspack-listings' ), value: post_types.place.name },
 				] }
 			/>,
 			<AutocompleteTokenField

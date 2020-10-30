@@ -3,13 +3,17 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import {
+	__experimentalBlockVariationPicker as BlockVariationPicker,
+	InnerBlocks,
+	InspectorControls,
+	PanelColorSettings,
+} from '@wordpress/block-editor';
 import { createBlock } from '@wordpress/blocks';
-import { InnerBlocks, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
 import {
 	BaseControl,
 	Button,
 	ButtonGroup,
-	Modal,
 	Notice,
 	PanelBody,
 	PanelRow,
@@ -28,7 +32,8 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { Listing } from '../listing/listing';
-import { SidebarQueryControls } from '../../components/';
+import { SidebarQueryControls } from '../../components';
+import { List, Query, Specific } from '../../svg';
 import { getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 const CuratedListEditorComponent = ( {
@@ -45,7 +50,6 @@ const CuratedListEditorComponent = ( {
 	const [ error, setError ] = useState( null );
 	const [ isFetching, setIsFetching ] = useState( false );
 	const [ locations, setLocations ] = useState( [] );
-	const [ showModal, setShowModal ] = useState( false );
 	const {
 		showNumbers,
 		showMap,
@@ -61,6 +65,7 @@ const CuratedListEditorComponent = ( {
 		imageScale,
 		mobileStack,
 		textColor,
+		startup,
 		queryMode,
 		queryOptions,
 		queriedListings,
@@ -155,19 +160,6 @@ const CuratedListEditorComponent = ( {
 		}
 	}, [ showMap, JSON.stringify( locations ) ]);
 
-	// If we have listings that might be lost, warn the user. Otherwise, just swtich modes.
-	const maybeShowModal = () => {
-		if (
-			( ! queryMode && 0 === listingBlocks.length ) ||
-			( queryMode && 0 === queriedListings.length )
-		) {
-			setAttributes( { queryMode: ! queryMode } );
-			return;
-		}
-
-		setShowModal( true );
-	};
-
 	// Use current query options to get listing posts.
 	const fetchPosts = async query => {
 		setIsFetching( true );
@@ -245,18 +237,47 @@ const CuratedListEditorComponent = ( {
 		},
 	];
 
+	if ( startup ) {
+		return (
+			<div className="newspack-listings__placeholder">
+				<BlockVariationPicker
+					icon={ <List /> }
+					label={ __( 'Curated List', 'newspack-listings' ) }
+					instructions={ __( 'Select the type of list to start with.' ) }
+					onSelect={ variation => {
+						if ( variation.name && 'query' === variation.name ) {
+							setAttributes( {
+								queryMode: true,
+								startup: false,
+							} );
+						} else {
+							setAttributes( {
+								startup: false,
+							} );
+						}
+					} }
+					variations={ [
+						{
+							name: 'query',
+							title: __( 'Query', 'newspack-listings' ),
+							icon: <Query />,
+						},
+						{
+							name: 'specific',
+							title: __( 'Specific Listings', 'newspack-listings' ),
+							icon: <Specific />,
+						},
+					] }
+				/>
+			</div>
+		);
+	}
+
 	return (
 		<div className="newspack-listings__curated-list-editor">
 			<InspectorControls>
-				<PanelBody title={ __( 'Query Settings', 'newspack-listings' ) }>
-					<PanelRow>
-						<ToggleControl
-							label={ __( 'Query mode', 'newspack-listings' ) }
-							checked={ queryMode }
-							onChange={ () => maybeShowModal() }
-						/>
-					</PanelRow>
-					{ queryMode && (
+				{ queryMode && (
+					<PanelBody title={ __( 'Query Settings', 'newspack-listings' ) }>
 						<SidebarQueryControls
 							disabled={ isFetching }
 							setAttributes={ setAttributes }
@@ -264,8 +285,8 @@ const CuratedListEditorComponent = ( {
 							showLoadMore={ showLoadMore }
 							loadMoreText={ loadMoreText }
 						/>
-					) }
-				</PanelBody>
+					</PanelBody>
+				) }
 				<PanelBody title={ __( 'List Settings', 'newspack-listings' ) }>
 					<PanelRow>
 						<ToggleControl
@@ -455,43 +476,6 @@ const CuratedListEditorComponent = ( {
 						</Button>
 					) }
 			</div>
-			{ showModal && (
-				<Modal
-					className="newspack-listings__modal"
-					title={ __( 'Change query mode?' ) }
-					onRequestClose={ () => setShowModal( false ) }
-				>
-					<p>
-						{ __(
-							'Are you sure you want to change the query mode? Doing so will delete the existing items in this list.',
-							'newspack-listings'
-						) }
-					</p>
-					<Button
-						isPrimary
-						onClick={ () => {
-							// Confirm: delete all listing item and map blocks, if applicable.
-							if ( hasMap ) {
-								listingBlocks.push( hasMap.clientId );
-							}
-							removeBlocks( listingBlocks );
-							setAttributes( { queryMode: ! queryMode } );
-							setShowModal( false );
-						} }
-					>
-						{ __( 'OK', 'newspack-listings' ) }
-					</Button>
-					<Button
-						isSecondary
-						onClick={ () => {
-							// Cancel: reset query mode without deleting inner listing item or map blocks.
-							setShowModal( false );
-						} }
-					>
-						{ __( 'Cancel', 'newspack-listings' ) }
-					</Button>
-				</Modal>
-			) }
 		</div>
 	);
 };

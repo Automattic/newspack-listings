@@ -6,7 +6,7 @@ import { getCategories, setCategories } from '@wordpress/blocks';
 /**
  * Internal dependencies
  */
-import { NewspackLogo } from '../components';
+import { NewspackLogo } from '../svg';
 
 /**
  * If the Newspack Blocks plugin is installed, use the existing Newspack block category.

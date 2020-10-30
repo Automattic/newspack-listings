@@ -5,6 +5,31 @@
 		border: 1px solid var( --newspack-listings--grey-dark );
 		border-radius: 2px;
 		padding: 1em;
+
+		label,
+		.newspack-listings__label {
+			display: block;
+			font-size: 1rem;
+			margin-bottom: 0.5rem;
+		}
+
+		.autocomplete-tokenfield__help {
+			font-size: 0.875rem;
+		}
+	}
+
+	&__placeholder {
+		.components-button.has-icon {
+			padding: 12px;
+		}
+
+		li {
+			align-items: center;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			margin-right: 0;
+		}
 	}
 
 	&__modal {

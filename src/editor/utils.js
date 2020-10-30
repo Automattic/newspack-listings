@@ -20,7 +20,7 @@ export const isListing = () => {
 	const { post_type, post_types } = window.newspack_listings_data;
 
 	for ( const slug in post_types ) {
-		if ( post_types.hasOwnProperty( slug ) && post_type === post_types[ slug ] ) {
+		if ( post_types.hasOwnProperty( slug ) && post_type === post_types[ slug ].name ) {
 			return true;
 		}
 	}

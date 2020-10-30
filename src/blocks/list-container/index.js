@@ -9,11 +9,12 @@ import { registerBlockType } from '@wordpress/blocks';
  * Internal dependencies
  */
 import { ListContainerEditor } from './edit';
+import { List } from '../../svg';
 
 export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
 		title: __( 'Curated List Container', 'newspack-listing' ),
-		icon: 'list-view',
+		icon: <List />,
 		category: 'newspack',
 		parent: [ 'newspack-listings/curated-list' ],
 		keywords: [
