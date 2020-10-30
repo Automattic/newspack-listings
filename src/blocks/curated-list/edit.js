@@ -81,14 +81,18 @@ const CuratedListEditorComponent = ( {
 	const classes = getCuratedListClasses( className, attributes );
 	const initialRender = useDidMount();
 
-	// If changing query options, fetch listing posts that match the query.
+	/**
+	 * If changing query options, fetch listing posts that match the query.
+	 */
 	useEffect(() => {
 		if ( queryMode ) {
 			fetchPosts( queryOptions );
 		}
 	}, [ JSON.stringify( queryOptions ), queryMode ]);
 
-	// Update locations in component state. This lets us keep the map block in sync with listing items.
+	/**
+	 * Update locations in component state. This lets us keep the map block in sync with listing items.
+	 */
 	useEffect(() => {
 		if ( ! canUseMapBlock ) {
 			return;
@@ -100,7 +104,13 @@ const CuratedListEditorComponent = ( {
 		if ( queryMode ) {
 			newLocations = queriedListings.reduce( ( acc, queriedListing ) => {
 				if ( queriedListing.meta && queriedListing.meta.newspack_listings_locations ) {
-					queriedListing.meta.newspack_listings_locations.map( location => acc.push( location ) );
+					queriedListing.meta.newspack_listings_locations.map( location => {
+						if ( isValidLocation( location ) ) {
+							acc.push( location );
+						}
+
+						return acc;
+					} );
 				}
 
 				return acc;
@@ -109,7 +119,13 @@ const CuratedListEditorComponent = ( {
 			newLocations = list
 				? list.innerBlocks.reduce( ( acc, innerBlock ) => {
 						if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
-							innerBlock.attributes.locations.map( location => acc.push( location ) );
+							innerBlock.attributes.locations.map( location => {
+								if ( isValidLocation( location ) ) {
+									acc.push( location );
+								}
+
+								return acc;
+							} );
 						}
 						return acc;
 				  }, [] )
@@ -119,7 +135,9 @@ const CuratedListEditorComponent = ( {
 		setLocations( newLocations );
 	}, [ queryMode, JSON.stringify( list ), JSON.stringify( queriedListings ) ]);
 
-	// Create, update, or remove map when showMap attribute or locations change.
+	/**
+	 * Create, update, or remove map when showMap attribute or locations change.
+	 */
 	useEffect(() => {
 		// Don't run on the initial render.
 		if ( initialRender ) {
@@ -155,7 +173,12 @@ const CuratedListEditorComponent = ( {
 		}
 	}, [ showMap, JSON.stringify( locations ) ]);
 
-	// Use current query options to get listing posts.
+	/**
+	 * Use current query options to get listing posts.
+	 *
+	 * @param {Object} query Query args.
+	 * @return {void}
+	 */
 	const fetchPosts = async query => {
 		setIsFetching( true );
 
@@ -180,7 +203,12 @@ const CuratedListEditorComponent = ( {
 		setIsFetching( false );
 	};
 
-	// Render the results of the listing query.
+	/**
+	 * Render the results of the listing query.
+	 *
+	 * @param {Object} listing Post object for listing to show.
+	 * @param {number} index Index of the item in the array.
+	 */
 	const renderQueriedListings = ( listing, index ) => {
 		return (
 			<div className="newspack-listings__listing-editor newspack-listings__listing">
@@ -198,6 +226,29 @@ const CuratedListEditorComponent = ( {
 		);
 	};
 
+	/**
+	 * Validate location data.
+	 *
+	 * @param {*} location Location data to check.
+	 * @return {boolean} True if the data is valid location data, false if not.
+	 */
+	const isValidLocation = location => {
+		if (
+			! location ||
+			! location.id ||
+			! location.coordinates ||
+			! location.coordinates.latitude ||
+			! location.coordinates.longitude
+		) {
+			return false;
+		}
+
+		return true;
+	};
+
+	/**
+	 * Image size options for the sidebar.
+	 */
 	const imageSizeOptions = [
 		{
 			value: 1,
@@ -227,6 +278,9 @@ const CuratedListEditorComponent = ( {
 		},
 	];
 
+	/**
+	 * Show a hint to the user if there are no listings that can be added to the list.
+	 */
 	if ( isEmpty ) {
 		return (
 			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
@@ -237,6 +291,9 @@ const CuratedListEditorComponent = ( {
 		);
 	}
 
+	/**
+	 * Let user pick Query or Specific mode on startup.
+	 */
 	if ( startup ) {
 		return (
 			<div className="newspack-listings__placeholder">
