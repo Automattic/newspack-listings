@@ -226,6 +226,7 @@ class QueryControls extends Component {
 			<ToggleControl
 				key="loadMore"
 				disabled={ disabled }
+				help={ __( 'Will be shown only if there more listings to load.', 'newspack-listings' ) }
 				label={ __( 'Show "load more" button', 'newspack-listings' ) }
 				checked={ showLoadMore }
 				onChange={ () => setAttributes( { showLoadMore: ! showLoadMore } ) }
