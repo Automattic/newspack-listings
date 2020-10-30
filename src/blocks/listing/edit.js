@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
@@ -99,10 +99,11 @@ const ListingEditorComponent = ( {
 		return (
 			<div className="newspack-listings__listing-search">
 				<QueryControls
-					label={ sprintf(
-						__( 'Search for a %s listing to display:', 'newspack-listings' ),
-						listingTypeSlug
-					) }
+					label={
+						__( 'Search for a ', 'newspack-listings' ) +
+						listingTypeSlug +
+						__( ' listing to display.', 'newspack-listings' )
+					}
 					listingType={ listingType }
 					listingTypeSlug={ listingTypeSlug }
 					maxLength={ 1 }

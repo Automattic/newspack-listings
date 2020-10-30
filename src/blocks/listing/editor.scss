@@ -10,7 +10,7 @@
 		.components-spinner {
 			display: block;
 			float: none;
-			margin: auto;
+			margin: 1.75rem auto;
 		}
 
 		+ .newspack-listings__listing-editor {
@@ -27,13 +27,13 @@
 		.autocomplete-tokenfield__help {
 			font-size: 0.875rem;
 		}
+	}
 
-		.autocomplete-tokenfield {
-			.components-spinner {
-				position: absolute;
-				right: 0.5rem;
-				top: 2.75rem;
-			}
+	&__listing-search {
+		.components-spinner {
+			position: absolute;
+			right: 1rem;
+			top: 1rem;
 		}
 	}
 
