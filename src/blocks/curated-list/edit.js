@@ -73,21 +73,16 @@ const CuratedListEditorComponent = ( {
 		loadMoreText,
 	} = attributes;
 
+	const isEmpty = !! window.newspack_listings_data.no_listings || false;
 	const list = innerBlocks.find(
 		innerBlock => innerBlock.name === 'newspack-listings/list-container'
 	);
-	const listingBlocks = list ? list.innerBlocks.map( innerBlock => innerBlock.clientId ) : [];
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
 	const classes = getCuratedListClasses( className, attributes );
 	const initialRender = useDidMount();
 
 	// If changing query options, fetch listing posts that match the query.
 	useEffect(() => {
-		// Don't run on the initial render.
-		if ( initialRender ) {
-			return;
-		}
-
 		if ( queryMode ) {
 			fetchPosts( queryOptions );
 		}
@@ -164,11 +159,6 @@ const CuratedListEditorComponent = ( {
 	const fetchPosts = async query => {
 		setIsFetching( true );
 
-		// Remove blocks from prior queries.
-		if ( 0 < listingBlocks.length ) {
-			removeBlocks( listingBlocks );
-		}
-
 		try {
 			setError( null );
 			const posts = await apiFetch( {
@@ -236,6 +226,16 @@ const CuratedListEditorComponent = ( {
 			),
 		},
 	];
+
+	if ( isEmpty ) {
+		return (
+			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
+				<Notice isDismissible={ false }>
+					{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }
+				</Notice>
+			</Placeholder>
+		);
+	}
 
 	if ( startup ) {
 		return (

@@ -73,7 +73,7 @@ final class Newspack_Listings_Blocks {
 
 		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
 			$post_count           = wp_count_posts( $name )->publish;
-			$total_count         .= $post_count;
+			$total_count          = $total_count + $post_count;
 			$post_types[ $label ] = [
 				'name'             => $name,
 				'show_in_inserter' => 0 < $post_count,
