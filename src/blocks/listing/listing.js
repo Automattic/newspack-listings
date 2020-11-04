@@ -10,15 +10,10 @@ import { decodeEntities } from '@wordpress/html-entities';
 
 export const Listing = ( { attributes, error, post } ) => {
 	// Parent Curated List block attributes.
-	const { showAuthor, showCategory, showExcerpt, showImage, showCaption, textColor } = attributes;
+	const { showAuthor, showCategory, showExcerpt, showImage, showCaption } = attributes;
 
 	return (
-		<div
-			className="newspack-listings__listing-post entry-wrapper"
-			style={ {
-				color: textColor || '#000',
-			} }
-		>
+		<div className="newspack-listings__listing-post entry-wrapper">
 			{ error && (
 				<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
 					{ error }

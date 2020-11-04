@@ -4,7 +4,7 @@
 
 		&.show-numbers .newspack-listings__listing::before {
 			color: #767676;
-			color: var( --newspack-listings--grey-medium );
+			color: currentColor;
 			content: counter( list ) '. ';
 			counter-increment: list;
 			display: block;

@@ -20,14 +20,7 @@ call_user_func(
 
 		?>
 	<li class="newspack-listings__listing">
-	<article
-		class="newspack-listings__listing-post"
-		<?php
-		if ( ! empty( $attributes['textColor'] ) ) {
-			echo esc_attr( 'style="color:' . $attributes['textColor'] . ';"' );
-		}
-		?>
-	>
+	<article class="newspack-listings__listing-post">
 		<?php if ( $attributes['showImage'] ) : ?>
 			<?php
 			$featured_image = get_the_post_thumbnail( $post->ID, 'large' );

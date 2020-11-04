@@ -60,6 +60,9 @@ function render_block( $attributes, $inner_content ) {
 	}
 	$classes[] = 'type-scale-' . $attributes['typeScale'];
 
+	// Text color for listings.
+	$text_color = ! empty( $attributes['textColor'] ) ? 'color:' . $attributes['textColor'] : '';
+
 	// Extend wp_kses_post to allow jetpack/map required elements and attributes.
 	$allowed_elements = wp_kses_allowed_html( 'post' );
 
@@ -143,7 +146,9 @@ function render_block( $attributes, $inner_content ) {
 	<?php if ( $has_more_pages && Utils\is_amp() ) : ?>
 		<amp-script layout="container" src="<?php echo esc_url( NEWSPACK_LISTINGS_URL . 'src/assets/amp/curated-list.js' ); ?>">
 	<?php endif; ?>
-	<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+	<div
+		class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
+		style="<?php echo esc_attr( $text_color ); ?>">
 		<?php echo wp_kses( $inner_content, $allowed_elements ); ?>
 		<?php if ( $attributes['queryMode'] && $has_more_pages ) : ?>
 			<button type="button" data-next="<?php echo esc_url( $listings_rest_url ); ?>">

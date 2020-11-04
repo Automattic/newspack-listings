@@ -519,7 +519,12 @@ const CuratedListEditorComponent = ( {
 					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-			<div className={ classes.join( ' ' ) }>
+			<div
+				className={ classes.join( ' ' ) }
+				style={ {
+					color: textColor || '#000',
+				} }
+			>
 				{ queryMode && error && (
 					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
 						{ error }
