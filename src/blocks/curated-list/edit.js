@@ -68,7 +68,6 @@ const CuratedListEditorComponent = ( {
 		mediaPosition,
 		typeScale,
 		imageScale,
-		mobileStack,
 		textColor,
 		startup,
 		queryMode,
@@ -177,14 +176,18 @@ const CuratedListEditorComponent = ( {
 	/**
 	 * Guard against accidentally deleting the list container block.
 	 */
-	useEffect( () => {
-		if ( ! queryMode && ! list ) {
-			// Create a new map at the bottom of the list.
-			const newBlock = createBlock( 'newspack-listings/list-container' );
+	useEffect(
+		() => {
+			if ( ! queryMode && ! list ) {
+				// Create a new map at the bottom of the list.
+				const newBlock = createBlock( 'newspack-listings/list-container' );
 
-			insertBlocks( [ newBlock ], null, clientId );
-		}
-	}, JSON.stringify( innerBlocks ) );
+				insertBlocks( [ newBlock ], null, clientId );
+			}
+		},
+		JSON.stringify( innerBlocks ),
+		queryMode
+	);
 
 	/**
 	 * Use current query options to get listing posts.
@@ -423,13 +426,6 @@ const CuratedListEditorComponent = ( {
 
 					{ showImage && mediaPosition !== 'top' && mediaPosition !== 'behind' && (
 						<Fragment>
-							<PanelRow>
-								<ToggleControl
-									label={ __( 'Stack on mobile', 'newspack-listings' ) }
-									checked={ mobileStack }
-									onChange={ () => setAttributes( { mobileStack: ! mobileStack } ) }
-								/>
-							</PanelRow>
 							<BaseControl
 								label={ __( 'Featured Image Size', 'newspack-listings' ) }
 								id="newspackfeatured-image-size"
