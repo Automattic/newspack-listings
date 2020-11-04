@@ -175,6 +175,18 @@ const CuratedListEditorComponent = ( {
 	}, [ showMap, JSON.stringify( locations ) ]);
 
 	/**
+	 * Guard against accidentally deleting the list container block.
+	 */
+	useEffect( () => {
+		if ( ! queryMode && ! list ) {
+			// Create a new map at the bottom of the list.
+			const newBlock = createBlock( 'newspack-listings/list-container' );
+
+			insertBlocks( [ newBlock ], null, clientId );
+		}
+	}, JSON.stringify( innerBlocks ) );
+
+	/**
 	 * Use current query options to get listing posts.
 	 *
 	 * @param {Object} query Query args.
