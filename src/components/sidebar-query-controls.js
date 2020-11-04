@@ -212,7 +212,7 @@ class QueryControls extends Component {
 				disabled={ disabled }
 				label={ __( 'Max number of items', 'newspack-listings' ) }
 				help={ __(
-					'Maximum number of posts to show at a time. If using the "load more" option, the results will be paginated by this number.',
+					'Maximum number of listings to show at a time. If using the "load more" option, the results will be paginated by this number.',
 					'newspack-listings'
 				) }
 				value={ maxItems }
