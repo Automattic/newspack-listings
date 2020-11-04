@@ -2,14 +2,10 @@
 
 .newspack-listings {
 	&__listing-post {
-		.media-position-left &,
-		.media-position-right & {
-			display: flex;
-		}
-
-		.mobile-stack & {
-			@media only screen and ( max-width: $tablet_width - 1 ) {
-				display: block;
+		@media only screen and ( min-width: $tablet_width ) {
+			.media-position-left &,
+			.media-position-right & {
+				display: flex;
 			}
 		}
 

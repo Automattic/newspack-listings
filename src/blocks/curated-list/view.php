@@ -53,9 +53,6 @@ function render_block( $attributes, $inner_content ) {
 	if ( $attributes['showMap'] ) {
 		$classes[] = 'show-map';
 	}
-	if ( $attributes['mobileStack'] ) {
-		$classes[] = 'mobile-stack';
-	}
 	if ( $attributes['showImage'] ) {
 		$classes[] = 'show-image';
 		$classes[] = 'media-position-' . $attributes['mediaPosition'];

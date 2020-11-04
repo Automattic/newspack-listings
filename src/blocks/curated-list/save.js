@@ -4,22 +4,7 @@
 import { InnerBlocks } from '@wordpress/block-editor';
 
 export const CuratedList = ( { attributes, className } ) => {
-	const {
-		showNumbers,
-		showMap,
-		showSortByDate,
-		// showExcerpt,
-		// showImage,
-		// showCaption,
-		// minHeight,
-		// showCategory,
-		// mediaPosition,
-		// typeScale,
-		// imageScale,
-		// mobileStack,
-		// textColor,
-		// showSubtitle,
-	} = attributes;
+	const { showNumbers, showMap, showSortByDate } = attributes;
 
 	const classes = [ className, 'newspack-listings__curated-list' ];
 	if ( showNumbers ) classes.push( 'show-numbers' );

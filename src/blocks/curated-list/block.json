@@ -69,10 +69,6 @@
       "type": "integer",
       "default": 3
     },
-    "mobileStack": {
-      "type": "boolean",
-      "default": false
-    },
     "textColor": {
       "type": "string",
       "default": ""

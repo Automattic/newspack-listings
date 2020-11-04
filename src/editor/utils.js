@@ -45,7 +45,6 @@ export const getCuratedListClasses = ( className, attributes ) => {
 		mediaPosition,
 		typeScale,
 		imageScale,
-		mobileStack,
 	} = attributes;
 
 	const classes = [ className, 'newspack-listings__curated-list' ];
@@ -53,7 +52,6 @@ export const getCuratedListClasses = ( className, attributes ) => {
 	if ( showNumbers ) classes.push( 'show-numbers' );
 	if ( showMap ) classes.push( 'show-map' );
 	if ( showSortByDate ) classes.push( 'has-sort-by-date-ui' );
-	if ( mobileStack ) classes.push( 'mobile-stack' );
 	if ( showImage ) {
 		classes.push( 'show-image' );
 		classes.push( `media-position-${ mediaPosition }` );
