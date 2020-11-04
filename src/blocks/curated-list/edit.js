@@ -58,7 +58,6 @@ const CuratedListEditorComponent = ( {
 	const {
 		showNumbers,
 		showMap,
-		showSortByDate,
 		showAuthor,
 		showExcerpt,
 		showImage,
@@ -384,14 +383,6 @@ const CuratedListEditorComponent = ( {
 							/>
 						</PanelRow>
 					) }
-
-					<PanelRow>
-						<ToggleControl
-							label={ __( 'Show sort-by-date UI', 'newspack-listings' ) }
-							checked={ showSortByDate }
-							onChange={ () => setAttributes( { showSortByDate: ! showSortByDate } ) }
-						/>
-					</PanelRow>
 				</PanelBody>
 				<PanelBody title={ __( 'Featured Image Settings', 'newspack-listings' ) }>
 					<PanelRow>
