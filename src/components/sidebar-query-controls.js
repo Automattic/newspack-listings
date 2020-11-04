@@ -28,7 +28,7 @@ class QueryControls extends Component {
 
 	fetchAuthorSuggestions = search => {
 		if ( ! search ) {
-			return [];
+			return new Promise( resolve => resolve( [] ) );
 		}
 
 		return apiFetch( {
@@ -61,7 +61,7 @@ class QueryControls extends Component {
 
 	fetchCategorySuggestions = search => {
 		if ( ! search ) {
-			return [];
+			return new Promise( resolve => resolve( [] ) );
 		}
 
 		const { taxonomies } = window.newspack_listings_data;
@@ -102,7 +102,7 @@ class QueryControls extends Component {
 
 	fetchTagSuggestions = search => {
 		if ( ! search ) {
-			return [];
+			return new Promise( resolve => resolve( [] ) );
 		}
 
 		const { taxonomies } = window.newspack_listings_data;
