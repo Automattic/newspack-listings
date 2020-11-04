@@ -1,6 +1,11 @@
 /**
  * External dependencies
  */
+import { debounce } from 'lodash';
+
+/**
+ * WorPress dependencies
+ */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import {
@@ -84,11 +89,7 @@ const CuratedListEditorComponent = ( {
 	/**
 	 * If changing query options, fetch listing posts that match the query.
 	 */
-	useEffect(() => {
-		if ( queryMode ) {
-			fetchPosts( queryOptions );
-		}
-	}, [ JSON.stringify( queryOptions ), queryMode ]);
+	useEffect( () => debouncedFetchPosts(), [ JSON.stringify( queryOptions ), queryMode ] );
 
 	/**
 	 * Update locations in component state. This lets us keep the map block in sync with listing items.
@@ -179,14 +180,18 @@ const CuratedListEditorComponent = ( {
 	 * @param {Object} query Query args.
 	 * @return {void}
 	 */
-	const fetchPosts = async query => {
+	const fetchPosts = async () => {
+		if ( isFetching || ! queryMode ) {
+			return;
+		}
+
 		setIsFetching( true );
 
 		try {
 			setError( null );
 			const posts = await apiFetch( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
-					query,
+					queryOptions,
 					_fields: 'id,title,author,category,excerpt,media,meta,type',
 				} ),
 			} );
@@ -202,6 +207,8 @@ const CuratedListEditorComponent = ( {
 
 		setIsFetching( false );
 	};
+
+	const debouncedFetchPosts = debounce( fetchPosts, 500 );
 
 	/**
 	 * Render the results of the listing query.
