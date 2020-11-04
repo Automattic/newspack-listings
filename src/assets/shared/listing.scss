@@ -2,13 +2,6 @@
 
 .newspack-listings {
 	&__listing-post {
-		@media only screen and ( min-width: $tablet_width ) {
-			.media-position-left &,
-			.media-position-right & {
-				display: flex;
-			}
-		}
-
 		+ .is-link {
 			padding-left: 0;
 			padding-right: 0;
@@ -57,11 +50,26 @@
 		}
 	}
 
-	&__listing-title {
-		margin-top: 0.5em;
+	&__listing-link {
+		display: block;
 
-		.editor-styles-wrapper & {
-			margin-top: 0.5em;
+		@media only screen and ( min-width: $tablet_width ) {
+			.media-position-left &,
+			.media-position-right & {
+				display: flex;
+			}
+		}
+	}
+
+	&__listing-title {
+		margin-top: 0.5rem;
+
+		.media-position-left & {
+			margin-top: 0;
+		}
+
+		.media-position-right & {
+			margin-top: 0;
 		}
 	}
 
@@ -106,10 +114,10 @@
 		display: block;
 		flex-basis: 100%;
 
-		.cat-links a {
+		.cat-links {
 			font-size: 0.75em;
 			font-weight: 700;
-			text-decoration: none;
+			margin: 0 0 0.75rem;
 		}
 	}
 }

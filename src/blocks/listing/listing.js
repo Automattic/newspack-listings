@@ -10,7 +10,7 @@ import { decodeEntities } from '@wordpress/html-entities';
 
 export const Listing = ( { attributes, error, post } ) => {
 	// Parent Curated List block attributes.
-	const { showAuthor, showCategory, showExcerpt, showImage, showCaption } = attributes;
+	const { showAuthor, showCategory, showTags, showExcerpt, showImage, showCaption } = attributes;
 
 	return (
 		<div className="newspack-listings__listing-post entry-wrapper">
@@ -39,7 +39,7 @@ export const Listing = ( { attributes, error, post } ) => {
 						<div className="cat-links">
 							{ post.category.map( ( category, index ) => (
 								<Fragment key="index">
-									<a href="#">{ decodeEntities( category.name ) }</a>
+									{ decodeEntities( category.name ) }
 									{ index + 1 < post.category.length && ', ' }
 								</Fragment>
 							) ) }
@@ -50,6 +50,18 @@ export const Listing = ( { attributes, error, post } ) => {
 						<cite>{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( post.author ) }</cite>
 					) }
 					{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
+
+					{ showTags && post.tags.length && (
+						<p>
+							<strong>{ __( 'Tagged: ', 'newspack-listings' ) }</strong>
+							{ post.tags.map( ( tag, index ) => (
+								<Fragment key="index">
+									{ decodeEntities( tag.name ) }
+									{ index + 1 < post.tags.length && ', ' }
+								</Fragment>
+							) ) }
+						</p>
+					) }
 				</div>
 			) }
 		</div>

@@ -21,46 +21,52 @@ call_user_func(
 		?>
 	<li class="newspack-listings__listing">
 	<article class="newspack-listings__listing-post">
-		<?php if ( $attributes['showImage'] ) : ?>
-			<?php
-			$featured_image = get_the_post_thumbnail( $post->ID, 'large' );
-			if ( ! empty( $featured_image ) ) :
-				?>
-				<figure class="newspack-listings__listing-featured-media">
-					<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
+		<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
+			<?php if ( $attributes['showImage'] ) : ?>
+				<?php
+				$featured_image = get_the_post_thumbnail( $post->ID, 'large' );
+				if ( ! empty( $featured_image ) ) :
+					?>
+					<figure class="newspack-listings__listing-featured-media">
 						<?php echo wp_kses_post( $featured_image ); ?>
 						<?php if ( $attributes['showCaption'] ) : ?>
 						<figcaption class="newspack-listings__listing-caption">
 							<?php echo wp_kses_post( get_the_post_thumbnail_caption( $post->ID ) ); ?>
 						</figcaption>
 						<?php endif; ?>
-					</a>
-				</figure>
-			<?php endif; ?>
-		<?php endif; ?>
-
-		<div class="newspack-listings__listing-meta">
-			<?php if ( $attributes['showCategory'] ) : ?>
-			<div class="cat-links">
-				<?php
-				$categories = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
-				if ( is_array( $categories ) ) :
-					foreach ( $categories as $category ) :
-						$term_url = get_term_link( $category->slug, Core::NEWSPACK_LISTINGS_CAT );
-
-						if ( empty( $term_url ) ) {
-							$term_url = '#';
-						}
-						?>
-						<a href="<?php echo esc_url( $term_url ); ?>">
-							<?php echo wp_kses_post( $category->name ); ?>
-						</a>
-					<?php endforeach; ?>
+					</figure>
 				<?php endif; ?>
-			</div>
 			<?php endif; ?>
 
-			<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
+			<div class="newspack-listings__listing-meta">
+				<?php
+				if ( $attributes['showCategory'] ) :
+					$categories = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
+
+					if ( is_array( $categories ) && 0 < count( $categories ) ) :
+						?>
+						<div class="newspack-listings__category cat-links">
+							<?php
+							$category_index = 0;
+							foreach ( $categories as $category ) {
+								$term_url = get_term_link( $category->slug, Core::NEWSPACK_LISTINGS_CAT );
+
+								if ( empty( $term_url ) ) {
+									$term_url = '#';
+								}
+								echo wp_kses_post( $category->name );
+
+								if ( $category_index + 1 < count( $categories ) ) {
+									echo esc_html( ', ' );
+								}
+
+								$category_index ++;
+							}
+							?>
+						</div>
+					<?php endif; ?>
+				<?php endif; ?>
+
 				<h3 class="newspack-listings__listing-title"><?php echo wp_kses_post( $post->post_title ); ?></h3>
 				<?php if ( $attributes['showAuthor'] ) : ?>
 				<cite>
@@ -73,8 +79,32 @@ call_user_func(
 					echo wp_kses_post( Utils\get_listing_excerpt( $post ) );
 				}
 				?>
-			</a>
-		</div>
+
+				<?php
+				if ( $attributes['showTags'] ) :
+					$tags = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_TAG );
+
+					if ( is_array( $tags ) && 0 < count( $tags ) ) :
+						?>
+						<p class="newspack-listings__tags">
+							<strong><?php echo esc_html( __( 'Tagged: ', 'newspack-listings' ) ); ?></strong>
+							<?php
+							$tag_index = 0;
+							foreach ( $tags as $tag ) {
+								echo wp_kses_post( $tag->name );
+
+								if ( $tag_index + 1 < count( $tags ) ) {
+									echo esc_html( ', ' );
+								}
+
+								$tag_index ++;
+							}
+							?>
+						</p>
+					<?php endif; ?>
+				<?php endif; ?>
+			</div>
+		</a>
 	</article>
 	</li>
 		<?php

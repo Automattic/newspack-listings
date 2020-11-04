@@ -64,6 +64,7 @@ const CuratedListEditorComponent = ( {
 		showCaption,
 		minHeight,
 		showCategory,
+		showTags,
 		mediaPosition,
 		typeScale,
 		imageScale,
@@ -85,9 +86,54 @@ const CuratedListEditorComponent = ( {
 	const initialRender = useDidMount();
 
 	/**
+	 * Use current query options to get listing posts.
+	 *
+	 * @param {Object} query Query args.
+	 * @return {void}
+	 */
+	const fetchPosts = async query => {
+		if ( isFetching || ! queryMode ) {
+			return;
+		}
+
+		setIsFetching( true );
+
+		try {
+			setError( null );
+			const posts = await apiFetch( {
+				path: addQueryArgs( '/newspack-listings/v1/listings', {
+					query,
+					_fields: 'id,title,author,category,tags,excerpt,media,meta,type',
+				} ),
+			} );
+
+			setAttributes( { queriedListings: posts } );
+
+			if ( 0 === posts.length ) {
+				throw 'No posts matching query options. Try selecting different or less specific query options.';
+			}
+		} catch ( e ) {
+			setError( e );
+		}
+
+		setIsFetching( false );
+	};
+
+	/**
+	 * Debounced version of fetchPosts to minimize consecutive executions.
+	 */
+	const debouncedFetchPosts = debounce( fetchPosts, 500 );
+
+	/**
 	 * If changing query options, fetch listing posts that match the query.
 	 */
-	useEffect( () => debouncedFetchPosts(), [ JSON.stringify( queryOptions ), queryMode ] );
+	useEffect(() => {
+		if ( initialRender ) {
+			fetchPosts( queryOptions );
+		} else {
+			debouncedFetchPosts( queryOptions );
+		}
+	}, [ JSON.stringify( queryOptions ), queryMode ]);
 
 	/**
 	 * Update locations in component state. This lets us keep the map block in sync with listing items.
@@ -187,42 +233,6 @@ const CuratedListEditorComponent = ( {
 		JSON.stringify( innerBlocks ),
 		queryMode
 	);
-
-	/**
-	 * Use current query options to get listing posts.
-	 *
-	 * @param {Object} query Query args.
-	 * @return {void}
-	 */
-	const fetchPosts = async () => {
-		if ( isFetching || ! queryMode ) {
-			return;
-		}
-
-		setIsFetching( true );
-
-		try {
-			setError( null );
-			const posts = await apiFetch( {
-				path: addQueryArgs( '/newspack-listings/v1/listings', {
-					queryOptions,
-					_fields: 'id,title,author,category,excerpt,media,meta,type',
-				} ),
-			} );
-
-			setAttributes( { queriedListings: posts } );
-
-			if ( 0 === posts.length ) {
-				throw 'No posts matching query options. Try selecting different or less specific query options.';
-			}
-		} catch ( e ) {
-			setError( e );
-		}
-
-		setIsFetching( false );
-	};
-
-	const debouncedFetchPosts = debounce( fetchPosts, 500 );
 
 	/**
 	 * Render the results of the listing query.
@@ -506,6 +516,13 @@ const CuratedListEditorComponent = ( {
 							label={ __( 'Show Category', 'newspack-listings' ) }
 							checked={ showCategory }
 							onChange={ () => setAttributes( { showCategory: ! showCategory } ) }
+						/>
+					</PanelRow>
+					<PanelRow>
+						<ToggleControl
+							label={ __( 'Show Tags', 'newspack-listings' ) }
+							checked={ showTags }
+							onChange={ () => setAttributes( { showTags: ! showTags } ) }
 						/>
 					</PanelRow>
 				</PanelBody>

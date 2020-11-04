@@ -186,7 +186,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'rewrite' => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
 			],
 			'generic'     => [
 				'labels'  => [
@@ -205,7 +205,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
+				'rewrite' => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
 			],
 			'marketplace' => [
 				'labels'  => [
@@ -224,7 +224,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No Marketplace listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No Marketplace listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
+				'rewrite' => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
 			],
 			'place'       => [
 				'labels'  => [
@@ -243,7 +243,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No places found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No places found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['place'] ],
+				'rewrite' => false, // => phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['place'] ],
 			],
 		];
 
@@ -277,10 +277,7 @@ final class Newspack_Listings_Core {
 		$category_args = [
 			'hierarchical'  => true,
 			'public'        => true,
-			'rewrite'       => [
-				'hierarchical' => true,
-				'slug'         => $prefix . '/category',
-			],
+			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'hierarchical' => true, 'slug' => $prefix . '/category' ]
 			'show_in_menu'  => true,
 			'show_in_rest'  => true,
 			'show_tagcloud' => false,
@@ -289,7 +286,7 @@ final class Newspack_Listings_Core {
 		$tag_args      = [
 			'hierarchical'  => false,
 			'public'        => true,
-			'rewrite'       => [ 'slug' => $prefix . '/tag' ],
+			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/tag' ],
 			'show_in_menu'  => true,
 			'show_in_rest'  => true,
 			'show_tagcloud' => false,
@@ -307,7 +304,15 @@ final class Newspack_Listings_Core {
 			register_taxonomy_for_object_type( self::NEWSPACK_LISTINGS_TAG, $post_type );
 		}
 
-		// Rewrite rules are necessary for the prefixed permalinks to work.
+		// phpcs:ignore Squiz.PHP.CommentedOutCode.Found self::rewrite_taxonomy_urls();
+	}
+
+	/**
+	 * Create rewrite rules for prefixed taxonomy URLs.
+	 */
+	public static function rewrite_taxonomy_urls() {
+		$prefix = Settings::get_settings( 'permalink_prefix' );
+
 		add_rewrite_rule( '^' . $prefix . '/category/([^/]+)/?$', 'index.php?' . self::NEWSPACK_LISTINGS_CAT . '=$matches[1]', 'top' );
 		add_rewrite_rule( '^' . $prefix . '/tag/([^/]+)/?$', 'index.php?' . self::NEWSPACK_LISTINGS_TAG . '=$matches[1]', 'top' );
 	}

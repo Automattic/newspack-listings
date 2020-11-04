@@ -42,6 +42,10 @@
       "type": "boolean",
       "default": false
     },
+    "showTags": {
+      "type": "boolean",
+      "default": false
+    },
     "mediaPosition": {
       "type": "string",
       "default": "top"
