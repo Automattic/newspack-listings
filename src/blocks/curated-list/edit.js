@@ -494,7 +494,7 @@ const CuratedListEditorComponent = ( {
 						},
 					] }
 				/>
-				<PanelBody title={ __( 'Post Meta Settings', 'newspack-listings' ) }>
+				<PanelBody title={ __( 'Meta Settings', 'newspack-listings' ) }>
 					<PanelRow>
 						<ToggleControl
 							label={ __( 'Show Author', 'newspack-listings' ) }
