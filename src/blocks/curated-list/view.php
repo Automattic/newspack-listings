@@ -159,10 +159,10 @@ function render_block( $attributes, $inner_content ) {
 			?>
 			</button>
 			<p class="loading">
-				<?php _e( 'Loading...', 'newspack-listings' ); ?>
+				<?php esc_html_e( 'Loading...', 'newspack-listings' ); ?>
 			</p>
 			<p class="error">
-				<?php _e( 'Something went wrong. Please refresh the page and/or try again.', 'newspack-listings' ); ?>
+				<?php esc_html_e( 'Something went wrong. Please refresh the page and/or try again.', 'newspack-listings' ); ?>
 			</p>
 		<?php endif; ?>
 	</div>
