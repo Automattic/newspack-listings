@@ -162,6 +162,7 @@ final class Newspack_Listings_Core {
 	public static function register_post_types() {
 		$prefix            = Settings::get_settings( 'permalink_prefix' );
 		$default_config    = [
+			'has_archive'  => false,
 			'public'       => true,
 			'show_in_menu' => 'newspack-listings',
 			'show_in_rest' => true,
@@ -186,7 +187,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
 			],
 			'generic'     => [
 				'labels'  => [
@@ -205,7 +206,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
 			],
 			'marketplace' => [
 				'labels'  => [
@@ -224,7 +225,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No Marketplace listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No Marketplace listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
 			],
 			'place'       => [
 				'labels'  => [
@@ -243,7 +244,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No places found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No places found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => false, // => phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['place'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['place'] ],
 			],
 		];
 
