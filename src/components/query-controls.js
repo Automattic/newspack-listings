@@ -132,7 +132,7 @@ class QueryControls extends Component {
 					fetchSavedInfo={ postIDs => this.fetchSavedPosts( postIDs ) }
 					label={ label }
 					help={ __(
-						'Begin typing post title, click autocomplete result to select.',
+						'Begin typing listing title, click autocomplete result to select.',
 						'newspack-listings'
 					) }
 				/>

@@ -21,7 +21,13 @@
 	}
 
 	.components-form-token-field__suggestions-list {
-		margin-left: 0;
-		padding-left: 0;
+		border-top-color: var( --newspack-listings--grey-medium );
+		margin: 0 -4px -4px;
+		max-height: 131px;
+		padding: 4px;
+	}
+
+	.components-form-token-field__suggestion {
+		padding: 10px 12px;
 	}
 }
