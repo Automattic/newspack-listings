@@ -8,6 +8,7 @@ import { registerBlockType } from '@wordpress/blocks';
 /**
  * Internal dependencies
  */
+import './editor.scss';
 import { ListContainerEditor } from './edit';
 import { List } from '../../svg';
 
