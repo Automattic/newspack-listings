@@ -31,7 +31,7 @@
 
 	&__search-suggestions {
 		border-radius: 2px;
-		border: 1px solid var( --newspack-listings--grey-medium );
+		box-shadow: inset 0 0 0 1px var( --newspack-listings--grey-medium );
 		max-height: 204px;
 		padding: 4px;
 		overflow: scroll;
@@ -39,7 +39,7 @@
 		.components-button {
 			color: var( --newspack-listings--grey-dark );
 			display: block;
-			margin: 0;
+			margin: 4px 0 0;
 			padding: 10px 12px;
 			text-decoration: none;
 			width: 100%;
@@ -48,6 +48,10 @@
 			&:hover:not( :disabled ) {
 				background: var( --wp-admin-theme-color );
 				color: white;
+			}
+
+			&:first-of-type {
+				margin-top: 0;
 			}
 		}
 	}
