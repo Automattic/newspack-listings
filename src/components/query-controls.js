@@ -106,7 +106,6 @@ class QueryControls extends Component {
 
 		return (
 			<Fragment>
-				<hr />
 				<span className="newspack-listings__label">
 					{ __( 'Or, select a recent ', 'newspack-listings' ) +
 						listingTypeSlug +
