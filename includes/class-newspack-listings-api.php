@@ -126,6 +126,10 @@ final class Newspack_Listings_Api {
 			$args['orderby'] = $query['sortBy'];
 		}
 
+		if ( ! empty( $query['post__in'] ) ) {
+			$args['post__in'] = $query['post__in'];
+		}
+
 		if (
 			! empty( $query['categories'] ) ||
 			! empty( $query['tags'] ) ||
@@ -311,7 +315,7 @@ final class Newspack_Listings_Api {
 			}
 
 			if ( ! empty( $next_url ) ) {
-				$response->header( 'next-url', esc_url( $next_url ) );
+				$response->header( 'next-url', $next_url );
 			}
 
 			return $response;

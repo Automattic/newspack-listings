@@ -2,6 +2,10 @@
   "name": "newspack-listings/curated-list",
   "category": "newspack",
   "attributes": {
+    "isSelected": {
+      "type": "boolean",
+      "default": false
+    },
     "showNumbers": {
       "type": "boolean",
       "default": true
@@ -10,7 +14,7 @@
       "type": "boolean",
       "default": false
     },
-    "showSortByDate": {
+    "showSortUi": {
       "type": "boolean",
       "default": false
     },
@@ -102,6 +106,10 @@
         "sortBy": "date",
         "order": "DESC"
       }
+    },
+    "listingIds": {
+      "type": "array",
+      "default": []
     },
     "queriedListings": {
       "type": "array",

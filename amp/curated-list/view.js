@@ -3,6 +3,7 @@
 let isFetching = false;
 let isEndOfData = false;
 buildLoadMoreHandler( document.querySelector( '.newspack-listings__curated-list' ) );
+buildSortHandler( document.querySelector( '.newspack-listings__curated-list' ) );
 function buildLoadMoreHandler( blockWrapperEl ) {
 	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
 	if ( ! btnEl ) return;
@@ -42,6 +43,56 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 			btnEl.textContent = btnText;
 		}
 	} );
+}
+function buildSortHandler( blockWrapperEl ) {
+	const sortUi = blockWrapperEl.querySelector( '.newspack-listings__sort-ui' );
+	const sortBy = blockWrapperEl.querySelector( '.newspack-listings__sort-select-control' );
+	const sortOrder = blockWrapperEl.querySelectorAll( 'input' );
+	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
+	if ( ! sortBy || ! sortOrder.length || ! sortUi ) return;
+	const triggers = Array.prototype.concat.call( Array.prototype.slice.call( sortOrder ), [
+		sortBy,
+	] );
+	const postsContainerEl = blockWrapperEl.querySelector( '.newspack-listings__list-container' );
+	console.log( postsContainerEl );
+	const restURL = sortUi.getAttribute( 'data-url' );
+	let isFetching = false;
+	let _sortBy = sortUi.querySelector( '[selected]' ).value;
+	let _order = sortUi.querySelector( '[checked]' ).value;
+	const sortHandler = e => {
+		if ( isFetching ) return false;
+		isFetching = true;
+		blockWrapperEl.classList.remove( 'is-error' );
+		blockWrapperEl.classList.add( 'is-loading' );
+		if ( e.target.tagName.toLowerCase() === 'select' ) {
+			_sortBy = e.target.value;
+		} else {
+			_order = e.target.value;
+		}
+		Array.prototype.forEach.call( sortOrder, button => button.removeAttribute( 'disabled' ) );
+		const requestURL = `${ restURL }&${ encodeURIComponent(
+			'query[sortBy]'
+		) }=${ _sortBy }&${ encodeURIComponent( 'query[order]' ) }=${ _order }`;
+		apiFetchWithRetry( { url: requestURL, onSuccess, onError }, 3 );
+		function onSuccess( data, next ) {
+			if ( ! isPostsDataValid( data ) ) return onError();
+			postsContainerEl.textContent = '';
+			data.forEach( item => {
+				const tempDIV = document.createElement( 'div' );
+				tempDIV.innerHTML = item.html.trim();
+				postsContainerEl.appendChild( tempDIV.childNodes[ 0 ] );
+			} );
+			if ( next && btnEl ) btnEl.setAttribute( 'data-next', next );
+			isFetching = false;
+			blockWrapperEl.classList.remove( 'is-loading' );
+		}
+		function onError() {
+			isFetching = false;
+			blockWrapperEl.classList.remove( 'is-loading' );
+			blockWrapperEl.classList.add( 'is-error' );
+		}
+	};
+	triggers.forEach( trigger => trigger.addEventListener( 'change', sortHandler ) );
 }
 function apiFetchWithRetry( options, n ) {
 	const xhr = new XMLHttpRequest();

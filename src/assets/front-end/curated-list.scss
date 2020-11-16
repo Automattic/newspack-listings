@@ -3,6 +3,7 @@
 .newspack-listings {
 	&__curated-list {
 		position: relative;
+		transition: opacity 0.25s ease-in-out;
 
 		.error,
 		.loading {
@@ -11,6 +12,12 @@
 
 		&.is-error .error {
 			display: block;
+		}
+
+		&.is-loading {
+			cursor: not-allowed;
+			opacity: 0.5;
+			pointer-events: none;
 		}
 	}
 

@@ -11,6 +11,9 @@ import { registerBlockType } from '@wordpress/blocks';
 import './editor.scss';
 import { ListContainerEditor } from './edit';
 import { List } from '../../svg';
+import parentData from '../curated-list/block.json';
+
+const parentAttributes = parentData.attributes;
 
 export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
@@ -26,7 +29,7 @@ export const registerListContainerBlock = () => {
 			__( 'latest', 'newspack-listings' ),
 		],
 
-		attributes: {},
+		attributes: parentAttributes,
 
 		// Hide from block inserter menus.
 		supports: {

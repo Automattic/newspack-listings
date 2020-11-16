@@ -44,6 +44,12 @@ function render_block( $attributes, $inner_content ) {
 		return;
 	}
 
+	// REST API URL for Listings.
+	$rest_url = rest_url( '/newspack-listings/v1/listings' );
+
+	// Is current page an AMP page?
+	$is_amp = Utils\is_amp();
+
 	// Conditional class names based on attributes.
 	$classes = [ 'newspack-listings__curated-list' ];
 
@@ -53,11 +59,15 @@ function render_block( $attributes, $inner_content ) {
 	if ( $attributes['showMap'] ) {
 		$classes[] = 'show-map';
 	}
+	if ( $attributes['showSortUi'] ) {
+		$classes[] = 'show-sort-ui';
+	}
 	if ( $attributes['showImage'] ) {
 		$classes[] = 'show-image';
 		$classes[] = 'media-position-' . $attributes['mediaPosition'];
 		$classes[] = 'media-size-' . $attributes['imageScale'];
 	}
+
 	$classes[] = 'type-scale-' . $attributes['typeScale'];
 
 	// Text color for listings.
@@ -84,6 +94,40 @@ function render_block( $attributes, $inner_content ) {
 		$allowed_elements['div']['placeholder'] = true;
 	}
 
+	// Allow form, select and option elements.
+	if ( empty( $allowed_elements['form'] ) ) {
+		$allowed_elements['form'] = [
+			'class'    => true,
+			'data-url' => true,
+		];
+	}
+	if ( empty( $allowed_elements['select'] ) ) {
+		$allowed_elements['select'] = [
+			'class' => true,
+			'id'    => true,
+		];
+	}
+	if ( empty( $allowed_elements['option'] ) ) {
+		$allowed_elements['option'] = [
+			'disabled' => true,
+			'selected' => true,
+			'value'    => true,
+		];
+	}
+
+	// Allow radio input elements.
+	if ( empty( $allowed_elements['input'] ) ) {
+		$allowed_elements['input'] = [
+			'class'    => true,
+			'checked'  => true,
+			'disabled' => true,
+			'id'       => true,
+			'name'     => true,
+			'type'     => true,
+			'value'    => true,
+		];
+	}
+
 	// Default: we can't have more pages unless a.) the block is in query mode, and b.) the number of queried posts exceeds max_num_pages.
 	$has_more_pages = false;
 
@@ -95,24 +139,18 @@ function render_block( $attributes, $inner_content ) {
 		$has_more_pages = $attributes['showLoadMore'] && ( ++$page ) <= $listings->max_num_pages;
 
 		// Only include the attributes we care about for individual listings.
-		$listing_attributes = [ 'textColor', 'showImage', 'showCaption', 'showCategory', 'showAuthor', 'showExcerpt' ];
-		$request_attributes = array_map(
-			function( $attribute ) {
-				return false === $attribute ? '0' : str_replace( '#', '%23', $attribute );
-			},
-			array_intersect_key( $attributes, array_flip( $listing_attributes ) )
-		);
+		$request_attributes = Utils\get_request_attributes( $attributes );
 
 		// REST API URL to fetch more listings.
-		$listings_rest_url = add_query_arg(
+		$next_url = add_query_arg(
 			[
 				'attributes' => $request_attributes,
 				'query'      => $attributes['queryOptions'],
 				'page'       => 2,
-				'amp'        => Utils\is_amp(),
+				'amp'        => $is_amp,
 				'_fields'    => 'html',
 			],
-			rest_url( '/newspack-listings/v1/listings' )
+			$rest_url
 		);
 
 		if ( $has_more_pages ) {
@@ -139,6 +177,9 @@ function render_block( $attributes, $inner_content ) {
 		}
 	}
 
+	// Load AMP script if a.) we're in an AMP page, and b.) we have either more pages or a sort UI.
+	$amp_script = Utils\is_amp() && ( $attributes['showSortUi'] || $has_more_pages );
+
 	// Begin front-end output.
 	ob_start();
 
@@ -148,10 +189,11 @@ function render_block( $attributes, $inner_content ) {
 	<?php endif; ?>
 	<div
 		class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
-		style="<?php echo esc_attr( $text_color ); ?>">
+		style="<?php echo esc_attr( $text_color ); ?>"
+	>
 		<?php echo wp_kses( $inner_content, $allowed_elements ); ?>
 		<?php if ( $attributes['queryMode'] && $has_more_pages ) : ?>
-			<button type="button" data-next="<?php echo esc_url( $listings_rest_url ); ?>">
+			<button type="button" data-next="<?php echo esc_url( $next_url ); ?>">
 			<?php
 			if ( ! empty( $attributes['loadMoreText'] ) ) {
 				echo esc_html( $attributes['loadMoreText'] );
@@ -168,7 +210,7 @@ function render_block( $attributes, $inner_content ) {
 			</p>
 		<?php endif; ?>
 	</div>
-	<?php if ( $has_more_pages && Utils\is_amp() ) : ?>
+	<?php if ( $amp_script ) : ?>
 		</amp-script>
 	<?php endif; ?>
 	<?php

@@ -40,7 +40,7 @@ export const getCuratedListClasses = ( className, attributes ) => {
 	const {
 		showNumbers,
 		showMap,
-		showSortByDate,
+		showSortUi,
 		showImage,
 		mediaPosition,
 		typeScale,
@@ -51,7 +51,7 @@ export const getCuratedListClasses = ( className, attributes ) => {
 
 	if ( showNumbers ) classes.push( 'show-numbers' );
 	if ( showMap ) classes.push( 'show-map' );
-	if ( showSortByDate ) classes.push( 'has-sort-by-date-ui' );
+	if ( showSortUi ) classes.push( 'has-sort-ui' );
 	if ( showImage ) {
 		classes.push( 'show-image' );
 		classes.push( `media-position-${ mediaPosition }` );

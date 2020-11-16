@@ -182,6 +182,23 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 }
 
 /**
+ * Get attributes formatted for REST API requests.
+ *
+ * @param array $attributes Array of block attributes.
+ * @return array Formatted array of the attributes we care about.
+ */
+function get_request_attributes( $attributes ) {
+	$listing_attributes = [ 'textColor', 'showImage', 'showCaption', 'showCategory', 'showTags', 'showAuthor', 'showExcerpt' ];
+
+	return array_map(
+		function( $attribute ) {
+			return false === $attribute ? '0' : str_replace( '#', '%23', $attribute );
+		},
+		array_intersect_key( $attributes, array_flip( $listing_attributes ) )
+	);
+}
+
+/**
  * Checks whether the current view is served in AMP context.
  *
  * @return bool True if AMP, false otherwise.
