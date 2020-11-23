@@ -155,7 +155,11 @@ function buildSortHandler( blockWrapperEl ) {
 		}
 
 		// Enable disabled sort order radio buttons.
-		Array.prototype.forEach.call( sortOrder, button => button.removeAttribute( 'disabled' ) );
+		if ( 'post__in' === e.target.value ) {
+			Array.prototype.forEach.call( sortOrder, button => button.setAttribute( 'disabled' ) );
+		} else {
+			Array.prototype.forEach.call( sortOrder, button => button.removeAttribute( 'disabled' ) );
+		}
 
 		const requestURL = `${ restURL }&${ encodeURIComponent(
 			'query[sortBy]'

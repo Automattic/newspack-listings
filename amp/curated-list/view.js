@@ -54,7 +54,6 @@ function buildSortHandler( blockWrapperEl ) {
 		sortBy,
 	] );
 	const postsContainerEl = blockWrapperEl.querySelector( '.newspack-listings__list-container' );
-	console.log( postsContainerEl );
 	const restURL = sortUi.getAttribute( 'data-url' );
 	let isFetching = false;
 	let _sortBy = sortUi.querySelector( '[selected]' ).value;
@@ -69,7 +68,11 @@ function buildSortHandler( blockWrapperEl ) {
 		} else {
 			_order = e.target.value;
 		}
-		Array.prototype.forEach.call( sortOrder, button => button.removeAttribute( 'disabled' ) );
+		if ( 'post__in' === e.target.value ) {
+			Array.prototype.forEach.call( sortOrder, button => button.setAttribute( 'disabled' ) );
+		} else {
+			Array.prototype.forEach.call( sortOrder, button => button.removeAttribute( 'disabled' ) );
+		}
 		const requestURL = `${ restURL }&${ encodeURIComponent(
 			'query[sortBy]'
 		) }=${ _sortBy }&${ encodeURIComponent( 'query[order]' ) }=${ _order }`;

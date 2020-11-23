@@ -96,12 +96,11 @@ function render_block( $attributes, $inner_content ) {
 					class="newspack-listings__sort-select-control"
 					id="<?php echo esc_attr( 'newspack-listings__sort-by__' . $block_id ); ?>"
 				>
-					<option
-						value="" disabled
-						<?php if ( ! $attributes['queryMode'] ) : ?>
-							selected
-						<?php endif; ?>
-					><?php echo esc_html( __( 'Sort By', 'newspack-listings' ) ); ?></option>
+					<?php if ( ! $attributes['queryMode'] ) : ?>
+						<option value="post__in" selected>
+							<?php echo esc_html( __( 'Default', 'newspack-listings' ) ); ?>
+						</option>
+					<?php endif; ?>
 					<option
 						value="date"
 						<?php if ( $attributes['queryMode'] && 'date' === $attributes['queryOptions']['sortBy'] ) : ?>
@@ -113,19 +112,28 @@ function render_block( $attributes, $inner_content ) {
 						<?php if ( $attributes['queryMode'] && 'title' === $attributes['queryOptions']['sortBy'] ) : ?>
 							selected
 						<?php endif; ?>
-					><?php echo esc_html( __( 'Title', 'newspack-listings' ) ); ?></option>
+					>
+						<?php echo esc_html( __( 'Title', 'newspack-listings' ) ); ?>
+					</option>
 					<option
 						value="type"
 						<?php if ( $attributes['queryMode'] && 'type' === $attributes['queryOptions']['sortBy'] ) : ?>
 							selected
 						<?php endif; ?>
-					><?php echo esc_html( __( 'Listing Type', 'newspack-listings' ) ); ?></option>
-					<option
-						value="rand"
-						<?php if ( $attributes['queryMode'] && 'rand' === $attributes['queryOptions']['sortBy'] ) : ?>
-							selected
-						<?php endif; ?>
-					><?php echo esc_html( __( 'Random', 'newspack-listings' ) ); ?></option>
+					>
+						<?php echo esc_html( __( 'Listing Type', 'newspack-listings' ) ); ?>
+					</option>
+
+					<?php if ( $attributes['showAuthor'] ) : ?>
+						<option
+							value="author"
+							<?php if ( $attributes['queryMode'] && 'author' === $attributes['queryOptions']['sortBy'] ) : ?>
+								selected
+							<?php endif; ?>
+						>
+							<?php echo esc_html( __( 'Author', 'newspack-listings' ) ); ?>
+						</option>
+					<?php endif; ?>
 				</select>
 			</section>
 
