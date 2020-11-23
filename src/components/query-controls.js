@@ -106,11 +106,11 @@ class QueryControls extends Component {
 
 		return (
 			<Fragment>
-				<span className="newspack-listings__label">
+				<p className="newspack-listings__label">
 					{ __( 'Or, select a recent ', 'newspack-listings' ) +
 						listingTypeSlug +
 						__( ' listing:', 'newspack-listings' ) }
-				</span>
+				</p>
 				<div className="newspack-listings__search-suggestions">
 					{ suggestions.map( this.renderSuggestion.bind( this ) ) }
 				</div>

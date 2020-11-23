@@ -8,6 +8,11 @@
 import { useEffect, useRef } from '@wordpress/element';
 
 /**
+ * Internal dependencies
+ */
+import { Event, Generic, Marketplace, Place } from '../svg';
+
+/**
  * Check if the current post in the editor is a listing CPT.
  *
  * @return {boolean} Whether or not the current post is a listing CPT.
@@ -78,4 +83,32 @@ export const useDidMount = () => {
 	}, []);
 
 	return didMount.current;
+};
+
+/**
+ * Generic utility to capitalize a given string.
+ *
+ * @param {string} str String to capitalize.
+ * @return {string} Same string, with first letter capitalized.
+ */
+export const capitalize = str => str[ 0 ].toUpperCase() + str.slice( 1 );
+
+/**
+ * Map listing type icons to listing type slugs.
+ *
+ * @param {string} listingTypeSlug Slug of the listing type to get an icon for.
+ *               One of: event, generic, marketplace, place
+ * @return {function} SVG component for the matching icon.
+ */
+export const getIcon = listingTypeSlug => {
+	switch ( listingTypeSlug ) {
+		case 'event':
+			return Event;
+		case 'marketplace':
+			return Marketplace;
+		case 'place':
+			return Place;
+		default:
+			return Generic;
+	}
 };

@@ -60,8 +60,8 @@ function render_block( $attributes ) {
 	// Get the listing post by post ID.
 	$post = get_post( intval( $attributes['listing'] ) );
 
-	// Bail if there's no post with the saved ID.
-	if ( empty( $post ) ) {
+	// Bail if there's no published post with the saved ID.
+	if ( empty( $post ) || 'publish' !== $post->post_status ) {
 		return;
 	}
 
