@@ -87,7 +87,6 @@ final class Newspack_Listings_Blocks {
 				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
 				'post_types'      => $post_types,
-				'meta_fields'     => Core::get_meta_fields( $post_type ),
 				'taxonomies'      => [
 					'category' => Core::NEWSPACK_LISTINGS_CAT,
 					'tag'      => Core::NEWSPACK_LISTINGS_TAG,

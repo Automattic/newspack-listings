@@ -2,54 +2,22 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { TextControl, ToggleControl } from '@wordpress/components';
+import { PanelRow, ToggleControl } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
-import { PluginDocumentSettingPanel } from '@wordpress/edit-post'; /**
+import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 
 /**
-* Internal dependencies
-*/
+ * Internal dependencies
+ */
 import { isListing } from '../utils';
 
 const SidebarComponent = ( { meta, updateMetaValue } ) => {
-	const { meta_fields, post_type_label, post_types } = window.newspack_listings_data;
+	const { post_type_label, post_types } = window.newspack_listings_data;
 
 	if ( ! post_types || ! isListing() ) {
 		return null;
 	}
-
-	// Render a meta field with the right component.
-	const renderMetaField = ( fieldName, i ) => {
-		const field = meta_fields[ fieldName ];
-
-		if ( 'toggle' === field.type ) {
-			return (
-				<ToggleControl
-					key={ i }
-					className={ `newspack-listings__${ field.type }-control` }
-					label={ field.settings.label }
-					help={ field.settings.description }
-					checked={ meta[ fieldName ] }
-					onChange={ value => updateMetaValue( fieldName, value ) }
-				/>
-			);
-		} else if ( 'input' === field.type ) {
-			return (
-				<TextControl
-					key={ i }
-					className={ `newspack-listings__${ field.type }-control` }
-					label={ field.settings.label }
-					help={ field.settings.description }
-					type="text"
-					value={ meta[ fieldName ] }
-					onChange={ value => updateMetaValue( fieldName, value ) }
-				/>
-			);
-		}
-
-		return null;
-	};
 
 	return (
 		<PluginDocumentSettingPanel
@@ -57,7 +25,14 @@ const SidebarComponent = ( { meta, updateMetaValue } ) => {
 			name="newspack-listings"
 			title={ post_type_label + ' ' + __( 'Settings', 'newspack-listings' ) }
 		>
-			{ Object.keys( meta_fields ).map( renderMetaField ) }
+			<PanelRow>
+				<ToggleControl
+					className={ 'newspack-listings__hide-author-control' }
+					label={ __( 'Hide listing author', 'newspack-listings' ) }
+					checked={ meta.newspack_listings_hide_author }
+					onChange={ value => updateMetaValue( 'newspack_listings_hide_author', value ) }
+				/>
+			</PanelRow>
 		</PluginDocumentSettingPanel>
 	);
 };

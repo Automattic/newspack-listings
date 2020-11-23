@@ -97,7 +97,7 @@ function get_data_from_blocks( $blocks, $source ) {
 
 			if ( is_array( $block_data ) ) {
 				$data = array_merge( $data, $block_data );
-			} else {
+			} elseif ( ! empty( $block_data ) ) {
 				$data[] = $block_data;
 			}
 		}
