@@ -261,8 +261,8 @@ final class Newspack_Listings_Api {
 							$item['tags'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_TAG );
 						}
 
-						// If $fields includes author, get the post author.
-						if ( in_array( 'author', $fields ) ) {
+						// If $fields includes author and the post isn't set to hide author, get the post author.
+						if ( in_array( 'author', $fields ) && empty( get_post_meta( $post->ID, 'newspack_listings_hide_author', true ) ) ) {
 							$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
 						}
 
