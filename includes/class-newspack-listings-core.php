@@ -332,7 +332,7 @@ final class Newspack_Listings_Core {
 		}
 
 		$all_meta_fields = [
-			'newspack_listings_contact_email'    => [
+			'newspack_listings_contact_email'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -364,7 +364,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_phone'    => [
+			'newspack_listings_contact_phone'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -396,7 +396,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_address'  => [
+			'newspack_listings_contact_address' => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -445,7 +445,7 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_business_hours'   => [
+			'newspack_listings_business_hours'  => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
@@ -492,7 +492,7 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_locations'        => [
+			'newspack_listings_locations'       => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -549,7 +549,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_event_dates'      => [
+			'newspack_listings_event_dates'     => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 				],
@@ -591,79 +591,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_event_start_date' => [
-				'post_types' => [
-					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
-				],
-				'label'      => __( 'Event start date', 'newspack-listings' ),
-				'settings'   => [
-					'object_subtype'    => $post_type,
-					'default'           => '',
-					'description'       => __( 'Start date for this event.', 'newspack-listings' ),
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'single'            => true,
-					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				],
-			],
-			'newspack_listings_event_start_time' => [
-				'post_types' => [
-					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
-				],
-				'label'      => __( 'Show start time', 'newspack-listings' ),
-				'settings'   => [
-					'object_subtype'    => $post_type,
-					'default'           => false,
-					'description'       => __( 'Show a start time for this event.', 'newspack-listings' ),
-					'type'              => 'boolean',
-					'sanitize_callback' => 'rest_sanitize_boolean',
-					'single'            => true,
-					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				],
-			],
-			'newspack_listings_event_end_date'   => [
-				'post_types' => [
-					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
-				],
-				'label'      => __( 'Event end time', 'newspack-listings' ),
-				'settings'   => [
-					'object_subtype'    => $post_type,
-					'default'           => '',
-					'description'       => __( 'Optional end time for this event.', 'newspack-listings' ),
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'single'            => true,
-					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				],
-			],
-			'newspack_listings_event_end_time'   => [
-				'post_types' => [
-					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
-				],
-				'label'      => __( 'Show end time', 'newspack-listings' ),
-				'settings'   => [
-					'object_subtype'    => $post_type,
-					'default'           => false,
-					'description'       => __( 'Show an end time for this event.', 'newspack-listings' ),
-					'type'              => 'boolean',
-					'sanitize_callback' => 'rest_sanitize_boolean',
-					'single'            => true,
-					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				],
-			],
-			'newspack_listings_hide_author'      => [
+			'newspack_listings_hide_author'     => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
