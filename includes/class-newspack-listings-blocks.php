@@ -94,6 +94,8 @@ final class Newspack_Listings_Blocks {
 
 				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
 				'no_listings'     => 0 === $total_count,
+				'date_format'     => get_option( 'date_format' ),
+				'time_format'     => get_option( 'time_format' ),
 			]
 		);
 
