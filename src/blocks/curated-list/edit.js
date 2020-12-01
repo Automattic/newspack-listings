@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { debounce } from 'lodash';
-
-/**
  * WorPress dependencies
  */
 import { __ } from '@wordpress/i18n';
@@ -40,6 +35,11 @@ import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
 import { List, Query, Specific } from '../../svg';
 import { getCuratedListClasses, useDidMount } from '../../editor/utils';
+
+/**
+ * Debounced fetchPosts function outside of component scope.
+ */
+let debouncedFetchPosts;
 
 const CuratedListEditorComponent = ( {
 	attributes,
@@ -120,18 +120,17 @@ const CuratedListEditorComponent = ( {
 	};
 
 	/**
-	 * Debounced version of fetchPosts to minimize consecutive executions.
-	 */
-	const debouncedFetchPosts = debounce( fetchPosts, 500 );
-
-	/**
 	 * If changing query options, fetch listing posts that match the query.
 	 */
 	useEffect(() => {
 		if ( initialRender ) {
 			fetchPosts( queryOptions );
 		} else {
-			debouncedFetchPosts( queryOptions );
+			// Debounced version of fetchPosts to minimize consecutive executions.
+			clearTimeout( debouncedFetchPosts );
+			debouncedFetchPosts = setTimeout( () => {
+				fetchPosts( queryOptions );
+			}, 500 );
 		}
 	}, [ JSON.stringify( queryOptions ), queryMode ]);
 
