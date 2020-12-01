@@ -227,7 +227,7 @@ const CuratedListEditorComponent = ( {
 
 			insertBlocks( [ newBlock ], null, clientId );
 		}
-	}, [ JSON.stringify( innerBlocks ), queryMode ]);
+	}, [ list ]);
 
 	/**
 	 * Render the results of the listing query.
