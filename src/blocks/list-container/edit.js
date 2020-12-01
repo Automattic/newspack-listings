@@ -17,7 +17,7 @@ const ListContainerEditorComponent = ( {
 } ) => {
 	const parentAttributes = parent.attributes || {};
 	const { queryMode, queryOptions, isSelected: parentIsSelected, showSortUi } = parentAttributes;
-	const { sortBy, order } = queryOptions;
+	const { order } = queryOptions;
 
 	// Sync parent attributes to list container attributes, so that we can use parent attributes in the PHP render callback.
 	useEffect(() => {
@@ -27,15 +27,6 @@ const ListContainerEditorComponent = ( {
 	if ( queryMode && ! showSortUi ) {
 		return null;
 	}
-
-	// Available sort options. "Default" is only available for lists in specific listing mode.
-	const sortOptions = [
-		{ value: '', label: __( 'Sort by', 'newspack-listings' ) },
-		{ value: 'date', label: __( 'Publish Date', 'newspack-listings' ) },
-		{ value: 'title', label: __( 'Title', 'newspack-listings' ) },
-		{ value: 'type', label: __( 'Listing Type', 'newspack-listings' ) },
-		{ value: 'author', label: __( 'Author', 'newspack-listings' ) },
-	];
 
 	return (
 		<div className="newspack-listings__list-container">
@@ -54,19 +45,13 @@ const ListContainerEditorComponent = ( {
 							{ __( 'Sort by:', 'newspack-listings' ) }
 						</label>
 						<select
-							disabled
+							disabled // Just a dummy component for demo display.
 							className="newspack-listings__sort-select-control"
 							id={ `newspack-listings__sort-by-${ clientId }` }
 						>
-							{ sortOptions.map( ( option, index ) => (
-								<option
-									key={ index }
-									value={ option.value }
-									selected={ queryMode && sortBy === option.value }
-								>
-									{ option.label }
-								</option>
-							) ) }
+							<option value="" selected>
+								{ __( 'Sort by', 'newspack-listings' ) }
+							</option>
 						</select>
 					</section>
 

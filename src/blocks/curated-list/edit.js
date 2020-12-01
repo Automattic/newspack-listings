@@ -398,6 +398,7 @@ const CuratedListEditorComponent = ( {
 							disabled={ isFetching }
 							setAttributes={ setAttributes }
 							queryOptions={ queryOptions }
+							showAuthor={ showAuthor }
 							showLoadMore={ showLoadMore }
 							loadMoreText={ loadMoreText }
 						/>

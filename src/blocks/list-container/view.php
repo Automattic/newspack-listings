@@ -115,14 +115,17 @@ function render_block( $attributes, $inner_content ) {
 					>
 						<?php echo esc_html( __( 'Title', 'newspack-listings' ) ); ?>
 					</option>
-					<option
-						value="type"
-						<?php if ( $attributes['queryMode'] && 'type' === $attributes['queryOptions']['sortBy'] ) : ?>
-							selected
-						<?php endif; ?>
-					>
-						<?php echo esc_html( __( 'Listing Type', 'newspack-listings' ) ); ?>
-					</option>
+
+					<?php if ( ! $attributes['queryMode'] || 'any' === $attributes['queryOptions']['type'] ) : ?>
+						<option
+							value="type"
+							<?php if ( $attributes['queryMode'] && 'type' === $attributes['queryOptions']['sortBy'] ) : ?>
+								selected
+							<?php endif; ?>
+						>
+							<?php echo esc_html( __( 'Listing Type', 'newspack-listings' ) ); ?>
+						</option>
+					<?php endif; ?>
 
 					<?php if ( $attributes['showAuthor'] ) : ?>
 						<option

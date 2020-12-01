@@ -123,7 +123,12 @@ final class Newspack_Listings_Api {
 			$args['order'] = $query['order'];
 		}
 		if ( ! empty( $query['sortBy'] ) ) {
-			$args['orderby'] = $query['sortBy'];
+			if ( 'start_date' === $query['sortBy'] ) {
+				$args['orderby']  = 'meta_value_datetime';
+				$args['meta_key'] = 'newspack_listings_event_dates';
+			} else {
+				$args['orderby'] = $query['sortBy'];
+			}
 		}
 
 		if ( ! empty( $query['post__in'] ) ) {
