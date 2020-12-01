@@ -2,21 +2,22 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
-import { CuratedList } from './save';
 import { CuratedListEditor } from './edit';
+import { List } from '../../svg';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
 export const registerCuratedListBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Curated List', 'newspack-listing' ),
-		icon: 'list-view',
+		icon: <List />,
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),
@@ -29,6 +30,6 @@ export const registerCuratedListBlock = () => {
 		attributes,
 
 		edit: CuratedListEditor,
-		save: CuratedList,
+		save: () => <InnerBlocks.Content />, // also uses view.php
 	} );
 };

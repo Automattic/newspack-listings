@@ -2,19 +2,22 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { registerBlockType } from '@wordpress/blocks';
 import { InnerBlocks } from '@wordpress/block-editor';
+import { registerBlockType } from '@wordpress/blocks';
 
 /**
  * Internal dependencies
  */
+import './editor.scss';
 import { ListContainerEditor } from './edit';
+import { List } from '../../svg';
 
 export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
 		title: __( 'Curated List Container', 'newspack-listing' ),
-		icon: 'list-view',
+		icon: <List />,
 		category: 'newspack',
+		parent: [ 'newspack-listings/curated-list' ],
 		keywords: [
 			__( 'curated', 'newspack-listings' ),
 			__( 'list', 'newspack-listings' ),

@@ -1,12 +1,6 @@
 .autocomplete-tokenfield {
 	position: relative;
 
-	.components-spinner {
-		position: absolute;
-		right: 1rem;
-		top: 1rem;
-	}
-
 	/* Workaround for hard-coded help text in FormTokenField. */
 	.components-form-token-field {
 		> .components-form-token-field__help {
@@ -20,13 +14,20 @@
 	}
 
 	.autocomplete-tokenfield__help {
-		font-size: 1rem;
+		font-size: 13px;
 		font-style: italic;
-		margin-top: 0;
+		line-height: 1.5;
+		margin: -8px 0 8px;
 	}
 
 	.components-form-token-field__suggestions-list {
-		margin-left: 0;
-		padding-left: 0;
+		border-top-color: var( --newspack-listings--grey-medium );
+		margin: 0 -4px -4px;
+		max-height: 131px;
+		padding: 4px;
+	}
+
+	.components-form-token-field__suggestion {
+		padding: 10px 12px;
 	}
 }

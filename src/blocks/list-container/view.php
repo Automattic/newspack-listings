@@ -42,8 +42,6 @@ function render_block( $attributes, $inner_content ) {
 	}
 
 	// Begin front-end output.
-	// TODO: Templatize this output; integrate more variations based on attributes.
-
 	ob_start();
 
 	?>

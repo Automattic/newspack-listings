@@ -110,3 +110,106 @@ function get_data_from_blocks( $blocks, $source ) {
 
 	return $data;
 }
+
+/**
+ * Modified excerpt generator that allows some HTML.
+ * Will use the excerpt if it exists, otherwise will generate from post content.
+ *
+ * @param array    $post Post object to create excerpt from.
+ * @param int|null $excerpt_length (Optional) Max length of excerpt to generate.
+ *
+ * @return string|boolean Post excerpt or generated excerpt, or false if $post is invalid.
+ */
+function get_listing_excerpt( $post, $excerpt_length = null ) {
+	// Bail if we don't have a valid post object.
+	if ( empty( $post ) || empty( $post->post_content ) ) {
+		return false;
+	}
+
+	// If we have a manually entered excerpt, use that.
+	if ( ! empty( $post->post_excerpt ) ) {
+		return wpautop( $post->post_excerpt );
+	}
+
+	// Recreate logic from wp_trim_excerpt (https://developer.wordpress.org/reference/functions/wp_trim_excerpt/).
+	$excerpt = $post->post_content;
+	$excerpt = strip_shortcodes( $excerpt );
+	$excerpt = excerpt_remove_blocks( $excerpt );
+	$excerpt = wpautop( $excerpt );
+	$excerpt = str_replace( ']]>', ']]&gt;', $excerpt );
+
+	// Strip HTML tags except for the explicitly allowed tags.
+	$allowed_tags = '<em>,<i>,<strong>,<b>,<u>,<ul>,<ol>,<li>,<h1>,<h2>,<h3>,<h4>,<h5>,<h6>,<p>,<img>';
+	$excerpt      = strip_tags( $excerpt, $allowed_tags ); // phpcs:ignore WordPressVIPMinimum.Functions.StripTags.StripTagsTwoParameters
+
+	// Get excerpt length. If not provided a valid length, use the default excerpt length.
+	if ( empty( $excerpt_length ) || ! is_int( $excerpt_length ) ) {
+		$excerpt_length = 55;
+	}
+
+	// Set excerpt length.
+	$excerpt_length = (int) apply_filters( 'excerpt_length', $excerpt_length );
+
+	// Divide string into tokens (HTML vs. words) (https://wordpress.stackexchange.com/questions/141125/allow-html-in-excerpt).
+	$tokens = [];
+	$output = '';
+	$index  = 0;
+
+	preg_match_all( '/(<[^>]+>|[^<>\s]+)\s*/u', $excerpt, $tokens );
+
+	// Add ellipses.
+	$excerpt_more = apply_filters( 'excerpt_more', ' [&hellip;]' );
+
+	foreach ( $tokens[0] as $token ) {
+		if ( $index >= $excerpt_length && preg_match( '/[\,\;\?\.\!]\s*$/uS', $token ) ) {
+			// Limit reached, continue until , ; ? . or ! occur at the end.
+			$output .= trim( $token );
+			$output .= $excerpt_more; // Add ellipses inside the last HTML tag.
+			break;
+		}
+
+		// Add words to complete sentence.
+		$index++;
+
+		// Append what's left of the token.
+		$output .= $token;
+	}
+
+	// Balance unclosed HTML tags and trim whitespace.
+	$output = trim( force_balance_tags( $output ) );
+
+	return $output;
+}
+
+/**
+ * Checks whether the current view is served in AMP context.
+ *
+ * @return bool True if AMP, false otherwise.
+ */
+function is_amp() {
+	return ! is_admin() && function_exists( 'is_amp_endpoint' ) && is_amp_endpoint();
+}
+
+
+/**
+ * Use AMP Plugin functions to render markup as valid AMP.
+ *
+ * @param string $html Markup to convert to AMP.
+ * @return string
+ */
+function generate_amp_partial( $html ) {
+	$dom = \AMP_DOM_Utils::get_dom_from_content( $html );
+
+	\AMP_Content_Sanitizer::sanitize_document(
+		$dom,
+		amp_get_content_sanitizers(),
+		[
+			'use_document_element' => false,
+		]
+	);
+	$xpath = new \DOMXPath( $dom );
+	foreach ( iterator_to_array( $xpath->query( '//noscript | //comment()' ) ) as $node ) {
+		$node->parentNode->removeChild( $node ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+	}
+	return \AMP_DOM_Utils::get_content_from_dom( $dom );
+}

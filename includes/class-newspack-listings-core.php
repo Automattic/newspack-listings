@@ -43,6 +43,12 @@ final class Newspack_Listings_Core {
 	];
 
 	/**
+	 * Custom taxonomy slugs for Newspack Listings.
+	 */
+	const NEWSPACK_LISTINGS_CAT = 'newspack_lst_cat';
+	const NEWSPACK_LISTINGS_TAG = 'newspack_lst_tag';
+
+	/**
 	 * The single instance of the class.
 	 *
 	 * @var Newspack_Listings_Core
@@ -67,8 +73,9 @@ final class Newspack_Listings_Core {
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
+		add_filter( 'parent_file', [ __CLASS__, 'highlight_taxonomy_menu_items' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_styles' ] );
+		add_action( 'init', [ __CLASS__, 'register_taxonomies' ] );
 		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
@@ -78,15 +85,34 @@ final class Newspack_Listings_Core {
 	 * Add options page.
 	 */
 	public static function add_plugin_page() {
+		// Top-level menu item.
 		add_menu_page(
 			'Newspack Listings',
 			'Listings',
 			'edit_posts',
 			'newspack-listings',
 			'',
-			'dashicons-list-view',
+			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0Ij48cGF0aCBkPSJNMTkgNXYxNEg1VjVoMTRtMS4xLTJIMy45Yy0uNSAwLS45LjQtLjkuOXYxNi4yYzAgLjQuNC45LjkuOWgxNi4yYy40IDAgLjktLjUuOS0uOVYzLjljMC0uNS0uNS0uOS0uOS0uOXpNMTEgN2g2djJoLTZWN3ptMCA0aDZ2MmgtNnYtMnptMCA0aDZ2MmgtNnpNNyA3aDJ2Mkg3em0wIDRoMnYySDd6bTAgNGgydjJIN3oiIGZpbGw9IndoaXRlIi8+PC9zdmc+Cg==',
 			35
 		);
+
+		// Custom taxonomy menu links.
+		add_submenu_page(
+			'newspack-listings',
+			__( 'Newspack Listings: Categories', 'newspack-listings' ),
+			__( 'Listing Categories', 'newspack-listings' ),
+			'manage_categories',
+			'edit-tags.php?taxonomy=' . self::NEWSPACK_LISTINGS_CAT
+		);
+		add_submenu_page(
+			'newspack-listings',
+			__( 'Newspack Listings: Tags', 'newspack-listings' ),
+			__( 'Listing Tags', 'newspack-listings' ),
+			'manage_categories',
+			'edit-tags.php?taxonomy=' . self::NEWSPACK_LISTINGS_TAG
+		);
+
+		// Settings menu link.
 		add_submenu_page(
 			'newspack-listings',
 			__( 'Newspack Listings: Site-Wide Settings', 'newspack-listings' ),
@@ -95,6 +121,20 @@ final class Newspack_Listings_Core {
 			'newspack-listings-settings-admin',
 			[ '\Newspack_Listings\Newspack_Listings_Settings', 'create_admin_page' ]
 		);
+	}
+
+	/**
+	 * Hack to highlight category/tag menu items.
+	 * https://deluxeblogtips.com/move-taxonomy-admin-menu/
+	 *
+	 * @param string $parent_file The parent file.
+	 */
+	public static function highlight_taxonomy_menu_items( $parent_file ) {
+		if ( get_current_screen()->taxonomy == self::NEWSPACK_LISTINGS_CAT || get_current_screen()->taxonomy == self::NEWSPACK_LISTINGS_TAG ) {
+			$parent_file = 'newspack-listings';
+		}
+
+		return $parent_file;
 	}
 
 	/**
@@ -122,11 +162,12 @@ final class Newspack_Listings_Core {
 	public static function register_post_types() {
 		$prefix            = Settings::get_settings( 'permalink_prefix' );
 		$default_config    = [
+			'has_archive'  => false,
 			'public'       => true,
 			'show_in_menu' => 'newspack-listings',
 			'show_in_rest' => true,
 			'show_ui'      => true,
-			'supports'     => [ 'editor', 'excerpt', 'title', 'custom-fields', 'thumbnail' ],
+			'supports'     => [ 'editor', 'excerpt', 'title', 'author', 'custom-fields', 'thumbnail' ],
 		];
 		$post_types_config = [
 			'event'       => [
@@ -227,6 +268,54 @@ final class Newspack_Listings_Core {
 			// Create a rewrite rule to handle the prefixed permalink.
 			add_rewrite_rule( '^' . $prefix . '/' . $permalink . '/([^/]+)/?$', 'index.php?name=$matches[1]&post_type=' . $post_type, 'top' );
 		}
+	}
+
+	/**
+	 * Register custom taxonomies for Listings CPTs.
+	 */
+	public static function register_taxonomies() {
+		$prefix        = Settings::get_settings( 'permalink_prefix' );
+		$category_args = [
+			'hierarchical'  => true,
+			'public'        => true,
+			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'hierarchical' => true, 'slug' => $prefix . '/category' ]
+			'show_in_menu'  => true,
+			'show_in_rest'  => true,
+			'show_tagcloud' => false,
+			'show_ui'       => true,
+		];
+		$tag_args      = [
+			'hierarchical'  => false,
+			'public'        => true,
+			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/tag' ],
+			'show_in_menu'  => true,
+			'show_in_rest'  => true,
+			'show_tagcloud' => false,
+			'show_ui'       => true,
+		];
+
+		// Register the taxonomies for all Listing CPTs.
+		$post_types = array_values( self::NEWSPACK_LISTINGS_POST_TYPES );
+		register_taxonomy( self::NEWSPACK_LISTINGS_CAT, $post_types, $category_args );
+		register_taxonomy( self::NEWSPACK_LISTINGS_TAG, $post_types, $tag_args );
+
+		// Better safe than sorry: https://developer.wordpress.org/reference/functions/register_taxonomy/#more-information.
+		foreach ( $post_types as $post_type ) {
+			register_taxonomy_for_object_type( self::NEWSPACK_LISTINGS_CAT, $post_type );
+			register_taxonomy_for_object_type( self::NEWSPACK_LISTINGS_TAG, $post_type );
+		}
+
+		// phpcs:ignore Squiz.PHP.CommentedOutCode.Found self::rewrite_taxonomy_urls();
+	}
+
+	/**
+	 * Create rewrite rules for prefixed taxonomy URLs.
+	 */
+	public static function rewrite_taxonomy_urls() {
+		$prefix = Settings::get_settings( 'permalink_prefix' );
+
+		add_rewrite_rule( '^' . $prefix . '/category/([^/]+)/?$', 'index.php?' . self::NEWSPACK_LISTINGS_CAT . '=$matches[1]', 'top' );
+		add_rewrite_rule( '^' . $prefix . '/tag/([^/]+)/?$', 'index.php?' . self::NEWSPACK_LISTINGS_TAG . '=$matches[1]', 'top' );
 	}
 
 	/**
@@ -549,22 +638,6 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * Enqueue custom styles for Newspack Listings front-end components.
-	 */
-	public static function custom_styles() {
-		if ( ! is_admin() ) {
-			wp_register_style(
-				'newspack-listings-styles',
-				plugins_url( '../dist/front_end.css', __FILE__ ),
-				[],
-				NEWSPACK_LISTINGS_VERSION
-			);
-
-			wp_enqueue_style( 'newspack-listings-styles' );
-		}
-	}
-
-	/**
 	 * If using a Newspack theme, force single listings pages to use the wide template (sans widget sidebar).
 	 *
 	 * @param string $template File path of the template to use for the current single post.
@@ -597,6 +670,7 @@ final class Newspack_Listings_Core {
 	 */
 	public static function activation_hook() {
 		self::register_post_types();
+		self::register_taxonomies();
 		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
 	}
 }

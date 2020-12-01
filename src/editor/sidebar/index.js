@@ -5,26 +5,17 @@ import { __ } from '@wordpress/i18n';
 import { TextControl, ToggleControl } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
-import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
+import { PluginDocumentSettingPanel } from '@wordpress/edit-post'; /**
 
-const SidebarComponent = ( { meta, postType, updateMetaValue } ) => {
+/**
+* Internal dependencies
+*/
+import { isListing } from '../utils';
+
+const SidebarComponent = ( { meta, updateMetaValue } ) => {
 	const { meta_fields, post_type_label, post_types } = window.newspack_listings_data;
-	let isValidPostType = false;
 
-	if ( ! post_types ) {
-		return null;
-	}
-
-	// Only show sidebar if the current post is a listing post type.
-	for ( const slug in post_types ) {
-		if ( post_types.hasOwnProperty( slug ) ) {
-			if ( post_types[ slug ] === postType ) {
-				isValidPostType = true;
-			}
-		}
-	}
-
-	if ( ! isValidPostType ) {
+	if ( ! post_types || ! isListing() ) {
 		return null;
 	}
 
@@ -72,11 +63,10 @@ const SidebarComponent = ( { meta, postType, updateMetaValue } ) => {
 };
 
 const mapStateToProps = select => {
-	const { getCurrentPostType, getEditedPostAttribute } = select( 'core/editor' );
+	const { getEditedPostAttribute } = select( 'core/editor' );
 
 	return {
 		meta: getEditedPostAttribute( 'meta' ),
-		postType: getCurrentPostType(),
 		title: getEditedPostAttribute( 'title' ),
 	};
 };

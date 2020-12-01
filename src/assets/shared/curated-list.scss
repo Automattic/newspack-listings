@@ -1,0 +1,20 @@
+.newspack-listings {
+	&__curated-list {
+		counter-reset: list;
+
+		&.show-numbers .newspack-listings__listing::before {
+			color: #767676;
+			color: currentColor;
+			content: counter( list ) '. ';
+			counter-increment: list;
+			display: block;
+			font-weight: bold;
+			margin-bottom: 0.5rem;
+		}
+	}
+
+	&__load-more {
+		display: block;
+		margin: 1rem auto;
+	}
+}

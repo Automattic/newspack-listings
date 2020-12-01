@@ -3,19 +3,19 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import { Button, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
-import { RawHTML, useEffect, useState } from '@wordpress/element';
-import { Button, Notice, Spinner } from '@wordpress/components';
+import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
+import { Listing } from './listing';
 import { QueryControls } from '../../components';
 
 const ListingEditorComponent = ( {
 	attributes,
-	className,
 	clientId,
 	getBlock,
 	getBlockParents,
@@ -27,26 +27,22 @@ const ListingEditorComponent = ( {
 	const [ isEditingPost, setIsEditingPost ] = useState( false );
 	const { listing } = attributes;
 
-	// Get the parent Curated List block.
-	const parent = getBlock( getBlockParents( clientId )[ 0 ] );
+	// Get the parent List Container block.
+	const parents = getBlockParents( clientId );
+	const parent = parents.reduce( ( acc, outerBlock ) => {
+		const blockInfo = getBlock( outerBlock );
 
-	// Parent Curated List block attributes.
-	const {
-		showExcerpt,
-		showImage,
-		showCaption,
-		// minHeight,
-		// showCategory,
-		// mediaPosition,
-		// typeScale,
-		// imageScale,
-		// mobileStack,
-		// textColor,
-		// showSubtitle,
-	} = parent.attributes;
+		if ( 'newspack-listings/list-container' === blockInfo.name ) {
+			acc.listContainer = blockInfo;
+		} else if ( 'newspack-listings/curated-list' === blockInfo.name ) {
+			acc.curatedList = blockInfo;
+		}
+
+		return acc;
+	}, {} );
 
 	// Build an array of just the listing post IDs that exist in the parent Curated List block.
-	const listItems = parent.innerBlocks.reduce( ( acc, innerBlock ) => {
+	const listItems = parent.listContainer.innerBlocks.reduce( ( acc, innerBlock ) => {
 		if ( innerBlock.attributes.listing ) {
 			acc.push( innerBlock.attributes.listing );
 		}
@@ -55,11 +51,8 @@ const ListingEditorComponent = ( {
 	}, [] );
 
 	const { post_types } = window.newspack_listings_data;
-	const classes = [ className, 'newspack-listings__listing' ];
 	const listingTypeSlug = name.split( '/' ).slice( -1 );
 	const listingType = post_types[ listingTypeSlug ];
-
-	classes.push( listingTypeSlug );
 
 	// Fetch listing post data if we have a listing post ID.
 	useEffect(() => {
@@ -70,8 +63,8 @@ const ListingEditorComponent = ( {
 
 	// Sync parent attributes to listing attributes, so that we can use parent attributes in the PHP render callback.
 	useEffect(() => {
-		setAttributes( { ...parent.attributes } );
-	}, [ JSON.stringify( parent.attributes ) ]);
+		setAttributes( { ...parent.curatedList.attributes } );
+	}, [ JSON.stringify( parent.curatedList.attributes ) ]);
 
 	// Fetch listing post by listingId.
 	const fetchPost = async listingId => {
@@ -81,7 +74,7 @@ const ListingEditorComponent = ( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,excerpt,media,meta',
+					_fields: 'id,title,author,category,tags,excerpt,media,meta',
 				} ),
 			} );
 
@@ -104,14 +97,15 @@ const ListingEditorComponent = ( {
 	// Renders the autocomplete search field to select listings. Will only show listings of the type that matches the block.
 	const renderSearch = () => {
 		return (
-			<div className="newspack-listings__listing-post">
+			<div className="newspack-listings__listing-search">
 				<QueryControls
 					label={
-						isEditingPost && post && post.title
-							? __( 'Select a new listing to replace “', 'newspack-listings' ) + post.title + '”'
-							: __( 'Select a listing.', 'newspack-listings' )
+						__( 'Search for a ', 'newspack-listings' ) +
+						listingTypeSlug +
+						__( ' listing to display.', 'newspack-listings' )
 					}
 					listingType={ listingType }
+					listingTypeSlug={ listingTypeSlug }
 					maxLength={ 1 }
 					onChange={ _listing => {
 						if ( _listing.length ) {
@@ -128,14 +122,6 @@ const ListingEditorComponent = ( {
 						{ __( 'Cancel', 'newspack-listings' ) }
 					</Button>
 				) }
-
-				<Button
-					isSecondary
-					href={ `/wp-admin/post-new.php?post_type=${ listingType }` }
-					target="_blank"
-				>
-					{ __( 'Create new listing', 'newspack-listing' ) }
-				</Button>
 			</div>
 		);
 	};
@@ -147,54 +133,24 @@ const ListingEditorComponent = ( {
 		}
 
 		return (
-			<div className="newspack-listings__listing-post">
-				{ error && (
-					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
-						{ error }
-					</Notice>
-				) }
-				{ post && post.title && (
-					<h3 className="newspack-listings__listing-title">
-						<RawHTML>{ post.title }</RawHTML>
-					</h3>
-				) }
-				{ showImage && post && post.media && post.media.image && (
-					<figure className="newspack-listings__listing-featured-media">
-						<img
-							className="newspack-listings__listing-thumbnail"
-							src={ post.media.image }
-							alt={ post.media.caption || post.title }
-						/>
-						{ showCaption && post.media.caption && (
-							<figcaption className="newspack-listings__listing-caption">
-								{ post.media.caption }
-							</figcaption>
-						) }
-					</figure>
-				) }
-				{ showExcerpt && post && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
-				<Button isSecondary onClick={ () => setIsEditingPost( true ) }>
-					{ __( 'Replace listing', 'newspack-listing' ) }
-				</Button>
+			<Fragment>
+				<Listing attributes={ parent.curatedList.attributes } error={ error } post={ post } />
 				{ post && (
 					<Button
 						isLink
-						href={ `/wp-admin/post.php?post=${ listing }&action=edit` }
+						href={ `/wp-admin/post.php?post=${ post.id }&action=edit` }
 						target="_blank"
 					>
 						{ __( 'Edit this listing', 'newspack-listing' ) }
 					</Button>
 				) }
-			</div>
+			</Fragment>
 		);
 	};
 
 	return (
-		<div className="newspack-listings__listing-editor">
-			<div className={ classes.join( ' ' ) }>
-				<span className="newspack-listings__listing-label">{ listingTypeSlug }</span>
-				{ ! listing || isEditingPost ? renderSearch() : renderPost() }
-			</div>
+		<div className="newspack-listings__listing-editor newspack-listings__listing">
+			{ ! listing || isEditingPost ? renderSearch() : renderPost() }
 		</div>
 	);
 };

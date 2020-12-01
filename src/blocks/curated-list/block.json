@@ -14,6 +14,10 @@
       "type": "boolean",
       "default": false
     },
+    "showAuthor": {
+      "type": "boolean",
+      "default": false
+    },
     "showExcerpt": {
       "type": "boolean",
       "default": true
@@ -35,6 +39,10 @@
       "default": 0
     },
     "showCategory": {
+      "type": "boolean",
+      "default": false
+    },
+    "showTags": {
       "type": "boolean",
       "default": false
     },
@@ -65,10 +73,6 @@
       "type": "integer",
       "default": 3
     },
-    "mobileStack": {
-      "type": "boolean",
-      "default": false
-    },
     "textColor": {
       "type": "string",
       "default": ""
@@ -77,9 +81,39 @@
       "type": "string",
       "default": ""
     },
-    "showSubtitle": {
+    "startup": {
+      "type": "boolean",
+      "default": true
+    },
+    "queryMode": {
       "type": "boolean",
       "default": false
+    },
+    "queryOptions": {
+      "type": "object",
+      "default": {
+        "type": null,
+        "authors": [],
+        "categories": [],
+        "tags": [],
+        "categoryExclusions": [],
+        "tagExclusions": [],
+        "maxItems": 10,
+        "sortBy": "date",
+        "order": "DESC"
+      }
+    },
+    "queriedListings": {
+      "type": "array",
+      "default": []
+    },
+    "showLoadMore": {
+      "type": "boolean",
+      "default": false
+    },
+    "loadMoreText": {
+      "type": "string",
+      "default": "Load more listings"
     }
   }
 }

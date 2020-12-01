@@ -6,10 +6,10 @@ import { getCategories, setCategories } from '@wordpress/blocks';
 /**
  * Internal dependencies
  */
-import { NewspackLogo } from '../components';
+import { NewspackLogo } from '../svg';
 
 /**
- * If tbe Newspack Blocks plugin is installed, use the existing Newspack block category.
+ * If the Newspack Blocks plugin is installed, use the existing Newspack block category.
  * Otherwise, create the category. This lets Newspack Listings remain usable without
  * depending on Newspack Blocks.
  */

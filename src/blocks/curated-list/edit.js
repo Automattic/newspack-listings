@@ -1,21 +1,45 @@
 /**
- * External dependencies
+ * WorPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createBlock } from '@wordpress/blocks';
-import { InnerBlocks, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
+import apiFetch from '@wordpress/api-fetch';
 import {
+	__experimentalBlockVariationPicker as BlockVariationPicker,
+	InnerBlocks,
+	InspectorControls,
+	PanelColorSettings,
+} from '@wordpress/block-editor';
+import { createBlock } from '@wordpress/blocks';
+import {
+	BaseControl,
 	Button,
 	ButtonGroup,
+	Notice,
 	PanelBody,
 	PanelRow,
+	Placeholder,
 	RangeControl,
+	SelectControl,
+	Spinner,
 	ToggleControl,
-	BaseControl,
 } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { Fragment, useEffect, useState } from '@wordpress/element';
+import { addQueryArgs } from '@wordpress/url';
+
+/**
+ * Internal dependencies
+ */
+import { Listing } from '../listing/listing';
+import { SidebarQueryControls } from '../../components';
+import { List, Query, Specific } from '../../svg';
+import { getCuratedListClasses, useDidMount } from '../../editor/utils';
+
+/**
+ * Debounced fetchPosts function outside of component scope.
+ */
+let debouncedFetchPosts;
 
 const CuratedListEditorComponent = ( {
 	attributes,
@@ -23,63 +47,154 @@ const CuratedListEditorComponent = ( {
 	className,
 	clientId,
 	innerBlocks,
-	insertBlock,
-	removeBlock,
+	insertBlocks,
+	removeBlocks,
 	setAttributes,
 	updateBlockAttributes,
 } ) => {
+	const [ error, setError ] = useState( null );
+	const [ isFetching, setIsFetching ] = useState( false );
 	const [ locations, setLocations ] = useState( [] );
 	const {
 		showNumbers,
 		showMap,
-		showSortByDate,
+		showAuthor,
 		showExcerpt,
 		showImage,
 		showCaption,
 		minHeight,
 		showCategory,
+		showTags,
 		mediaPosition,
 		typeScale,
 		imageScale,
-		mobileStack,
 		textColor,
-		showSubtitle,
+		startup,
+		queryMode,
+		queryOptions,
+		queriedListings,
+		showLoadMore,
+		loadMoreText,
 	} = attributes;
 
+	const isEmpty = !! window.newspack_listings_data.no_listings || false;
 	const list = innerBlocks.find(
 		innerBlock => innerBlock.name === 'newspack-listings/list-container'
 	);
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
-	const classes = [ className, 'newspack-listings__curated-list' ];
-	if ( showNumbers ) classes.push( 'show-numbers' );
-	if ( showMap ) classes.push( 'show-map' );
-	if ( showSortByDate ) classes.push( 'has-sort-by-date-ui' );
+	const classes = getCuratedListClasses( className, attributes );
+	const initialRender = useDidMount();
 
-	// Update locations in component state. This lets us keep the map block in sync with listing items.
+	/**
+	 * Use current query options to get listing posts.
+	 *
+	 * @param {Object} query Query args.
+	 * @return {void}
+	 */
+	const fetchPosts = async query => {
+		if ( isFetching || ! queryMode ) {
+			return;
+		}
+
+		setIsFetching( true );
+
+		try {
+			setError( null );
+			const posts = await apiFetch( {
+				path: addQueryArgs( '/newspack-listings/v1/listings', {
+					query,
+					_fields: 'id,title,author,category,tags,excerpt,media,meta,type',
+				} ),
+			} );
+
+			setAttributes( { queriedListings: posts } );
+
+			if ( 0 === posts.length ) {
+				throw 'No posts matching query options. Try selecting different or less specific query options.';
+			}
+		} catch ( e ) {
+			setError( e );
+		}
+
+		setIsFetching( false );
+	};
+
+	/**
+	 * If changing query options, fetch listing posts that match the query.
+	 */
 	useEffect(() => {
+		if ( initialRender ) {
+			fetchPosts( queryOptions );
+		} else {
+			// Debounced version of fetchPosts to minimize consecutive executions.
+			clearTimeout( debouncedFetchPosts );
+			debouncedFetchPosts = setTimeout( () => {
+				fetchPosts( queryOptions );
+			}, 500 );
+		}
+	}, [ JSON.stringify( queryOptions ), queryMode ]);
+
+	/**
+	 * Update locations in component state. This lets us keep the map block in sync with listing items.
+	 */
+	useEffect(() => {
+		if ( ! canUseMapBlock ) {
+			return;
+		}
+
+		let newLocations = [];
+
 		// Only build locations array if we have any listings, and the Jetpack Maps block exists.
-		const blockLocations =
-			canUseMapBlock && list
+		if ( queryMode ) {
+			newLocations = queriedListings.reduce( ( acc, queriedListing ) => {
+				if ( queriedListing.meta && queriedListing.meta.newspack_listings_locations ) {
+					queriedListing.meta.newspack_listings_locations.map( location => {
+						if ( isValidLocation( location ) ) {
+							acc.push( location );
+						}
+
+						return acc;
+					} );
+				}
+
+				return acc;
+			}, [] );
+		} else {
+			newLocations = list
 				? list.innerBlocks.reduce( ( acc, innerBlock ) => {
 						if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
-							innerBlock.attributes.locations.map( location => acc.push( location ) );
+							innerBlock.attributes.locations.map( location => {
+								if ( isValidLocation( location ) ) {
+									acc.push( location );
+								}
+
+								return acc;
+							} );
 						}
 						return acc;
 				  }, [] )
 				: [];
+		}
 
-		setLocations( blockLocations );
-	}, [ JSON.stringify( list ) ]);
+		setLocations( newLocations );
+	}, [ queryMode, JSON.stringify( list ), JSON.stringify( queriedListings ) ]);
 
-	// Create, update, or remove map when showMap attribute or locations change.
+	/**
+	 * Create, update, or remove map when showMap attribute or locations change.
+	 */
 	useEffect(() => {
+		// Don't run on the initial render.
+		if ( initialRender ) {
+			return;
+		}
+
 		// Don't bother if the Jetpack Maps block doesn't exist.
 		if ( ! canUseMapBlock ) {
 			return;
 		}
 
 		// If showMap toggle is enabled, update the existing map or create a new one.
-		if ( showMap ) {
+		if ( showMap && 0 < locations.length ) {
 			if ( hasMap ) {
 				// If we already have a map, update it.
 				updateBlockAttributes( hasMap.clientId, { points: locations } );
@@ -94,14 +209,72 @@ const CuratedListEditorComponent = ( {
 					points: locations,
 				} );
 
-				insertBlock( newBlock, 0, clientId );
+				insertBlocks( [ newBlock ], 0, clientId );
 			}
 		} else if ( hasMap ) {
 			// If disabling the showMap toggle, remove the existing map.
-			removeBlock( hasMap.clientId );
+			removeBlocks( [ hasMap.clientId ] );
 		}
 	}, [ showMap, JSON.stringify( locations ) ]);
 
+	/**
+	 * Guard against accidentally deleting the list container block.
+	 */
+	useEffect(() => {
+		if ( ! queryMode && ! list ) {
+			// Create a new map at the bottom of the list.
+			const newBlock = createBlock( 'newspack-listings/list-container' );
+
+			insertBlocks( [ newBlock ], null, clientId );
+		}
+	}, [ list ]);
+
+	/**
+	 * Render the results of the listing query.
+	 *
+	 * @param {Object} listing Post object for listing to show.
+	 * @param {number} index Index of the item in the array.
+	 */
+	const renderQueriedListings = ( listing, index ) => {
+		return (
+			<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
+				<Listing attributes={ attributes } error={ error } post={ listing } />
+				{
+					<Button
+						isLink
+						href={ `/wp-admin/post.php?post=${ listing.id }&action=edit` }
+						target="_blank"
+					>
+						{ __( 'Edit this listing', 'newspack-listing' ) }
+					</Button>
+				}
+			</div>
+		);
+	};
+
+	/**
+	 * Validate location data.
+	 *
+	 * @param {*} location Location data to check.
+	 * @return {boolean} True if the data is valid location data, false if not.
+	 */
+	const isValidLocation = location => {
+		if (
+			! location ||
+			! location.id ||
+			! location.coordinates ||
+			! location.coordinates.latitude ||
+			! location.coordinates.longitude
+		) {
+			return false;
+		}
+
+		return true;
+	};
+
+	/**
+	 * Image size options for the sidebar.
+	 */
 	const imageSizeOptions = [
 		{
 			value: 1,
@@ -131,15 +304,73 @@ const CuratedListEditorComponent = ( {
 		},
 	];
 
-	const subtitleIsSupportedInTheme =
-		typeof window === 'object' &&
-		window.newspackIsPostSubtitleSupported &&
-		window.newspackIsPostSubtitleSupported.post_subtitle;
+	/**
+	 * Show a hint to the user if there are no listings that can be added to the list.
+	 */
+	if ( isEmpty ) {
+		return (
+			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
+				<Notice isDismissible={ false }>
+					{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }
+				</Notice>
+			</Placeholder>
+		);
+	}
+
+	/**
+	 * Let user pick Query or Specific mode on startup.
+	 */
+	if ( startup ) {
+		return (
+			<div className="newspack-listings__placeholder">
+				<BlockVariationPicker
+					icon={ <List /> }
+					label={ __( 'Curated List', 'newspack-listings' ) }
+					instructions={ __( 'Select the type of list to start with.' ) }
+					onSelect={ variation => {
+						if ( variation.name && 'query' === variation.name ) {
+							setAttributes( {
+								queryMode: true,
+								startup: false,
+							} );
+						} else {
+							setAttributes( {
+								startup: false,
+							} );
+						}
+					} }
+					variations={ [
+						{
+							name: 'query',
+							title: __( 'Query', 'newspack-listings' ),
+							icon: <Query />,
+						},
+						{
+							name: 'specific',
+							title: __( 'Specific Listings', 'newspack-listings' ),
+							icon: <Specific />,
+						},
+					] }
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<div className="newspack-listings__curated-list-editor">
 			<InspectorControls>
-				<PanelBody title={ __( 'Curated List Settings', 'newspack-listings' ) }>
+				{ queryMode && (
+					<PanelBody title={ __( 'Query Settings', 'newspack-listings' ) }>
+						<SidebarQueryControls
+							disabled={ isFetching }
+							setAttributes={ setAttributes }
+							queryOptions={ queryOptions }
+							showLoadMore={ showLoadMore }
+							loadMoreText={ loadMoreText }
+						/>
+					</PanelBody>
+				) }
+				<PanelBody title={ __( 'List Settings', 'newspack-listings' ) }>
 					<PanelRow>
 						<ToggleControl
 							label={ __( 'Show list item numbers', 'newspack-listings' ) }
@@ -157,14 +388,6 @@ const CuratedListEditorComponent = ( {
 							/>
 						</PanelRow>
 					) }
-
-					<PanelRow>
-						<ToggleControl
-							label={ __( 'Show sort-by-date UI', 'newspack-listings' ) }
-							checked={ showSortByDate }
-							onChange={ () => setAttributes( { showSortByDate: ! showSortByDate } ) }
-						/>
-					</PanelRow>
 				</PanelBody>
 				<PanelBody title={ __( 'Featured Image Settings', 'newspack-listings' ) }>
 					<PanelRow>
@@ -176,24 +399,29 @@ const CuratedListEditorComponent = ( {
 					</PanelRow>
 
 					{ showImage && (
-						<PanelRow>
-							<ToggleControl
-								label={ __( 'Show Featured Image Caption', 'newspack-listings' ) }
-								checked={ showCaption }
-								onChange={ () => setAttributes( { showCaption: ! showCaption } ) }
+						<Fragment>
+							<PanelRow>
+								<ToggleControl
+									label={ __( 'Show Featured Image Caption', 'newspack-listings' ) }
+									checked={ showCaption }
+									onChange={ () => setAttributes( { showCaption: ! showCaption } ) }
+								/>
+							</PanelRow>
+							<SelectControl
+								label={ __( 'Featured Image Position', 'newspack-listings' ) }
+								value={ mediaPosition }
+								onChange={ value => setAttributes( { mediaPosition: value } ) }
+								options={ [
+									{ label: __( 'Top', 'newspack-listings' ), value: 'top' },
+									{ label: __( 'Left', 'newspack-listings' ), value: 'left' },
+									{ label: __( 'Right', 'newspack-listings' ), value: 'right' },
+								] }
 							/>
-						</PanelRow>
+						</Fragment>
 					) }
 
 					{ showImage && mediaPosition !== 'top' && mediaPosition !== 'behind' && (
 						<Fragment>
-							<PanelRow>
-								<ToggleControl
-									label={ __( 'Stack on mobile', 'newspack-listings' ) }
-									checked={ mobileStack }
-									onChange={ () => setAttributes( { mobileStack: ! mobileStack } ) }
-								/>
-							</PanelRow>
 							<BaseControl
 								label={ __( 'Featured Image Size', 'newspack-listings' ) }
 								id="newspackfeatured-image-size"
@@ -240,15 +468,6 @@ const CuratedListEditorComponent = ( {
 					) }
 				</PanelBody>
 				<PanelBody title={ __( 'Post Control Settings', 'newspack-listings' ) }>
-					{ subtitleIsSupportedInTheme && (
-						<PanelRow>
-							<ToggleControl
-								label={ __( 'Show Subtitle', 'newspack-listings' ) }
-								checked={ showSubtitle }
-								onChange={ () => setAttributes( { showSubtitle: ! showSubtitle } ) }
-							/>
-						</PanelRow>
-					) }
 					<PanelRow>
 						<ToggleControl
 							label={ __( 'Show Excerpt', 'newspack-listings' ) }
@@ -279,7 +498,14 @@ const CuratedListEditorComponent = ( {
 						},
 					] }
 				/>
-				<PanelBody title={ __( 'Post Meta Settings', 'newspack-listings' ) }>
+				<PanelBody title={ __( 'Meta Settings', 'newspack-listings' ) }>
+					<PanelRow>
+						<ToggleControl
+							label={ __( 'Show Author', 'newspack-listings' ) }
+							checked={ showAuthor }
+							onChange={ () => setAttributes( { showAuthor: ! showAuthor } ) }
+						/>
+					</PanelRow>
 					<PanelRow>
 						<ToggleControl
 							label={ __( 'Show Category', 'newspack-listings' ) }
@@ -287,18 +513,48 @@ const CuratedListEditorComponent = ( {
 							onChange={ () => setAttributes( { showCategory: ! showCategory } ) }
 						/>
 					</PanelRow>
+					<PanelRow>
+						<ToggleControl
+							label={ __( 'Show Tags', 'newspack-listings' ) }
+							checked={ showTags }
+							onChange={ () => setAttributes( { showTags: ! showTags } ) }
+						/>
+					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-			<div className={ classes.join( ' ' ) }>
-				<span className="newspack-listings__curated-list-label">
-					{ __( 'Curated List', 'newspack-listings' ) }
-				</span>
+			<div
+				className={ classes.join( ' ' ) }
+				style={ {
+					color: textColor || '#000',
+				} }
+			>
+				{ queryMode && error && (
+					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
+						{ error }
+					</Notice>
+				) }
 				<InnerBlocks
 					allowedBlocks={ [ 'jetpack/map', 'newspack-listings/list-container' ] }
 					template={ [ [ 'newspack-listings/list-container' ] ] } // Start with an empty list only.
 					templateInsertUpdatesSelection={ false }
 					renderAppender={ () => null } // We want to discourage editors from adding blocks in this top-level wrapper, but we can't lock the template because we still need to be able to programmatically add or remove map blocks.
 				/>
+				{ // If in query mode and while fetching posts.
+				isFetching && queryMode && (
+					<Placeholder>
+						<Spinner />
+					</Placeholder>
+				) }
+				{ // If in query mode, show the queried listings.
+				! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
+				{ ! isFetching &&
+					queryMode &&
+					showLoadMore &&
+					queryOptions.maxItems <= queriedListings.length && (
+						<Button className="newspack-listings__load-more" isPrimary>
+							{ loadMoreText }
+						</Button>
+					) }
 			</div>
 		</div>
 	);
@@ -317,11 +573,11 @@ const mapStateToProps = ( select, ownProps ) => {
 };
 
 const mapDispatchToProps = dispatch => {
-	const { insertBlock, removeBlock, updateBlockAttributes } = dispatch( 'core/block-editor' );
+	const { insertBlocks, removeBlocks, updateBlockAttributes } = dispatch( 'core/block-editor' );
 
 	return {
-		insertBlock,
-		removeBlock,
+		insertBlocks,
+		removeBlocks,
 		updateBlockAttributes,
 	};
 };

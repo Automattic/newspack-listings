@@ -1,45 +1,58 @@
-.block-editor-block-list__layout {
-	counter-reset: list;
-}
+@import '../../assets/shared/listing';
 
 .newspack-listings {
 	&__listing-editor {
 		border-radius: 2px;
-		box-shadow: inset 0 0 0 1px var( --newspack-listings--grey-medium );
-		padding: 1rem;
+		box-shadow: inset 0 0 0 1px var( --newspack-listings--grey-dark );
+		padding: 1em;
+		position: relative;
 
 		.components-spinner {
 			display: block;
 			float: none;
-			margin: 2rem auto;
+			margin: 1.75rem auto;
 		}
 
-		.components-button + .components-button {
-			margin-left: 0.5rem;
+		+ .newspack-listings__listing-editor {
+			margin-top: 1.75rem;
 		}
 	}
 
-	&__listing-label {
-		background-color: #eee;
-		background-color: var( --newspack-listings--grey-light );
-		border-bottom-left-radius: 2px;
-		display: block;
-		font-size: 0.75rem;
-		font-weight: bold;
-		letter-spacing: 0.01rem;
-		right: 1px;
-		padding: 0.25rem 0.5rem;
-		position: absolute;
-		text-transform: uppercase;
-		top: 1px;
+	&__listing-search {
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu,
+			Cantarell, 'Helvetica Neue', sans-serif;
+
+		.components-spinner {
+			position: absolute;
+			right: 8px;
+			top: 10px;
+		}
+	}
+
+	&__search-suggestions {
+		border-radius: 2px;
+		border: 1px solid var( --newspack-listings--grey-medium );
+		max-height: 204px;
+		padding: 4px;
+		overflow: scroll;
+
+		.components-button {
+			color: var( --newspack-listings--grey-dark );
+			display: block;
+			margin: 0;
+			padding: 10px 12px;
+			text-decoration: none;
+			width: 100%;
+
+			&:active:not( :disabled ),
+			&:hover:not( :disabled ) {
+				background: var( --wp-admin-theme-color );
+				color: white;
+			}
+		}
 	}
 
 	&__error {
 		margin: 1rem auto 2rem;
-	}
-
-	&__listing-featured-media {
-		margin: 1rem 0;
-		padding: 0;
 	}
 }

@@ -50,6 +50,8 @@ final class Newspack_Listings_Blocks {
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'manage_editor_assets' ] );
 		add_action( 'admin_init', [ __CLASS__, 'register_block_pattern_category' ], 10 );
 		add_action( 'admin_init', [ __CLASS__, 'register_block_patterns' ], 11 );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_styles' ] );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
 	}
 
@@ -65,7 +67,18 @@ final class Newspack_Listings_Blocks {
 			true
 		);
 
-		$post_type = get_post_type();
+		$total_count = 0;
+		$post_type   = get_post_type();
+		$post_types  = [];
+
+		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
+			$post_count           = wp_count_posts( $name )->publish;
+			$total_count          = $total_count + $post_count;
+			$post_types[ $label ] = [
+				'name'             => $name,
+				'show_in_inserter' => 0 < $post_count,
+			];
+		}
 
 		wp_localize_script(
 			'newspack-listings-editor',
@@ -73,8 +86,15 @@ final class Newspack_Listings_Blocks {
 			[
 				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
-				'post_types'      => Core::NEWSPACK_LISTINGS_POST_TYPES,
+				'post_types'      => $post_types,
 				'meta_fields'     => Core::get_meta_fields( $post_type ),
+				'taxonomies'      => [
+					'category' => Core::NEWSPACK_LISTINGS_CAT,
+					'tag'      => Core::NEWSPACK_LISTINGS_TAG,
+				],
+
+				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
+				'no_listings'     => 0 === $total_count,
 			]
 		);
 
@@ -131,6 +151,39 @@ final class Newspack_Listings_Blocks {
 	}
 
 	/**
+	 * Enqueue custom scripts for Newspack Listings front-end components.
+	 */
+	public static function custom_scripts() {
+		if ( ! Utils\is_amp() ) {
+			wp_register_script(
+				'newspack-listings',
+				NEWSPACK_LISTINGS_URL . 'dist/assets.js',
+				[],
+				NEWSPACK_LISTINGS_VERSION,
+				true
+			);
+
+			wp_enqueue_script( 'newspack-listings' );
+		}
+	}
+
+	/**
+	 * Enqueue custom styles for Newspack Listings front-end components.
+	 */
+	public static function custom_styles() {
+		if ( ! is_admin() ) {
+			wp_register_style(
+				'newspack-listings-styles',
+				NEWSPACK_LISTINGS_URL . 'dist/assets.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+
+			wp_enqueue_style( 'newspack-listings-styles' );
+		}
+	}
+
+	/**
 	 * Register custom block pattern category for Newspack Listings.
 	 */
 	public static function register_block_pattern_category() {
@@ -183,6 +236,29 @@ final class Newspack_Listings_Blocks {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Loads a template with given data in scope.
+	 *
+	 * @param string $template Name of the template to be included.
+	 * @param array  $data     Data to be passed into the template to be included.
+	 * @param string $path     (Optional) Path to the folder containing the template.
+	 * @return string
+	 */
+	public static function template_include( $template, $data = [], $path = NEWSPACK_LISTINGS_PLUGIN_FILE . 'src/templates/' ) {
+		if ( ! strpos( $template, '.php' ) ) {
+			$template = $template . '.php';
+		}
+		$path .= $template;
+		if ( ! is_file( $path ) ) {
+			return '';
+		}
+		ob_start();
+		include $path;
+		$contents = ob_get_contents();
+		ob_end_clean();
+		return $contents;
 	}
 }
 

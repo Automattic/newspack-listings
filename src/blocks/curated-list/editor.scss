@@ -1,36 +1,37 @@
-.newspack-listings {
-	&__curated-list {
-		&.show-numbers .newspack-listings__listing-editor::before {
-			color: #767676;
-			color: var( --newspack-listings--grey-medium );
-			content: counter( list ) '. ';
-			counter-increment: list;
-			font-weight: bold;
-		}
-	}
+@import '../../assets/shared/curated-list';
 
+.newspack-listings {
 	&__curated-list-editor {
 		border: 1px solid var( --newspack-listings--grey-dark );
 		border-radius: 2px;
-		padding: 3rem 1rem 1rem;
+		padding: 1em;
 
-		[data-type='jetpack/map'] {
-			pointer-events: none;
+		label,
+		.newspack-listings__label {
+			display: block;
+			font-size: 13px;
+			line-height: 1.5;
+			margin-bottom: 8px;
 		}
 	}
 
-	&__curated-list-label {
-		background-color: #36f;
-		border-bottom-left-radius: 2px;
-		color: var( --newspack-listings--white );
-		display: block;
-		font-size: 0.75rem;
-		font-weight: bold;
-		left: 1px;
-		letter-spacing: 0.01rem;
-		padding: 0.25rem 0.5rem;
-		position: absolute;
-		text-transform: uppercase;
-		top: 1px;
+	&__placeholder {
+		.components-button.has-icon {
+			padding: 12px;
+		}
+
+		li {
+			align-items: center;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			margin-right: 0;
+		}
+	}
+
+	&__modal {
+		button + button {
+			margin-left: 0.5rem;
+		}
 	}
 }

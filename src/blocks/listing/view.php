@@ -8,6 +8,7 @@
 namespace Newspack_Listings\Listing_Block;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
 
 /**
  * Dynamic block registration.
@@ -64,43 +65,13 @@ function render_block( $attributes ) {
 		return;
 	}
 
-	// Begin front-end output.
-	// TODO: Templatize this output; integrate more variations based on attributes.
-	ob_start();
-
-	?>
-	<li class="newspack-listings__listing">
-		<a class="newspack-listings__listing-link" href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>">
-			<article class="newspack-listings__listing-article">
-				<h3><?php echo wp_kses_post( $post->post_title ); ?></h3>
-
-				<?php if ( true === $attributes['showImage'] ) : ?>
-					<?php
-					$featured_image = get_the_post_thumbnail( $post->ID, 'large' );
-					if ( ! empty( $featured_image ) ) :
-						?>
-						<figure class="newspack-listings__listing-featured-media">
-							<?php echo wp_kses_post( $featured_image ); ?>
-							<?php if ( true === $attributes['showCaption'] ) : ?>
-							<figcaption>
-								<?php echo wp_kses_post( get_the_post_thumbnail_caption( $post->ID ) ); ?>
-							</figcaption>
-							<?php endif; ?>
-						</figure>
-					<?php endif; ?>
-				<?php endif; ?>
-
-				<?php
-				if ( true === $attributes['showExcerpt'] ) {
-					echo wp_kses_post( wpautop( get_the_excerpt( $post->ID ) ) );
-				}
-				?>
-			</article>
-		</a>
-	</li>
-	<?php
-
-	$content = ob_get_clean();
+	$content = Blocks::template_include(
+		'listing',
+		[
+			'attributes' => $attributes,
+			'post'       => $post,
+		]
+	);
 
 	return $content;
 }
