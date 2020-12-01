@@ -221,18 +221,14 @@ const CuratedListEditorComponent = ( {
 	/**
 	 * Guard against accidentally deleting the list container block.
 	 */
-	useEffect(
-		() => {
-			if ( ! queryMode && ! list ) {
-				// Create a new map at the bottom of the list.
-				const newBlock = createBlock( 'newspack-listings/list-container' );
+	useEffect(() => {
+		if ( ! queryMode && ! list ) {
+			// Create a new map at the bottom of the list.
+			const newBlock = createBlock( 'newspack-listings/list-container' );
 
-				insertBlocks( [ newBlock ], null, clientId );
-			}
-		},
-		JSON.stringify( innerBlocks ),
-		queryMode
-	);
+			insertBlocks( [ newBlock ], null, clientId );
+		}
+	}, [ JSON.stringify( innerBlocks ), queryMode ]);
 
 	/**
 	 * Render the results of the listing query.
@@ -242,8 +238,8 @@ const CuratedListEditorComponent = ( {
 	 */
 	const renderQueriedListings = ( listing, index ) => {
 		return (
-			<div className="newspack-listings__listing-editor newspack-listings__listing">
-				<Listing key={ index } attributes={ attributes } error={ error } post={ listing } />
+			<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
+				<Listing attributes={ attributes } error={ error } post={ listing } />
 				{
 					<Button
 						isLink
