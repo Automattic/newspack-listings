@@ -144,7 +144,7 @@ function render_block( $attributes, $inner_content ) {
 
 	?>
 	<?php if ( $has_more_pages && Utils\is_amp() ) : ?>
-		<amp-script layout="container" src="<?php echo esc_url( NEWSPACK_LISTINGS_URL . 'src/assets/amp/curated-list.js' ); ?>">
+		<amp-script layout="container" src="<?php echo esc_url( NEWSPACK_LISTINGS_URL . 'amp/curated-list/view.js' ); ?>">
 	<?php endif; ?>
 	<div
 		class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
