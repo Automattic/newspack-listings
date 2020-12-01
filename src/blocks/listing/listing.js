@@ -13,7 +13,7 @@ export const Listing = ( { attributes, error, post } ) => {
 	// Parent Curated List block attributes.
 	const { showAuthor, showCategory, showTags, showExcerpt, showImage, showCaption } = attributes;
 	const { date_format, time_format } = window.newspack_listings_data;
-	const { newspack_listings_event_dates } = post.meta;
+	const { newspack_listings_event_dates } = post.meta || {};
 
 	// Render event date(s) and time(s).
 	const renderDates = () => {
@@ -90,9 +90,7 @@ export const Listing = ( { attributes, error, post } ) => {
 					{ showAuthor && post.author && (
 						<cite>{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( post.author ) }</cite>
 					) }
-					{ newspack_listings_event_dates &&
-						0 < newspack_listings_event_dates.length &&
-						renderDates() }
+					{ Array.isArray( newspack_listings_event_dates ) && renderDates() }
 					{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
 
 					{ showTags && post.tags.length && (
