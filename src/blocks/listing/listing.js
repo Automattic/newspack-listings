@@ -3,55 +3,14 @@
 /**
  * External dependencies
  */
-import { __, _x } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
-import { date } from '@wordpress/date';
 import { Fragment, RawHTML } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 
 export const Listing = ( { attributes, error, post } ) => {
 	// Parent Curated List block attributes.
 	const { showAuthor, showCategory, showTags, showExcerpt, showImage, showCaption } = attributes;
-	const { date_format, time_format } = window.newspack_listings_data;
-	const { newspack_listings_event_dates } = post.meta || {};
-
-	// Render event date(s) and time(s).
-	const renderDates = () => {
-		return (
-			<ul className="newspack-listings__event-dates">
-				{ newspack_listings_event_dates.map( ( dates, index ) => {
-					const {
-						endDate = '',
-						showEnd = false,
-						showEndTime = false,
-						startDate = '',
-						showStartTime = false,
-					} = dates;
-					return (
-						<li key={ index } className="newspack-listings__event-start-time">
-							<time dateTime={ startDate }>
-								{ date(
-									showStartTime ? `${ date_format } ${ time_format }` : date_format,
-									startDate
-								) }
-							</time>
-							{ showEnd && (
-								<Fragment>
-									{ _x( ' – ', 'Date range separator', 'newspack-listings' ) }
-									<time dateTime={ endDate }>
-										{ date(
-											showEndTime ? `${ date_format } ${ time_format }` : date_format,
-											endDate
-										) }
-									</time>
-								</Fragment>
-							) }
-						</li>
-					);
-				} ) }
-			</ul>
-		);
-	};
 
 	return (
 		<div className="newspack-listings__listing-post entry-wrapper">
@@ -90,7 +49,7 @@ export const Listing = ( { attributes, error, post } ) => {
 					{ showAuthor && post.author && (
 						<cite>{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( post.author ) }</cite>
 					) }
-					{ Array.isArray( newspack_listings_event_dates ) && renderDates() }
+
 					{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
 
 					{ showTags && post.tags.length && (
