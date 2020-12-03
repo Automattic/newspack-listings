@@ -125,7 +125,7 @@ function render_block( $attributes ) {
 				</span>
 			<?php endif; ?>
 		</time>
-		<?php if ( $is_date_range && empty( $is_same_day ) ) : ?>
+		<?php if ( $is_date_range ) : ?>
 			<?php if ( empty( $is_same_day ) || $show_time ) : ?>
 				<span class="newspack-listings__event-time">
 					<?php echo esc_html( _x( '–', 'Date separator', 'newspack-listings' ) ); ?>
@@ -140,7 +140,6 @@ function render_block( $attributes ) {
 					echo esc_html( $the_end_date );
 				}
 				?>
-
 				<?php if ( $show_time ) : ?>
 					<span class="newspack-listings__event-time">
 						<?php echo esc_html( $end_date->format( $time_format ) ); ?>
