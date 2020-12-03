@@ -7,6 +7,7 @@
  */
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
 use \Newspack_Listings\Utils as Utils;
 
 call_user_func(
@@ -76,7 +77,29 @@ call_user_func(
 
 				<?php
 				if ( $attributes['showExcerpt'] ) {
-					echo wp_kses_post( Utils\get_listing_excerpt( $post ) );
+					$custom_excerpt = Utils\get_listing_excerpt( $post );
+
+					// If post is an event listing, check for event dates and prepend them to the excerpt.
+					if ( Core::NEWSPACK_LISTINGS_POST_TYPES['event'] === $post->post_type ) {
+						$event_dates_blocks = Utils\get_blocks_by_type( 'newspack-listings/event-dates', parse_blocks( $post->post_content ) );
+
+						if ( is_array( $event_dates_blocks ) && 0 < count( $event_dates_blocks ) ) {
+							$the_dates = '';
+
+							foreach ( $event_dates_blocks as $event_date_block ) {
+								$event_dates = Blocks::template_include(
+									'event-dates',
+									[ 'attributes' => array_shift( $event_dates_blocks )['attrs'] ]
+								);
+
+								$the_dates .= $event_dates;
+							}
+
+							$custom_excerpt = $the_dates . $custom_excerpt;
+						}
+					}
+
+					echo wp_kses_post( $custom_excerpt );
 				}
 				?>
 

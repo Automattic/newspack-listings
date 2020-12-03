@@ -53,7 +53,6 @@ final class Newspack_Listings_Blocks {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'custom_styles' ] );
 		add_action( 'init', [ __CLASS__, 'manage_view_assets' ] );
-		add_filter( 'excerpt_allowed_blocks', [ __CLASS__, 'allow_event_dates_in_excerpts' ] );
 	}
 
 	/**
@@ -261,17 +260,6 @@ final class Newspack_Listings_Blocks {
 		$contents = ob_get_contents();
 		ob_end_clean();
 		return $contents;
-	}
-
-	/**
-	 * Allow Event Date blocks to appear in post excerpts.
-	 *
-	 * @param array $allowed_blocks Array of block names that can appear in post excerpts.
-	 * @return array Filtered array.
-	 */
-	public static function allow_event_dates_in_excerpts( $allowed_blocks ) {
-		$allowed_blocks[] = 'newspack-listings/event-dates';
-		return $allowed_blocks;
 	}
 }
 

@@ -149,7 +149,7 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 	$excerpt = str_replace( ']]>', ']]&gt;', $excerpt );
 
 	// Strip HTML tags except for the explicitly allowed tags.
-	$allowed_tags = '<em>,<i>,<strong>,<b>,<u>,<ul>,<ol>,<li>,<h1>,<h2>,<h3>,<h4>,<h5>,<h6>,<p>,<img>,<time>,<div>,<span>';
+	$allowed_tags = '<em>,<i>,<strong>,<b>,<u>,<ul>,<ol>,<li>,<h1>,<h2>,<h3>,<h4>,<h5>,<h6>,<p>,<img>';
 	$excerpt      = strip_tags( $excerpt, $allowed_tags ); // phpcs:ignore WordPressVIPMinimum.Functions.StripTags.StripTagsTwoParameters
 
 	// Get excerpt length. If not provided a valid length, use the default excerpt length.
@@ -206,6 +206,49 @@ function get_request_attributes( $attributes ) {
 		},
 		array_intersect_key( $attributes, array_flip( $listing_attributes ) )
 	);
+}
+
+/**
+ * Are the given dates the same calendar day?
+ *
+ * @param DateTime $start_date Start date class.
+ * @param DateTime $end_date End date class.
+ * @return boolean Whether the two dates are the same day.
+ */
+function is_same_day( $start_date, $end_date ) {
+	return $start_date->format( 'F j, Y' ) === $end_date->format( 'F j, Y' );
+}
+
+/**
+ * Are the given dates in the same calendar month?
+ *
+ * @param DateTime $start_date Start date class.
+ * @param DateTime $end_date End date class.
+ * @return boolean Whether the two dates are in the same month.
+ */
+function is_same_month( $start_date, $end_date ) {
+	return $start_date->format( 'F, Y' ) === $end_date->format( 'F, Y' );
+}
+
+/**
+ * Are the given dates in the same calendar year?
+ *
+ * @param DateTime $start_date Start date class.
+ * @param DateTime $end_date End date class.
+ * @return boolean Whether the two dates are in the same year.
+ */
+function is_same_year( $start_date, $end_date ) {
+	return $start_date->format( 'Y' ) === $end_date->format( 'Y' );
+}
+
+/**
+ * Given a YYYY-MM-DDTHH:MM:SS date/time string, get only the date.
+ *
+ * @param string $date_string Date/time string in YYYY-MM-DDTHH:MM:SS format.
+ * @return string The same date string, but without the timestamp.
+ */
+function strip_time( $date_string ) {
+	return explode( 'T', $date_string )[0];
 }
 
 /**
