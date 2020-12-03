@@ -47,11 +47,6 @@ function register_blocks() {
  * @param array $attributes Block attributes (including parent attributes inherited from Curated List container block).
  */
 function render_block( $attributes ) {
-	// Don't output the block inside RSS feeds.
-	if ( is_feed() ) {
-		return;
-	}
-
 	// Bail if there's no listing post ID for this block.
 	if ( empty( $attributes['listing'] ) ) {
 		return;

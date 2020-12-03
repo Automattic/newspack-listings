@@ -75,39 +75,6 @@ call_user_func(
 				<?php endif; ?>
 
 				<?php
-				$event_dates = get_post_meta( $post->ID, 'newspack_listings_event_dates', true );
-
-				if ( ! empty( $event_dates ) ) :
-					$date_format = get_option( 'date_format' );
-					$time_format = get_option( 'time_format' );
-					?>
-					<ul class="newspack-listings__event-dates">
-						<?php foreach ( $event_dates as $event_date ) : ?>
-							<?php if ( $event_date['startDate'] ) : ?>
-								<li class="newspack-listings__event-start-time">
-									<time datetime="<?php echo esc_attr( $event_date['startDate'] ); ?>">
-										<?php
-										$start_date_format = $event_date['showStartTime'] ? $date_format . ' ' . $time_format : $date_format;
-										echo esc_html( gmdate( $start_date_format, strtotime( $event_date['startDate'] ) ) );
-										?>
-									</time>
-
-									<?php if ( $event_date['showEnd'] && $event_date['endDate'] ) : ?>
-										<?php echo esc_html( _x( ' – ', 'Date string separator', 'newspack-listings' ) ); ?>
-											<time datetime="<?php echo esc_attr( $event_date['endDate'] ); ?>">
-												<?php
-												$end_date_format = $event_date['showEndTime'] ? $date_format . ' ' . $time_format : $date_format;
-												echo esc_html( gmdate( $end_date_format, strtotime( $event_date['endDate'] ) ) );
-												?>
-											</time>
-									<?php endif; ?>
-								</li>
-							<?php endif; ?>
-						<?php endforeach; ?>
-					</ul>
-				<?php endif; ?>
-
-				<?php
 				if ( $attributes['showExcerpt'] ) {
 					echo wp_kses_post( Utils\get_listing_excerpt( $post ) );
 				}

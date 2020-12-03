@@ -38,11 +38,6 @@ function register_block() {
  * @param string $inner_content InnerBlock content.
  */
 function render_block( $attributes, $inner_content ) {
-	// Don't output the block inside RSS feeds.
-	if ( is_feed() ) {
-		return;
-	}
-
 	$content = '';
 
 	if ( $attributes['showSortUi'] ) {
@@ -101,12 +96,24 @@ function render_block( $attributes, $inner_content ) {
 							<?php echo esc_html( __( 'Default', 'newspack-listings' ) ); ?>
 						</option>
 					<?php endif; ?>
+					<?php if ( Core::NEWSPACK_LISTINGS_POST_TYPES['event'] === $attributes['queryOptions']['type'] ) : ?>
+						<option
+							value="event_date"
+							<?php if ( $attributes['queryMode'] && 'event_date' === $attributes['queryOptions']['sortBy'] ) : ?>
+								selected
+							<?php endif; ?>
+						>
+							<?php echo esc_html( __( 'Event Date', 'newspack-listings' ) ); ?>
+						</option>
+					<?php endif; ?>
 					<option
 						value="date"
 						<?php if ( $attributes['queryMode'] && 'date' === $attributes['queryOptions']['sortBy'] ) : ?>
 							selected
 						<?php endif; ?>
-					><?php echo esc_html( __( 'Publish Date', 'newspack-listings' ) ); ?></option>
+					>
+						<?php echo esc_html( __( 'Publish Date', 'newspack-listings' ) ); ?>
+					</option>
 					<option
 						value="title"
 						<?php if ( $attributes['queryMode'] && 'title' === $attributes['queryOptions']['sortBy'] ) : ?>

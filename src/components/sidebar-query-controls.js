@@ -178,7 +178,7 @@ class QueryControls extends Component {
 		if ( isEventList ) {
 			sortOptions.unshift( {
 				label: __( 'Event Date', 'newspack-listings' ),
-				value: 'start_date',
+				value: 'event_date',
 			} );
 		}
 

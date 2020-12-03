@@ -172,7 +172,7 @@ final class Newspack_Listings_Core {
 		];
 		$post_types_config = [
 			'event'       => [
-				'labels'  => [
+				'labels'   => [
 					'name'               => _x( 'Events', 'post type general name', 'newspack-listings' ),
 					'singular_name'      => _x( 'Event', 'post type singular name', 'newspack-listings' ),
 					'menu_name'          => _x( 'Events', 'admin menu', 'newspack-listings' ),
@@ -188,7 +188,8 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'rewrite'  => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'template' => [ [ 'newspack-listings/event-dates' ] ],
 			],
 			'generic'     => [
 				'labels'  => [
@@ -332,7 +333,7 @@ final class Newspack_Listings_Core {
 		}
 
 		$all_meta_fields = [
-			'newspack_listings_contact_email'   => [
+			'newspack_listings_contact_email'    => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -364,7 +365,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_phone'   => [
+			'newspack_listings_contact_phone'    => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -396,7 +397,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_address' => [
+			'newspack_listings_contact_address'  => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -445,7 +446,7 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_business_hours'  => [
+			'newspack_listings_business_hours'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
@@ -492,7 +493,7 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_locations'       => [
+			'newspack_listings_locations'        => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -549,49 +550,30 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_event_dates'     => [
+			'newspack_listings_event_start_date' => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 				],
 				'label'      => __( 'Event dates', 'newspack-listings' ),
+				'source'     => [
+					'blockName' => 'newspack-listings/event-dates',
+					'attr'      => 'startDate',
+					'single'    => true,
+				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
 					'default'           => [],
-					'description'       => __( 'Start and end dates for this event.', 'newspack-listings' ),
-					'type'              => 'array',
-					'sanitize_callback' => 'Utils\sanitize_array',
+					'description'       => __( 'Start date for this event.', 'newspack-listings' ),
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
-					'show_in_rest'      => [
-						'schema' => [
-							'type'  => 'array',
-							'items' => [
-								'type'       => 'object',
-								'properties' => [
-									'startDate'     => [
-										'type' => 'string',
-									],
-									'showStartTime' => [
-										'type' => 'boolean ',
-									],
-									'showEnd'       => [
-										'type' => 'boolean ',
-									],
-									'endDate'       => [
-										'type' => 'string',
-									],
-									'showEndTime'   => [
-										'type' => 'boolean',
-									],
-								],
-							],
-						],
-					],
+					'show_in_rest'      => true,
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
 				],
 			],
-			'newspack_listings_hide_author'     => [
+			'newspack_listings_hide_author'      => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],

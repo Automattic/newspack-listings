@@ -82,6 +82,11 @@ function get_data_from_blocks( $blocks, $source ) {
 			return false;
 		}
 
+		// If the source has 'single' specified, only get data from the first found block instance.
+		if ( $source['single'] ) {
+			$matching_blocks = array_slice( $matching_blocks, 0, 1 );
+		}
+
 		// Gather data from all matching block instances.
 		foreach ( $matching_blocks as $matching_block ) {
 			$block_data = false;
@@ -106,6 +111,11 @@ function get_data_from_blocks( $blocks, $source ) {
 	// Return false instead of an empty array, if there's no data to return.
 	if ( empty( $data ) ) {
 		return false;
+	}
+
+	// If the source has 'single' specified, only return data from the first found block instance.
+	if ( $source['single'] ) {
+		return array_shift( $data );
 	}
 
 	return $data;
@@ -139,7 +149,7 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 	$excerpt = str_replace( ']]>', ']]&gt;', $excerpt );
 
 	// Strip HTML tags except for the explicitly allowed tags.
-	$allowed_tags = '<em>,<i>,<strong>,<b>,<u>,<ul>,<ol>,<li>,<h1>,<h2>,<h3>,<h4>,<h5>,<h6>,<p>,<img>';
+	$allowed_tags = '<em>,<i>,<strong>,<b>,<u>,<ul>,<ol>,<li>,<h1>,<h2>,<h3>,<h4>,<h5>,<h6>,<p>,<img>,<time>,<div>,<span>';
 	$excerpt      = strip_tags( $excerpt, $allowed_tags ); // phpcs:ignore WordPressVIPMinimum.Functions.StripTags.StripTagsTwoParameters
 
 	// Get excerpt length. If not provided a valid length, use the default excerpt length.

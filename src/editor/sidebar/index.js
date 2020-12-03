@@ -10,14 +10,12 @@ import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 /**
  * Internal dependencies
  */
-import { EventDates } from './event-dates';
 import { isListing } from '../utils';
 import './style.scss';
 
 const SidebarComponent = ( { meta, updateMetaValue } ) => {
-	const { post_type_label, post_type, post_types } = window.newspack_listings_data;
+	const { post_type_label, post_types } = window.newspack_listings_data;
 	const { newspack_listings_hide_author } = meta;
-	const isEvent = 'newspack_lst_event' === post_type;
 
 	if ( ! post_types || ! isListing() ) {
 		return null;
@@ -37,7 +35,6 @@ const SidebarComponent = ( { meta, updateMetaValue } ) => {
 					onChange={ value => updateMetaValue( 'newspack_listings_hide_author', value ) }
 				/>
 			</PanelRow>
-			{ isEvent && <EventDates /> }
 		</PluginDocumentSettingPanel>
 	);
 };

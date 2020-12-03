@@ -15,15 +15,22 @@ import { Event, Generic, Marketplace, Place } from '../svg';
 /**
  * Check if the current post in the editor is a listing CPT.
  *
+ * @param {string|null} listingType (Optional) If given, check if the current post is this exact listing type
  * @return {boolean} Whether or not the current post is a listing CPT.
  */
-export const isListing = () => {
+export const isListing = ( listingType = null ) => {
 	if ( ! window.newspack_listings_data ) {
 		return false;
 	}
 
 	const { post_type, post_types } = window.newspack_listings_data;
 
+	// If passed a listingType arg, just check whether it matches the current post type.
+	if ( null !== listingType ) {
+		return listingType === post_type;
+	}
+
+	// Otherwise, check whether the current post type is any listing type.
 	for ( const slug in post_types ) {
 		if ( post_types.hasOwnProperty( slug ) && post_type === post_types[ slug ].name ) {
 			return true;
@@ -98,7 +105,7 @@ export const capitalize = str => str[ 0 ].toUpperCase() + str.slice( 1 );
  *
  * @param {string} listingTypeSlug Slug of the listing type to get an icon for.
  *               One of: event, generic, marketplace, place
- * @return {function} SVG component for the matching icon.
+ * @return {Function} SVG component for the matching icon.
  */
 export const getIcon = listingTypeSlug => {
 	switch ( listingTypeSlug ) {

@@ -39,11 +39,6 @@ function register_block() {
  * @param String $inner_content InnerBlock content.
  */
 function render_block( $attributes, $inner_content ) {
-	// Don't output the block inside RSS feeds.
-	if ( is_feed() ) {
-		return;
-	}
-
 	// REST API URL for Listings.
 	$rest_url = rest_url( '/newspack-listings/v1/listings' );
 
