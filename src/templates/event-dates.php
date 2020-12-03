@@ -21,9 +21,9 @@ call_user_func(
 		$time_format   = get_option( 'time_format', 'g:i A' );
 		$is_date_range = ! empty( $attributes['endDate'] ) && ! empty( $attributes['showEnd'] );
 		$start_date    = new \DateTime( $attributes['startDate'] );
-		$end_date      = new \DateTime( $attributes['endDate'] );
-		$show_time     = $attributes['showTime'];
-		$is_same_day   = Utils\is_same_day( $start_date, $end_date );
+		$end_date      = ! empty( $attributes['endDate'] ) ? new \DateTime( $attributes['endDate'] ) : false;
+		$show_time     = ! empty( $attributes['showTime'] ) ? $attributes['showTime'] : false;
+		$is_same_day   = empty( $end_date ) ? true : Utils\is_same_day( $start_date, $end_date );
 
 		$start_date_format = $date_format;
 		$end_date_format   = $date_format;
@@ -39,8 +39,11 @@ call_user_func(
 		}
 
 		$the_start_date = $start_date->format( $start_date_format );
-		$the_end_date   = $end_date->format( $end_date_format );
+		$the_end_date   = '';
 
+		if ( ! empty( $end_date ) ) {
+			$the_end_date = $end_date->format( $end_date_format );
+		}
 		?>
 	<div class="newspack-listings__event-dates">
 		<time

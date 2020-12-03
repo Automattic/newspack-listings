@@ -113,13 +113,14 @@ function render_block( $attributes, $inner_content ) {
 	// Allow radio input elements.
 	if ( empty( $allowed_elements['input'] ) ) {
 		$allowed_elements['input'] = [
-			'class'    => true,
-			'checked'  => true,
-			'disabled' => true,
-			'id'       => true,
-			'name'     => true,
-			'type'     => true,
-			'value'    => true,
+			'class'       => true,
+			'checked'     => true,
+			'disabled'    => true,
+			'id'          => true,
+			'name'        => true,
+			'type'        => true,
+			'value'       => true,
+			'placeholder' => true,
 		];
 	}
 
@@ -179,7 +180,7 @@ function render_block( $attributes, $inner_content ) {
 	ob_start();
 
 	?>
-	<?php if ( $has_more_pages && Utils\is_amp() ) : ?>
+	<?php if ( $amp_script ) : ?>
 		<amp-script layout="container" src="<?php echo esc_url( NEWSPACK_LISTINGS_URL . 'amp/curated-list/view.js' ); ?>">
 	<?php endif; ?>
 	<div

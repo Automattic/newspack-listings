@@ -28,6 +28,14 @@
 		div {
 			align-items: center;
 			display: flex;
+
+			&.full-width {
+				width: 100%;
+			}
+		}
+
+		section {
+			margin-bottom: 0.5rem;
 		}
 
 		div + div {
@@ -50,8 +58,9 @@
 
 		@media only screen and ( min-width: $tablet_width ) {
 			display: flex;
+			flex-wrap: wrap;
 
-			section + section {
+			section + section:not( .full-width ) {
 				margin-left: 1.5rem;
 			}
 		}

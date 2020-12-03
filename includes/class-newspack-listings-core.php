@@ -562,7 +562,7 @@ final class Newspack_Listings_Core {
 				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => [],
+					'default'           => '',
 					'description'       => __( 'Start date for this event.', 'newspack-listings' ),
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
