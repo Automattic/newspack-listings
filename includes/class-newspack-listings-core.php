@@ -647,23 +647,6 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * Filter callback to decide whether to show the author for the current singular post.
-	 * Can be used from other plugins and/or themes to modify default template behavior.
-	 *
-	 * @param boolean $hide_author Whether or not to hide the author.
-	 * @return boolean If the current post a.) is a listing and b.) has enabled the option to hide author.
-	 */
-	public static function hide_author( $hide_author = false ) {
-		$post_id = get_the_ID();
-
-		if ( self::is_listing() && ! empty( get_post_meta( $post_id, 'newspack_listings_hide_author', true ) ) ) {
-			return true;
-		}
-
-		return $hide_author;
-	}
-
-	/**
 	 * Sync data from specific content blocks to post meta.
 	 * Source blocks for each meta field are set in the meta config above.
 	 *
@@ -696,6 +679,23 @@ final class Newspack_Listings_Core {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Filter callback to decide whether to show the author for the current singular post.
+	 * Can be used from other plugins and/or themes to modify default template behavior.
+	 *
+	 * @param boolean $hide_author Whether or not to hide the author.
+	 * @return boolean If the current post a.) is a listing and b.) has enabled the option to hide author.
+	 */
+	public static function hide_author( $hide_author = false ) {
+		$post_id = get_the_ID();
+
+		if ( self::is_listing() && ! empty( get_post_meta( $post_id, 'newspack_listings_hide_author', true ) ) ) {
+			return true;
+		}
+
+		return $hide_author;
 	}
 
 	/**
