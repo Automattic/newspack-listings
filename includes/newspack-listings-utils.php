@@ -29,6 +29,30 @@ function sanitize_array( $array ) {
 	return $array;
 }
 
+
+/**
+ * Loads a template with given data in scope.
+ *
+ * @param string $template Name of the template to be included.
+ * @param array  $data     Data to be passed into the template to be included.
+ * @param string $path     (Optional) Path to the folder containing the template.
+ * @return string
+ */
+function template_include( $template, $data = [], $path = NEWSPACK_LISTINGS_PLUGIN_FILE . 'src/templates/' ) {
+	if ( ! strpos( $template, '.php' ) ) {
+		$template = $template . '.php';
+	}
+	$path .= $template;
+	if ( ! is_file( $path ) ) {
+		return '';
+	}
+	ob_start();
+	include $path;
+	$contents = ob_get_contents();
+	ob_end_clean();
+	return $contents;
+}
+
 /**
  * Given a block name, get all blocks (and recursively, all inner blocks) matching the given type.
  *
@@ -136,9 +160,25 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 		return false;
 	}
 
+	$the_dates = '';
+
+	// If post contains event dates, prepend them to the excerpt.
+	$event_dates_blocks = get_blocks_by_type( 'newspack-listings/event-dates', parse_blocks( $post->post_content ) );
+
+	if ( is_array( $event_dates_blocks ) && 0 < count( $event_dates_blocks ) ) {
+		foreach ( $event_dates_blocks as $event_date_block ) {
+			$event_dates = template_include(
+				'event-dates',
+				[ 'attributes' => array_shift( $event_dates_blocks )['attrs'] ]
+			);
+
+			$the_dates .= $event_dates;
+		}
+	}
+
 	// If we have a manually entered excerpt, use that.
 	if ( ! empty( $post->post_excerpt ) ) {
-		return wpautop( $post->post_excerpt );
+		return $the_dates . wpautop( $post->post_excerpt );
 	}
 
 	// Recreate logic from wp_trim_excerpt (https://developer.wordpress.org/reference/functions/wp_trim_excerpt/).
@@ -188,7 +228,7 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 	// Balance unclosed HTML tags and trim whitespace.
 	$output = trim( force_balance_tags( $output ) );
 
-	return $output;
+	return $the_dates . $output;
 }
 
 /**

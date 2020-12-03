@@ -40,7 +40,10 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 								showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 							) }
 							checked={ showEnd }
-							onChange={ () => setAttributes( { showEnd: ! showEnd } ) }
+							onChange={ () => {
+								setAttributes( { showEnd: ! showEnd } );
+								setAttributes( { endDate: '' } );
+							} }
 						/>
 					</PanelRow>
 				</PanelBody>
@@ -80,7 +83,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 							} }
 						/>
 						{ ! showTime && startDate && (
-							<Button isLink onClick={ () => setAttributes( { startDate: false } ) }>
+							<Button isLink onClick={ () => setAttributes( { startDate: '' } ) }>
 								{ __( 'Reset', 'newspack-listings' ) }
 							</Button>
 						) }
@@ -117,7 +120,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 								} }
 							/>
 							{ ! showTime && endDate && (
-								<Button isLink onClick={ () => setAttributes( { endDate: false } ) }>
+								<Button isLink onClick={ () => setAttributes( { endDate: '' } ) }>
 									{ __( 'Reset', 'newspack-listings' ) }
 								</Button>
 							) }

@@ -8,7 +8,6 @@
 namespace Newspack_Listings\Curated_List_Block;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
 use \Newspack_Listings\Newspack_Listings_Api as Api;
 use \Newspack_Listings\Utils as Utils;
 
@@ -158,7 +157,7 @@ function render_block( $attributes, $inner_content ) {
 
 			while ( $listings->have_posts() ) {
 				$listings->the_post();
-				$listing_content = Blocks::template_include(
+				$listing_content = Utils\template_include(
 					'listing',
 					[
 						'attributes' => $attributes,

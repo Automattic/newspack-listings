@@ -8,7 +8,7 @@
 namespace Newspack_Listings\Listing_Block;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
+use \Newspack_Listings\Utils as Utils;
 
 /**
  * Dynamic block registration.
@@ -60,7 +60,7 @@ function render_block( $attributes ) {
 		return;
 	}
 
-	$content = Blocks::template_include(
+	$content = Utils\template_include(
 		'listing',
 		[
 			'attributes' => $attributes,

@@ -8,7 +8,6 @@
 namespace Newspack_Listings\Event_Dates_Block;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
 use \Newspack_Listings\Utils as Utils;
 
 /**
@@ -44,7 +43,7 @@ function render_block( $attributes ) {
 	}
 
 	// Begin front-end output.
-	$content = Blocks::template_include(
+	$content = Utils\template_include(
 		'event-dates',
 		[ 'attributes' => $attributes ]
 	);

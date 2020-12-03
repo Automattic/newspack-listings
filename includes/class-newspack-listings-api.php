@@ -241,7 +241,7 @@ final class Newspack_Listings_Api {
 
 						// if $fields includes html, get rendered HTML for the post.
 						if ( in_array( 'html', $fields ) && ! empty( $attributes ) ) {
-							$html = Blocks::template_include(
+							$html = Utils\template_include(
 								'listing',
 								[
 									'attributes' => $attributes,
