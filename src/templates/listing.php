@@ -7,7 +7,6 @@
  */
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
 use \Newspack_Listings\Utils as Utils;
 
 call_user_func(
@@ -77,9 +76,7 @@ call_user_func(
 
 				<?php
 				if ( $attributes['showExcerpt'] ) {
-					$custom_excerpt = Utils\get_listing_excerpt( $post );
-
-					echo wp_kses_post( $custom_excerpt );
+					echo wp_kses_post( Utils\get_listing_excerpt( $post ) );
 				}
 				?>
 
