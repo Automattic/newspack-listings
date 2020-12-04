@@ -27,13 +27,13 @@ import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
+import { Icon, check, loop, postList } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
-import { List, Query, Specific } from '../../svg';
 import { getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 /**
@@ -309,7 +309,10 @@ const CuratedListEditorComponent = ( {
 	 */
 	if ( isEmpty ) {
 		return (
-			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
+			<Placeholder
+				icon={ <Icon icon={ postList } /> }
+				label={ __( 'Curated List', 'newspack-listings' ) }
+			>
 				<Notice isDismissible={ false }>
 					{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }
 				</Notice>
@@ -324,7 +327,7 @@ const CuratedListEditorComponent = ( {
 		return (
 			<div className="newspack-listings__placeholder">
 				<BlockVariationPicker
-					icon={ <List /> }
+					icon={ <Icon icon={ postList } /> }
 					label={ __( 'Curated List', 'newspack-listings' ) }
 					instructions={ __( 'Select the type of list to start with.' ) }
 					onSelect={ variation => {
@@ -343,12 +346,12 @@ const CuratedListEditorComponent = ( {
 						{
 							name: 'query',
 							title: __( 'Query', 'newspack-listings' ),
-							icon: <Query />,
+							icon: <Icon icon={ loop } size={ 48 } />,
 						},
 						{
 							name: 'specific',
 							title: __( 'Specific Listings', 'newspack-listings' ),
-							icon: <Specific />,
+							icon: <Icon icon={ check } size={ 48 } />,
 						},
 					] }
 				/>

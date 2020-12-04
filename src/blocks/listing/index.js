@@ -3,13 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
+import { Icon, page } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
 import { ListingEditor } from './edit';
-import { List } from '../../svg';
 import metadata from './block.json';
 import parentData from '../curated-list/block.json';
 
@@ -22,7 +22,7 @@ export const registerListingBlock = () => {
 		if ( post_types.hasOwnProperty( listingType ) ) {
 			registerBlockType( `newspack-listings/${ listingType }`, {
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
-				icon: <List />,
+				icon: <Icon icon={ page } />,
 				category,
 				parent: [ 'newspack-listings/list-container' ],
 				keywords: [
