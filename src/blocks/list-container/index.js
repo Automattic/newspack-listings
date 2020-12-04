@@ -15,7 +15,10 @@ import { ListContainerEditor } from './edit';
 export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
 		title: __( 'Curated List Container', 'newspack-listing' ),
-		icon: <Icon icon={ group } />,
+		icon: {
+			src: <Icon icon={ group } />,
+			foreground: '#36f',
+		},
 		category: 'newspack',
 		parent: [ 'newspack-listings/curated-list' ],
 		keywords: [
