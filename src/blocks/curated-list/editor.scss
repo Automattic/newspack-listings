@@ -2,8 +2,10 @@
 
 .newspack-listings {
 	&__curated-list-editor {
-		border: 1px solid var( --newspack-listings--grey-dark );
+		border: 1px solid transparent;
 		border-radius: 2px;
+		margin-left: -1rem;
+		margin-right: -1rem;
 		padding: 1em;
 
 		label,
@@ -12,6 +14,13 @@
 			font-size: 13px;
 			line-height: 1.5;
 			margin-bottom: 8px;
+		}
+
+		.wp-block[data-type^='newspack-listings']
+			+ .wp-block[data-type^='newspack-listings']
+			.newspack-listings__listing-editor {
+			border-top: 1px solid var( --newspack-listings--grey-light );
+			padding-top: 1rem;
 		}
 	}
 
