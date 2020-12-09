@@ -2,8 +2,8 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { InnerBlocks } from '@wordpress/block-editor';
-import { Notice } from '@wordpress/components';
+import { InnerBlocks, InspectorControls } from '@wordpress/block-editor';
+import { Notice, PanelRow, Spinner } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
@@ -30,6 +30,11 @@ const ListContainerEditorComponent = ( {
 
 	return (
 		<div className="newspack-listings__list-container">
+			<InspectorControls>
+				<PanelRow className="newspack-listings__list-container-spinner">
+					<Spinner />
+				</PanelRow>
+			</InspectorControls>
 			{ ! queryMode && innerBlocks && 0 === innerBlocks.length && (
 				<Notice className="newspack-listings__info" status="info" isDismissible={ false }>
 					{ __( 'This list is empty. Click the [+] button to add some listings.' ) }

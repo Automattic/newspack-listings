@@ -58,6 +58,8 @@ const CuratedListEditorComponent = ( {
 	insertBlocks,
 	isSelected,
 	removeBlocks,
+	selectBlock,
+	selectedBlock,
 	setAttributes,
 	updateBlockAttributes,
 } ) => {
@@ -258,6 +260,16 @@ const CuratedListEditorComponent = ( {
 			insertBlocks( [ newBlock ], null, clientId );
 		}
 	}, [ list ]);
+
+	/**
+	 * Prevent focusing of "invisible" List Container wrapper block.
+	 * Passes the focusing of List Container to this parent Curated List block.
+	 */
+	useEffect(() => {
+		if ( selectedBlock === list.clientId ) {
+			selectBlock( clientId );
+		}
+	}, [ selectedBlock ]);
 
 	/**
 	 * Render the results of the listing query.
@@ -609,23 +621,27 @@ const CuratedListEditorComponent = ( {
 };
 
 const mapStateToProps = ( select, ownProps ) => {
-	const { getBlocksByClientId } = select( 'core/block-editor' );
+	const { getBlocksByClientId, getSelectedBlockClientId } = select( 'core/block-editor' );
 	const { getBlockType } = select( 'core/blocks' );
 	const innerBlocks = getBlocksByClientId( ownProps.clientId )[ 0 ].innerBlocks || [];
 	const canUseMapBlock = !! getBlockType( 'jetpack/map' ); // Check for existence of Jetpack Map block before enabling location-based features.
 
 	return {
 		canUseMapBlock,
+		selectedBlock: getSelectedBlockClientId(),
 		innerBlocks,
 	};
 };
 
 const mapDispatchToProps = dispatch => {
-	const { insertBlocks, removeBlocks, updateBlockAttributes } = dispatch( 'core/block-editor' );
+	const { insertBlocks, removeBlocks, selectBlock, updateBlockAttributes } = dispatch(
+		'core/block-editor'
+	);
 
 	return {
 		insertBlocks,
 		removeBlocks,
+		selectBlock,
 		updateBlockAttributes,
 	};
 };

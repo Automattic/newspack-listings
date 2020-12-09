@@ -17,7 +17,7 @@ const parentAttributes = parentData.attributes;
 
 export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
-		title: __( 'Curated List Container', 'newspack-listing' ),
+		title: __( 'Curated List', 'newspack-listing' ),
 		icon: <List />,
 		category: 'newspack',
 		parent: [ 'newspack-listings/curated-list' ],
