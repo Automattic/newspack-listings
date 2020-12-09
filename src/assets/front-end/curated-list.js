@@ -119,8 +119,11 @@ function buildSortHandler( blockWrapperEl ) {
 	const sortUi = blockWrapperEl.querySelector( '.newspack-listings__sort-ui' );
 	const sortBy = blockWrapperEl.querySelector( '.newspack-listings__sort-select-control' );
 	const sortOrder = blockWrapperEl.querySelectorAll( '[name="newspack-listings__sort-order"]' );
+	const sortOrderContainer = blockWrapperEl.querySelector(
+		'.newspack-listings__sort-order-container'
+	);
 
-	if ( ! sortUi || ! sortBy || ! sortOrder.length ) {
+	if ( ! sortUi || ! sortBy || ! sortOrder.length || ! sortOrderContainer ) {
 		return;
 	}
 
@@ -156,9 +159,9 @@ function buildSortHandler( blockWrapperEl ) {
 
 		// Enable disabled sort order radio buttons.
 		if ( 'post__in' === e.target.value ) {
-			Array.prototype.forEach.call( sortOrder, button => button.setAttribute( 'disabled' ) );
+			sortOrderContainer.classList.add( 'is-hidden' );
 		} else {
-			Array.prototype.forEach.call( sortOrder, button => button.removeAttribute( 'disabled' ) );
+			sortOrderContainer.classList.remove( 'is-hidden' );
 		}
 
 		const requestURL = `${ restURL }&${ encodeURIComponent(

@@ -65,4 +65,15 @@
 			}
 		}
 	}
+
+	&__sort-order-container {
+		&.is-hidden {
+			display: none;
+
+			/* stylelint-disable selector-type-no-unknown  */
+			amp-script & {
+				display: none;
+			}
+		}
+	}
 }

@@ -85,7 +85,7 @@ function render_block( $attributes, $inner_content ) {
 				data-url="<?php echo esc_url( $sort_by_url ); ?>"
 			<?php endif; ?>
 		>
-			<section>
+			<section class="newspack-listings__sort-by-container">
 				<label class="newspack-listings__sort-ui-label" for="<?php echo esc_attr( 'newspack-listings__sort-by__' . $block_id ); ?>"><?php echo esc_html( __( 'Sort by:', 'newspack-listings' ) ); ?></label>
 				<select
 					class="newspack-listings__sort-select-control"
@@ -147,7 +147,9 @@ function render_block( $attributes, $inner_content ) {
 				</select>
 			</section>
 
-			<section>
+			<section class="newspack-listings__sort-order-container <?php if ( ! $attributes['queryMode'] ) : ?>
+				is-hidden
+			<?php endif; ?>">
 				<label class="newspack-listings__sort-ui-label"><?php echo esc_html( __( 'Sort order:', 'newspack-listings' ) ); ?></label>
 
 				<div>
@@ -159,9 +161,6 @@ function render_block( $attributes, $inner_content ) {
 
 						<?php if ( ! $attributes['queryMode'] || 'ASC' === $attributes['queryOptions']['order'] ) : ?>
 							checked
-						<?php endif; ?>
-						<?php if ( ! $attributes['queryMode'] ) : ?>
-							disabled
 						<?php endif; ?>
 					/>
 					<label class="newspack-listings__sort-ui-label-inner" for="<?php echo esc_attr( 'newspack-listings__sort-asc__' . $block_id ); ?>"><?php echo esc_html( __( 'Ascending', 'newspack-listings' ) ); ?></label>
@@ -176,9 +175,6 @@ function render_block( $attributes, $inner_content ) {
 
 						<?php if ( $attributes['queryMode'] && 'DESC' === $attributes['queryOptions']['order'] ) : ?>
 							checked
-						<?php endif; ?>
-						<?php if ( ! $attributes['queryMode'] ) : ?>
-							disabled
 						<?php endif; ?>
 					/>
 					<label class="newspack-listings__sort-ui-label-inner" for="<?php echo esc_attr( 'newspack-listings__sort-desc__' . $block_id ); ?>"><?php echo esc_html( __( 'Descending', 'newspack-listings' ) ); ?></label>

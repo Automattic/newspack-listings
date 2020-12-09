@@ -48,6 +48,9 @@ function buildSortHandler( blockWrapperEl ) {
 	const sortUi = blockWrapperEl.querySelector( '.newspack-listings__sort-ui' );
 	const sortBy = blockWrapperEl.querySelector( '.newspack-listings__sort-select-control' );
 	const sortOrder = blockWrapperEl.querySelectorAll( 'input' );
+	const sortOrderContainer = blockWrapperEl.querySelector(
+		'.newspack-listings__sort-order-container'
+	);
 	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
 	if ( ! sortBy || ! sortOrder.length || ! sortUi ) return;
 	const triggers = Array.prototype.concat.call( Array.prototype.slice.call( sortOrder ), [
@@ -69,9 +72,9 @@ function buildSortHandler( blockWrapperEl ) {
 			_order = e.target.value;
 		}
 		if ( 'post__in' === e.target.value ) {
-			Array.prototype.forEach.call( sortOrder, button => button.setAttribute( 'disabled' ) );
+			sortOrderContainer.classList.add( 'is-hidden' );
 		} else {
-			Array.prototype.forEach.call( sortOrder, button => button.removeAttribute( 'disabled' ) );
+			sortOrderContainer.classList.remove( 'is-hidden' );
 		}
 		const requestURL = `${ restURL }&${ encodeURIComponent(
 			'query[sortBy]'
