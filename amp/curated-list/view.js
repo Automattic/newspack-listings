@@ -1,7 +1,6 @@
 /* eslint-disable */
 
 let isFetching = false;
-let isEndOfData = false;
 buildLoadMoreHandler( document.querySelector( '.newspack-listings__curated-list' ) );
 buildSortHandler( document.querySelector( '.newspack-listings__curated-list' ) );
 function buildLoadMoreHandler( blockWrapperEl ) {
@@ -11,7 +10,7 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 	const btnText = btnEl.textContent.trim();
 	const loadingText = blockWrapperEl.querySelector( '.loading' ).textContent;
 	btnEl.addEventListener( 'click', function() {
-		if ( isFetching || isEndOfData ) return false;
+		if ( isFetching ) return false;
 		isFetching = true;
 		blockWrapperEl.classList.remove( 'is-error' );
 		blockWrapperEl.classList.add( 'is-loading' );
@@ -27,8 +26,6 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 				} );
 				if ( next ) btnEl.setAttribute( 'data-next', next );
 				if ( ! data.length || ! next ) {
-					isEndOfData = true;
-					blockWrapperEl.removeChild( btnEl );
 					blockWrapperEl.classList.remove( 'has-more-button' );
 				}
 				isFetching = false;
@@ -52,12 +49,13 @@ function buildSortHandler( blockWrapperEl ) {
 		'.newspack-listings__sort-order-container'
 	);
 	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
-	if ( ! sortBy || ! sortOrder.length || ! sortUi ) return;
+	if ( ! sortBy || ! sortOrder.length || ! sortUi || ! sortOrderContainer ) return;
 	const triggers = Array.prototype.concat.call( Array.prototype.slice.call( sortOrder ), [
 		sortBy,
 	] );
 	const postsContainerEl = blockWrapperEl.querySelector( '.newspack-listings__list-container' );
 	const restURL = sortUi.getAttribute( 'data-url' );
+	const hasMoreButton = blockWrapperEl.classList.contains( 'has-more-button' );
 	let isFetching = false;
 	let _sortBy = sortUi.querySelector( '[selected]' ).value;
 	let _order = sortUi.querySelector( '[checked]' ).value;
@@ -79,6 +77,10 @@ function buildSortHandler( blockWrapperEl ) {
 		const requestURL = `${ restURL }&${ encodeURIComponent(
 			'query[sortBy]'
 		) }=${ _sortBy }&${ encodeURIComponent( 'query[order]' ) }=${ _order }`;
+		if ( hasMoreButton && btnEl ) {
+			blockWrapperEl.classList.add( 'has-more-button' );
+			btnEl.setAttribute( 'data-next', requestURL );
+		}
 		apiFetchWithRetry( { url: requestURL, onSuccess, onError }, 3 );
 		function onSuccess( data, next ) {
 			if ( ! isPostsDataValid( data ) ) return onError();

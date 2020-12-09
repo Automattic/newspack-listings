@@ -40,11 +40,10 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 
 	// Set initial state flags.
 	let isFetching = false;
-	let isEndOfData = false;
 
 	btnEl.addEventListener( 'click', () => {
 		// Early return if still fetching or no more posts to render.
-		if ( isFetching || isEndOfData ) {
+		if ( isFetching ) {
 			return false;
 		}
 
@@ -84,8 +83,6 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 
 			// Remove next button if we're done.
 			if ( ! data.length || ! next ) {
-				isEndOfData = true;
-				blockWrapperEl.removeChild( btnEl );
 				blockWrapperEl.classList.remove( 'has-more-button' );
 			}
 
@@ -134,6 +131,7 @@ function buildSortHandler( blockWrapperEl ) {
 
 	const postsContainerEl = blockWrapperEl.querySelector( '.newspack-listings__list-container' );
 	const restURL = sortUi.getAttribute( 'data-url' );
+	const hasMoreButton = blockWrapperEl.classList.contains( 'has-more-button' );
 
 	// Set initial state flags and data.
 	let isFetching = false;
@@ -167,6 +165,11 @@ function buildSortHandler( blockWrapperEl ) {
 		const requestURL = `${ restURL }&${ encodeURIComponent(
 			'query[sortBy]'
 		) }=${ _sortBy }&${ encodeURIComponent( 'query[order]' ) }=${ _order }`;
+
+		if ( hasMoreButton && btnEl ) {
+			blockWrapperEl.classList.add( 'has-more-button' );
+			btnEl.setAttribute( 'data-next', requestURL );
+		}
 
 		fetchWithRetry( { url: requestURL, onSuccess, onError }, fetchRetryCount );
 

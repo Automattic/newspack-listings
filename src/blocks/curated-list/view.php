@@ -180,7 +180,7 @@ function render_block( $attributes, $inner_content ) {
 
 	?>
 	<?php if ( $amp_script ) : ?>
-		<amp-script layout="container" src="<?php echo esc_url( NEWSPACK_LISTINGS_URL . 'amp/curated-list/view.js' ); ?>">
+		<amp-script layout="container" sandbox="allow-forms" src="<?php echo esc_url( NEWSPACK_LISTINGS_URL . 'amp/curated-list/view.js' ); ?>">
 	<?php endif; ?>
 	<div
 		class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
@@ -188,7 +188,7 @@ function render_block( $attributes, $inner_content ) {
 	>
 		<?php echo wp_kses( $inner_content, $allowed_elements ); ?>
 		<?php if ( $attributes['queryMode'] && $has_more_pages ) : ?>
-			<button type="button" data-next="<?php echo esc_url( $next_url ); ?>">
+			<button class="newspack-listings__load-more-button" type="button" data-next="<?php echo esc_url( $next_url ); ?>">
 			<?php
 			if ( ! empty( $attributes['loadMoreText'] ) ) {
 				echo esc_html( $attributes['loadMoreText'] );
