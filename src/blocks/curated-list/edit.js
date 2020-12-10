@@ -266,7 +266,7 @@ const CuratedListEditorComponent = ( {
 	 * Passes the focusing of List Container to this parent Curated List block.
 	 */
 	useEffect(() => {
-		if ( selectedBlock === list.clientId ) {
+		if ( list && selectedBlock === list.clientId ) {
 			selectBlock( clientId );
 		}
 	}, [ selectedBlock ]);
