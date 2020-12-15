@@ -50,6 +50,7 @@ export const isListing = ( listingType = null ) => {
  */
 export const getCuratedListClasses = ( className, attributes ) => {
 	const {
+		backgroundColor,
 		showNumbers,
 		showMap,
 		showSortUi,
@@ -69,6 +70,7 @@ export const getCuratedListClasses = ( className, attributes ) => {
 		classes.push( `media-position-${ mediaPosition }` );
 		classes.push( `media-size-${ imageScale }` );
 	}
+	if ( backgroundColor ) classes.push( 'has-background-color' );
 
 	classes.push( `type-scale-${ typeScale }` );
 

@@ -61,11 +61,21 @@ function render_block( $attributes, $inner_content ) {
 		$classes[] = 'media-position-' . $attributes['mediaPosition'];
 		$classes[] = 'media-size-' . $attributes['imageScale'];
 	}
+	if ( $attributes['backgroundColor'] ) {
+		$classes[] = 'has-background-color';
+	}
 
 	$classes[] = 'type-scale-' . $attributes['typeScale'];
 
-	// Text color for listings.
-	$text_color = ! empty( $attributes['textColor'] ) ? 'color:' . $attributes['textColor'] : '';
+	// Color styles for listings.
+	$styles = [];
+
+	if ( ! empty( $attributes['textColor'] ) ) {
+		$styles[] = 'color:' . $attributes['textColor'];
+	}
+	if ( ! empty( $attributes['backgroundColor'] ) ) {
+		$styles[] = 'background-color:' . $attributes['backgroundColor'];
+	}
 
 	// Extend wp_kses_post to allow jetpack/map required elements and attributes.
 	$allowed_elements = wp_kses_allowed_html( 'post' );
@@ -184,7 +194,7 @@ function render_block( $attributes, $inner_content ) {
 	<?php endif; ?>
 	<div
 		class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
-		style="<?php echo esc_attr( $text_color ); ?>"
+		style="<?php echo esc_attr( implode( ';', $styles ) ); ?>"
 	>
 		<?php echo wp_kses( $inner_content, $allowed_elements ); ?>
 		<?php if ( $attributes['queryMode'] && $has_more_pages ) : ?>

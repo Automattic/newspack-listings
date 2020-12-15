@@ -81,7 +81,7 @@
 			"type": "string",
 			"default": ""
 		},
-		"customTextColor": {
+		"backgroundColor": {
 			"type": "string",
 			"default": ""
 		},
