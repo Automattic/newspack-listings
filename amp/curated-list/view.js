@@ -1,8 +1,8 @@
 /* eslint-disable */
 
 let isFetching = false;
-let isEndOfData = false;
 buildLoadMoreHandler( document.querySelector( '.newspack-listings__curated-list' ) );
+buildSortHandler( document.querySelector( '.newspack-listings__curated-list' ) );
 function buildLoadMoreHandler( blockWrapperEl ) {
 	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
 	if ( ! btnEl ) return;
@@ -10,7 +10,7 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 	const btnText = btnEl.textContent.trim();
 	const loadingText = blockWrapperEl.querySelector( '.loading' ).textContent;
 	btnEl.addEventListener( 'click', function() {
-		if ( isFetching || isEndOfData ) return false;
+		if ( isFetching ) return false;
 		isFetching = true;
 		blockWrapperEl.classList.remove( 'is-error' );
 		blockWrapperEl.classList.add( 'is-loading' );
@@ -26,8 +26,6 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 				} );
 				if ( next ) btnEl.setAttribute( 'data-next', next );
 				if ( ! data.length || ! next ) {
-					isEndOfData = true;
-					blockWrapperEl.removeChild( btnEl );
 					blockWrapperEl.classList.remove( 'has-more-button' );
 				}
 				isFetching = false;
@@ -42,6 +40,67 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 			btnEl.textContent = btnText;
 		}
 	} );
+}
+function buildSortHandler( blockWrapperEl ) {
+	const sortUi = blockWrapperEl.querySelector( '.newspack-listings__sort-ui' );
+	const sortBy = blockWrapperEl.querySelector( '.newspack-listings__sort-select-control' );
+	const sortOrder = blockWrapperEl.querySelectorAll( 'input' );
+	const sortOrderContainer = blockWrapperEl.querySelector(
+		'.newspack-listings__sort-order-container'
+	);
+	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
+	if ( ! sortBy || ! sortOrder.length || ! sortUi || ! sortOrderContainer ) return;
+	const triggers = Array.prototype.concat.call( Array.prototype.slice.call( sortOrder ), [
+		sortBy,
+	] );
+	const postsContainerEl = blockWrapperEl.querySelector( '.newspack-listings__list-container' );
+	const restURL = sortUi.getAttribute( 'data-url' );
+	const hasMoreButton = blockWrapperEl.classList.contains( 'has-more-button' );
+	let isFetching = false;
+	let _sortBy = sortUi.querySelector( '[selected]' ).value;
+	let _order = sortUi.querySelector( '[checked]' ).value;
+	const sortHandler = e => {
+		if ( isFetching ) return false;
+		isFetching = true;
+		blockWrapperEl.classList.remove( 'is-error' );
+		blockWrapperEl.classList.add( 'is-loading' );
+		if ( e.target.tagName.toLowerCase() === 'select' ) {
+			_sortBy = e.target.value;
+		} else {
+			_order = e.target.value;
+		}
+		if ( 'post__in' === e.target.value ) {
+			sortOrderContainer.classList.add( 'is-hidden' );
+		} else {
+			sortOrderContainer.classList.remove( 'is-hidden' );
+		}
+		const requestURL = `${ restURL }&${ encodeURIComponent(
+			'query[sortBy]'
+		) }=${ _sortBy }&${ encodeURIComponent( 'query[order]' ) }=${ _order }`;
+		if ( hasMoreButton && btnEl ) {
+			blockWrapperEl.classList.add( 'has-more-button' );
+			btnEl.setAttribute( 'data-next', requestURL );
+		}
+		apiFetchWithRetry( { url: requestURL, onSuccess, onError }, 3 );
+		function onSuccess( data, next ) {
+			if ( ! isPostsDataValid( data ) ) return onError();
+			postsContainerEl.textContent = '';
+			data.forEach( item => {
+				const tempDIV = document.createElement( 'div' );
+				tempDIV.innerHTML = item.html.trim();
+				postsContainerEl.appendChild( tempDIV.childNodes[ 0 ] );
+			} );
+			if ( next && btnEl ) btnEl.setAttribute( 'data-next', next );
+			isFetching = false;
+			blockWrapperEl.classList.remove( 'is-loading' );
+		}
+		function onError() {
+			isFetching = false;
+			blockWrapperEl.classList.remove( 'is-loading' );
+			blockWrapperEl.classList.add( 'is-error' );
+		}
+	};
+	triggers.forEach( trigger => trigger.addEventListener( 'change', sortHandler ) );
 }
 function apiFetchWithRetry( options, n ) {
 	const xhr = new XMLHttpRequest();

@@ -68,7 +68,7 @@ call_user_func(
 				<?php endif; ?>
 
 				<h3 class="newspack-listings__listing-title"><?php echo wp_kses_post( $post->post_title ); ?></h3>
-				<?php if ( $attributes['showAuthor'] ) : ?>
+				<?php if ( $attributes['showAuthor'] && empty( get_post_meta( $post->ID, 'newspack_listings_hide_author', true ) ) ) : ?>
 				<cite>
 					<?php echo wp_kses_post( __( 'By', 'newspack-listings' ) . ' ' . get_the_author_meta( 'display_name', $post->post_author ) ); ?>
 				</cite>

@@ -123,7 +123,17 @@ final class Newspack_Listings_Api {
 			$args['order'] = $query['order'];
 		}
 		if ( ! empty( $query['sortBy'] ) ) {
-			$args['orderby'] = $query['sortBy'];
+			if ( 'event_date' === $query['sortBy'] ) {
+				$args['orderby']   = 'meta_value';
+				$args['meta_type'] = 'DATE';
+				$args['meta_key']  = 'newspack_listings_event_start_date';
+			} else {
+				$args['orderby'] = $query['sortBy'];
+			}
+		}
+
+		if ( ! empty( $query['post__in'] ) ) {
+			$args['post__in'] = $query['post__in'];
 		}
 
 		if (
@@ -231,7 +241,7 @@ final class Newspack_Listings_Api {
 
 						// if $fields includes html, get rendered HTML for the post.
 						if ( in_array( 'html', $fields ) && ! empty( $attributes ) ) {
-							$html = Blocks::template_include(
+							$html = Utils\template_include(
 								'listing',
 								[
 									'attributes' => $attributes,
@@ -257,8 +267,8 @@ final class Newspack_Listings_Api {
 							$item['tags'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_TAG );
 						}
 
-						// If $fields includes author, get the post author.
-						if ( in_array( 'author', $fields ) ) {
+						// If $fields includes author and the post isn't set to hide author, get the post author.
+						if ( in_array( 'author', $fields ) && empty( get_post_meta( $post->ID, 'newspack_listings_hide_author', true ) ) ) {
 							$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
 						}
 
@@ -311,7 +321,7 @@ final class Newspack_Listings_Api {
 			}
 
 			if ( ! empty( $next_url ) ) {
-				$response->header( 'next-url', esc_url( $next_url ) );
+				$response->header( 'next-url', $next_url );
 			}
 
 			return $response;

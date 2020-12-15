@@ -49,6 +49,7 @@ export const Listing = ( { attributes, error, post } ) => {
 					{ showAuthor && post.author && (
 						<cite>{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( post.author ) }</cite>
 					) }
+
 					{ showExcerpt && post.excerpt && <RawHTML>{ post.excerpt }</RawHTML> }
 
 					{ showTags && post.tags.length && (
