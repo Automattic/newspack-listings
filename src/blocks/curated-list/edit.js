@@ -1,7 +1,7 @@
 /**
  * WorPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	__experimentalBlockVariationPicker as BlockVariationPicker,
@@ -41,6 +41,14 @@ import { getCuratedListClasses, useDidMount } from '../../editor/utils';
  */
 let debouncedFetchPosts;
 
+/**
+ * Absolute maximum number of listing posts to fetch in the editor.
+ * This allows us to fetch all listing locations for a query-based list,
+ * while also serving as a safeguard to ensure that we don't accidentally
+ * fetch a massive number of posts if the query options are too broad.
+ */
+const MAX_EDITOR_ITEMS = 100;
+
 const CuratedListEditorComponent = ( {
 	attributes,
 	canUseMapBlock,
@@ -48,7 +56,10 @@ const CuratedListEditorComponent = ( {
 	clientId,
 	innerBlocks,
 	insertBlocks,
+	isSelected,
 	removeBlocks,
+	selectBlock,
+	selectedBlock,
 	setAttributes,
 	updateBlockAttributes,
 } ) => {
@@ -58,6 +69,7 @@ const CuratedListEditorComponent = ( {
 	const {
 		showNumbers,
 		showMap,
+		showSortUi,
 		showAuthor,
 		showExcerpt,
 		showImage,
@@ -102,11 +114,11 @@ const CuratedListEditorComponent = ( {
 			setError( null );
 			const posts = await apiFetch( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
-					query,
+					query: { ...query, maxItems: MAX_EDITOR_ITEMS }, // Get up to MAX_EDITOR_ITEMS listings in the editor so we can show all locations.
 					_fields: 'id,title,author,category,tags,excerpt,media,meta,type',
 				} ),
 			} );
-
+			setAttributes( { listingIds: posts.map( post => post.id ) } );
 			setAttributes( { queriedListings: posts } );
 
 			if ( 0 === posts.length ) {
@@ -133,6 +145,13 @@ const CuratedListEditorComponent = ( {
 			}, 500 );
 		}
 	}, [ JSON.stringify( queryOptions ), queryMode ]);
+
+	/**
+	 * Set isSelected attribute so child blocks know selected state.
+	 */
+	useEffect(() => {
+		setAttributes( { isSelected } );
+	}, [ isSelected ]);
 
 	/**
 	 * Update locations in component state. This lets us keep the map block in sync with listing items.
@@ -177,7 +196,20 @@ const CuratedListEditorComponent = ( {
 		}
 
 		setLocations( newLocations );
-	}, [ queryMode, JSON.stringify( list ), JSON.stringify( queriedListings ) ]);
+	}, [ list, JSON.stringify( queriedListings ), queryMode ]);
+
+	/**
+	 * Keep track of post IDs of all nested listings in specific listings mode.
+	 */
+	useEffect(() => {
+		if ( ! queryMode && list ) {
+			const newListingIds = list.innerBlocks.map( innerBlock =>
+				parseInt( innerBlock.attributes.listing )
+			);
+
+			setAttributes( { listingIds: newListingIds } );
+		}
+	}, [ list ]);
 
 	/**
 	 * Create, update, or remove map when showMap attribute or locations change.
@@ -230,12 +262,27 @@ const CuratedListEditorComponent = ( {
 	}, [ list ]);
 
 	/**
+	 * Prevent focusing of "invisible" List Container wrapper block.
+	 * Passes the focusing of List Container to this parent Curated List block.
+	 */
+	useEffect(() => {
+		if ( list && selectedBlock === list.clientId ) {
+			selectBlock( clientId );
+		}
+	}, [ selectedBlock ]);
+
+	/**
 	 * Render the results of the listing query.
 	 *
 	 * @param {Object} listing Post object for listing to show.
 	 * @param {number} index Index of the item in the array.
 	 */
 	const renderQueriedListings = ( listing, index ) => {
+		// Only display up to the maxItems setting.
+		if ( index >= queryOptions.maxItems ) {
+			return null;
+		}
+
 		return (
 			<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
 				<Listing attributes={ attributes } error={ error } post={ listing } />
@@ -317,9 +364,7 @@ const CuratedListEditorComponent = ( {
 		);
 	}
 
-	/**
-	 * Let user pick Query or Specific mode on startup.
-	 */
+	// Let user pick Query or Specific mode on startup.
 	if ( startup ) {
 		return (
 			<div className="newspack-listings__placeholder">
@@ -365,6 +410,7 @@ const CuratedListEditorComponent = ( {
 							disabled={ isFetching }
 							setAttributes={ setAttributes }
 							queryOptions={ queryOptions }
+							showAuthor={ showAuthor }
 							showLoadMore={ showLoadMore }
 							loadMoreText={ loadMoreText }
 						/>
@@ -383,11 +429,25 @@ const CuratedListEditorComponent = ( {
 						<PanelRow>
 							<ToggleControl
 								label={ __( 'Show map', 'newspack-listings' ) }
+								help={ sprintf(
+									__(
+										'The map will display locations for up to %d items in the list, regardless of the current number of items shown.',
+										'newspack-listings'
+									),
+									MAX_EDITOR_ITEMS
+								) }
 								checked={ showMap }
 								onChange={ () => setAttributes( { showMap: ! showMap } ) }
 							/>
 						</PanelRow>
 					) }
+					<PanelRow>
+						<ToggleControl
+							label={ __( 'Show sort UI', 'newspack-listings' ) }
+							checked={ showSortUi }
+							onChange={ () => setAttributes( { showSortUi: ! showSortUi } ) }
+						/>
+					</PanelRow>
 				</PanelBody>
 				<PanelBody title={ __( 'Featured Image Settings', 'newspack-listings' ) }>
 					<PanelRow>
@@ -550,7 +610,7 @@ const CuratedListEditorComponent = ( {
 				{ ! isFetching &&
 					queryMode &&
 					showLoadMore &&
-					queryOptions.maxItems <= queriedListings.length && (
+					queryOptions.maxItems < queriedListings.length && (
 						<Button className="newspack-listings__load-more" isPrimary>
 							{ loadMoreText }
 						</Button>
@@ -561,23 +621,27 @@ const CuratedListEditorComponent = ( {
 };
 
 const mapStateToProps = ( select, ownProps ) => {
-	const { getBlocksByClientId } = select( 'core/block-editor' );
+	const { getBlocksByClientId, getSelectedBlockClientId } = select( 'core/block-editor' );
 	const { getBlockType } = select( 'core/blocks' );
 	const innerBlocks = getBlocksByClientId( ownProps.clientId )[ 0 ].innerBlocks || [];
 	const canUseMapBlock = !! getBlockType( 'jetpack/map' ); // Check for existence of Jetpack Map block before enabling location-based features.
 
 	return {
 		canUseMapBlock,
+		selectedBlock: getSelectedBlockClientId(),
 		innerBlocks,
 	};
 };
 
 const mapDispatchToProps = dispatch => {
-	const { insertBlocks, removeBlocks, updateBlockAttributes } = dispatch( 'core/block-editor' );
+	const { insertBlocks, removeBlocks, selectBlock, updateBlockAttributes } = dispatch(
+		'core/block-editor'
+	);
 
 	return {
 		insertBlocks,
 		removeBlocks,
+		selectBlock,
 		updateBlockAttributes,
 	};
 };

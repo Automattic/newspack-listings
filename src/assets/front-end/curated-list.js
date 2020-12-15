@@ -17,6 +17,11 @@ Array.prototype.forEach.call(
 	buildLoadMoreHandler
 );
 
+Array.prototype.forEach.call(
+	document.querySelectorAll( '.newspack-listings__curated-list.show-sort-ui' ),
+	buildSortHandler
+);
+
 /**
  * Builds a function to handle clicks on the load more button.
  * Creates internal state via closure to ensure all state is
@@ -35,11 +40,10 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 
 	// Set initial state flags.
 	let isFetching = false;
-	let isEndOfData = false;
 
 	btnEl.addEventListener( 'click', () => {
 		// Early return if still fetching or no more posts to render.
-		if ( isFetching || isEndOfData ) {
+		if ( isFetching ) {
 			return false;
 		}
 
@@ -58,6 +62,7 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 
 		/**
 		 * @param {Object} data Post data
+		 * @param {string} next URL to fetch next batch of posts
 		 */
 		function onSuccess( data, next ) {
 			// Validate received data.
@@ -73,13 +78,11 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 
 			if ( next ) {
 				// Save next URL as button's attribute.
-				btnEl.setAttribute( 'data-next', data.next );
+				btnEl.setAttribute( 'data-next', next );
 			}
 
 			// Remove next button if we're done.
 			if ( ! data.length || ! next ) {
-				isEndOfData = true;
-				blockWrapperEl.removeChild( btnEl );
 				blockWrapperEl.classList.remove( 'has-more-button' );
 			}
 
@@ -100,6 +103,116 @@ function buildLoadMoreHandler( blockWrapperEl ) {
 			btnEl.textContent = btnText;
 		}
 	} );
+}
+
+/**
+ * Builds a function to handle sorting of listing items.
+ * Creates internal state via closure to ensure all state is
+ * isolated to a single Block + button instance.
+ *
+ * @param {HTMLElement} blockWrapperEl the button that was clicked
+ */
+function buildSortHandler( blockWrapperEl ) {
+	const sortUi = blockWrapperEl.querySelector( '.newspack-listings__sort-ui' );
+	const sortBy = blockWrapperEl.querySelector( '.newspack-listings__sort-select-control' );
+	const sortOrder = blockWrapperEl.querySelectorAll( '[name="newspack-listings__sort-order"]' );
+	const sortOrderContainer = blockWrapperEl.querySelector(
+		'.newspack-listings__sort-order-container'
+	);
+
+	if ( ! sortUi || ! sortBy || ! sortOrder.length || ! sortOrderContainer ) {
+		return;
+	}
+
+	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
+	const triggers = Array.prototype.concat.call( Array.prototype.slice.call( sortOrder ), [
+		sortBy,
+	] );
+
+	const postsContainerEl = blockWrapperEl.querySelector( '.newspack-listings__list-container' );
+	const restURL = sortUi.getAttribute( 'data-url' );
+	const hasMoreButton = blockWrapperEl.classList.contains( 'has-more-button' );
+
+	// Set initial state flags and data.
+	let isFetching = false;
+	let _sortBy = sortUi.querySelector( '[selected]' ).value;
+	let _order = sortUi.querySelector( '[checked]' ).value;
+
+	const sortHandler = e => {
+		// Early return if still fetching or no more posts to render.
+		if ( isFetching ) {
+			return false;
+		}
+
+		isFetching = true;
+
+		blockWrapperEl.classList.remove( 'is-error' );
+		blockWrapperEl.classList.add( 'is-loading' );
+
+		if ( e.target.tagName.toLowerCase() === 'select' ) {
+			_sortBy = e.target.value;
+		} else {
+			_order = e.target.value;
+		}
+
+		// Enable disabled sort order radio buttons.
+		if ( 'post__in' === e.target.value ) {
+			sortOrderContainer.classList.add( 'is-hidden' );
+		} else {
+			sortOrderContainer.classList.remove( 'is-hidden' );
+		}
+
+		const requestURL = `${ restURL }&${ encodeURIComponent(
+			'query[sortBy]'
+		) }=${ _sortBy }&${ encodeURIComponent( 'query[order]' ) }=${ _order }`;
+
+		if ( hasMoreButton && btnEl ) {
+			blockWrapperEl.classList.add( 'has-more-button' );
+			btnEl.setAttribute( 'data-next', requestURL );
+		}
+
+		fetchWithRetry( { url: requestURL, onSuccess, onError }, fetchRetryCount );
+
+		/**
+		 * @param {Object} data Post data
+		 * @param {string} next URL to fetch next batch of posts
+		 */
+		function onSuccess( data, next ) {
+			// Validate received data.
+			if ( ! isPostsDataValid( data ) ) {
+				return onError();
+			}
+
+			if ( data.length ) {
+				// Clear all existing list items.
+				postsContainerEl.textContent = '';
+
+				// Render posts' HTML from string.
+				const postsHTML = data.map( item => item.html ).join( '' );
+				postsContainerEl.insertAdjacentHTML( 'beforeend', postsHTML );
+			}
+
+			if ( next && btnEl ) {
+				// Save next URL as button's attribute.
+				btnEl.setAttribute( 'data-next', next );
+			}
+
+			isFetching = false;
+			blockWrapperEl.classList.remove( 'is-loading' );
+		}
+
+		/**
+		 * Handle fetching error
+		 */
+		function onError() {
+			isFetching = false;
+
+			blockWrapperEl.classList.remove( 'is-loading' );
+			blockWrapperEl.classList.add( 'is-error' );
+		}
+	};
+
+	triggers.forEach( trigger => trigger.addEventListener( 'change', sortHandler ) );
 }
 
 /**

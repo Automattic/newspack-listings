@@ -78,6 +78,7 @@ final class Newspack_Listings_Core {
 		add_action( 'init', [ __CLASS__, 'register_taxonomies' ] );
 		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
+		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -171,7 +172,7 @@ final class Newspack_Listings_Core {
 		];
 		$post_types_config = [
 			'event'       => [
-				'labels'  => [
+				'labels'   => [
 					'name'               => _x( 'Events', 'post type general name', 'newspack-listings' ),
 					'singular_name'      => _x( 'Event', 'post type singular name', 'newspack-listings' ),
 					'menu_name'          => _x( 'Events', 'admin menu', 'newspack-listings' ),
@@ -187,7 +188,8 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'rewrite'  => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'template' => [ [ 'newspack-listings/event-dates' ] ],
 			],
 			'generic'     => [
 				'labels'  => [
@@ -331,7 +333,7 @@ final class Newspack_Listings_Core {
 		}
 
 		$all_meta_fields = [
-			'newspack_listings_contact_email'   => [
+			'newspack_listings_contact_email'    => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -339,14 +341,13 @@ final class Newspack_Listings_Core {
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
 				'label'      => __( 'Contact email address', 'newspack-listings' ),
-				'type'       => 'input',
 				'source'     => [
 					'blockName' => 'jetpack/email',
 					'attr'      => 'email',
 				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => '',
+					'default'           => [],
 					'description'       => __( 'Email address to contact for this listing.', 'newspack-listings' ),
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
@@ -364,7 +365,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_phone'   => [
+			'newspack_listings_contact_phone'    => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -372,14 +373,13 @@ final class Newspack_Listings_Core {
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
 				'label'      => __( 'Contact phone number', 'newspack-listings' ),
-				'type'       => 'input',
 				'source'     => [
 					'blockName' => 'jetpack/phone',
 					'attr'      => 'phone',
 				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => '',
+					'default'           => [],
 					'description'       => __( 'Phone number to contact for this listing.', 'newspack-listings' ),
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
@@ -397,7 +397,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_address' => [
+			'newspack_listings_contact_address'  => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -405,11 +405,10 @@ final class Newspack_Listings_Core {
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
 				'label'      => __( 'Contact Address', 'newspack-listings' ),
-				'type'       => 'input',
 				'source'     => [ 'blockName' => 'jetpack/address' ],
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => '',
+					'default'           => [],
 					'description'       => __( 'Contact address for this listing.', 'newspack-listings' ),
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
@@ -447,21 +446,20 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_business_hours'  => [
+			'newspack_listings_business_hours'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
 				'label'      => __( 'Hours of Operation', 'newspack-listings' ),
-				'type'       => 'input',
 				'source'     => [
 					'blockName' => 'jetpack/business-hours',
 					'attr'      => 'days',
 				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => '',
+					'default'           => [],
 					'description'       => __( 'Hours of operation for this listing.', 'newspack-listings' ),
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
@@ -495,7 +493,7 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_locations'       => [
+			'newspack_listings_locations'        => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -503,14 +501,13 @@ final class Newspack_Listings_Core {
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
 				'label'      => __( 'Locations', 'newspack-listings' ),
-				'type'       => 'input',
 				'source'     => [
 					'blockName' => 'jetpack/map',
 					'attr'      => 'points',
 				],
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => '',
+					'default'           => [],
 					'description'       => __( 'Geolocation data for this listing.', 'newspack-listings' ),
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
@@ -548,6 +545,50 @@ final class Newspack_Listings_Core {
 							],
 						],
 					],
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_event_start_date' => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+				],
+				'label'      => __( 'Event dates', 'newspack-listings' ),
+				'source'     => [
+					'blockName' => 'newspack-listings/event-dates',
+					'attr'      => 'startDate',
+					'single'    => true,
+				],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Start date for this event.', 'newspack-listings' ),
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_hide_author'      => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Hide listing author', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => false,
+					'description'       => __( 'Hide the author for this listing?', 'newspack-listings' ),
+					'type'              => 'boolean',
+					'sanitize_callback' => 'rest_sanitize_boolean',
+					'single'            => true,
+					'show_in_rest'      => true,
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
@@ -621,20 +662,40 @@ final class Newspack_Listings_Core {
 		$meta_fields = self::get_meta_fields( $post->post_type );
 
 		foreach ( $meta_fields as $field_name => $meta_field ) {
-			$source       = $meta_field['source'];
-			$data_to_sync = Utils\get_data_from_blocks( $blocks, $source );
+			$source = isset( $meta_field['source'] ) ? $meta_field['source'] : false;
 
-			/*
-			 * If there are no blocks matching the source, clear the field.
-			 * This prevents garbage data from persisting if a block is removed
-			 * after its data has already been saved as post meta.
-			 */
-			if ( false === $data_to_sync ) {
-				delete_post_meta( $post_id, $field_name );
-			} else {
-				update_post_meta( $post_id, $field_name, $data_to_sync );
+			if ( $source ) {
+				$data_to_sync = Utils\get_data_from_blocks( $blocks, $source );
+
+				/*
+				* If there are no blocks matching the source, or only empty, clear all data.
+				* This prevents garbage data from persisting if a block is removed
+				* after its data has already been saved as post meta.
+				*/
+				if ( empty( $data_to_sync ) ) {
+					delete_post_meta( $post_id, $field_name );
+				} else {
+					update_post_meta( $post_id, $field_name, $data_to_sync );
+				}
 			}
 		}
+	}
+
+	/**
+	 * Filter callback to decide whether to show the author for the current singular post.
+	 * Can be used from other plugins and/or themes to modify default template behavior.
+	 *
+	 * @param boolean $hide_author Whether or not to hide the author.
+	 * @return boolean If the current post a.) is a listing and b.) has enabled the option to hide author.
+	 */
+	public static function hide_author( $hide_author = false ) {
+		$post_id = get_the_ID();
+
+		if ( self::is_listing() && ! empty( get_post_meta( $post_id, 'newspack_listings_hide_author', true ) ) ) {
+			return true;
+		}
+
+		return $hide_author;
 	}
 
 	/**

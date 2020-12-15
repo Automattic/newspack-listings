@@ -29,6 +29,30 @@ function sanitize_array( $array ) {
 	return $array;
 }
 
+
+/**
+ * Loads a template with given data in scope.
+ *
+ * @param string $template Name of the template to be included.
+ * @param array  $data     Data to be passed into the template to be included.
+ * @param string $path     (Optional) Path to the folder containing the template.
+ * @return string
+ */
+function template_include( $template, $data = [], $path = NEWSPACK_LISTINGS_PLUGIN_FILE . 'src/templates/' ) {
+	if ( ! strpos( $template, '.php' ) ) {
+		$template = $template . '.php';
+	}
+	$path .= $template;
+	if ( ! is_file( $path ) ) {
+		return '';
+	}
+	ob_start();
+	include $path;
+	$contents = ob_get_contents();
+	ob_end_clean();
+	return $contents;
+}
+
 /**
  * Given a block name, get all blocks (and recursively, all inner blocks) matching the given type.
  *
@@ -82,6 +106,11 @@ function get_data_from_blocks( $blocks, $source ) {
 			return false;
 		}
 
+		// If the source has 'single' specified, only get data from the first found block instance.
+		if ( $source['single'] ) {
+			$matching_blocks = array_slice( $matching_blocks, 0, 1 );
+		}
+
 		// Gather data from all matching block instances.
 		foreach ( $matching_blocks as $matching_block ) {
 			$block_data = false;
@@ -97,7 +126,7 @@ function get_data_from_blocks( $blocks, $source ) {
 
 			if ( is_array( $block_data ) ) {
 				$data = array_merge( $data, $block_data );
-			} else {
+			} elseif ( ! empty( $block_data ) ) {
 				$data[] = $block_data;
 			}
 		}
@@ -106,6 +135,11 @@ function get_data_from_blocks( $blocks, $source ) {
 	// Return false instead of an empty array, if there's no data to return.
 	if ( empty( $data ) ) {
 		return false;
+	}
+
+	// If the source has 'single' specified, only return data from the first found block instance.
+	if ( $source['single'] ) {
+		return array_shift( $data );
 	}
 
 	return $data;
@@ -126,9 +160,25 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 		return false;
 	}
 
+	$the_dates = '';
+
+	// If post contains event dates, prepend them to the excerpt.
+	$event_dates_blocks = get_blocks_by_type( 'newspack-listings/event-dates', parse_blocks( $post->post_content ) );
+
+	if ( is_array( $event_dates_blocks ) && 0 < count( $event_dates_blocks ) ) {
+		foreach ( $event_dates_blocks as $event_date_block ) {
+			$event_dates = template_include(
+				'event-dates',
+				[ 'attributes' => array_shift( $event_dates_blocks )['attrs'] ]
+			);
+
+			$the_dates .= $event_dates;
+		}
+	}
+
 	// If we have a manually entered excerpt, use that.
 	if ( ! empty( $post->post_excerpt ) ) {
-		return wpautop( $post->post_excerpt );
+		return $the_dates . wpautop( $post->post_excerpt );
 	}
 
 	// Recreate logic from wp_trim_excerpt (https://developer.wordpress.org/reference/functions/wp_trim_excerpt/).
@@ -178,7 +228,67 @@ function get_listing_excerpt( $post, $excerpt_length = null ) {
 	// Balance unclosed HTML tags and trim whitespace.
 	$output = trim( force_balance_tags( $output ) );
 
-	return $output;
+	return $the_dates . $output;
+}
+
+/**
+ * Get attributes formatted for REST API requests.
+ *
+ * @param array $attributes Array of block attributes.
+ * @return array Formatted array of the attributes we care about.
+ */
+function get_request_attributes( $attributes ) {
+	$listing_attributes = [ 'textColor', 'showImage', 'showCaption', 'showCategory', 'showTags', 'showAuthor', 'showExcerpt' ];
+
+	return array_map(
+		function( $attribute ) {
+			return false === $attribute ? '0' : str_replace( '#', '%23', $attribute );
+		},
+		array_intersect_key( $attributes, array_flip( $listing_attributes ) )
+	);
+}
+
+/**
+ * Are the given dates the same calendar day?
+ *
+ * @param DateTime $start_date Start date class.
+ * @param DateTime $end_date End date class.
+ * @return boolean Whether the two dates are the same day.
+ */
+function is_same_day( $start_date, $end_date ) {
+	return $start_date->format( 'F j, Y' ) === $end_date->format( 'F j, Y' );
+}
+
+/**
+ * Are the given dates in the same calendar month?
+ *
+ * @param DateTime $start_date Start date class.
+ * @param DateTime $end_date End date class.
+ * @return boolean Whether the two dates are in the same month.
+ */
+function is_same_month( $start_date, $end_date ) {
+	return $start_date->format( 'F, Y' ) === $end_date->format( 'F, Y' );
+}
+
+/**
+ * Are the given dates in the same calendar year?
+ *
+ * @param DateTime $start_date Start date class.
+ * @param DateTime $end_date End date class.
+ * @return boolean Whether the two dates are in the same year.
+ */
+function is_same_year( $start_date, $end_date ) {
+	return $start_date->format( 'Y' ) === $end_date->format( 'Y' );
+}
+
+/**
+ * Given a YYYY-MM-DDTHH:MM:SS date/time string, get only the date.
+ *
+ * @param string $date_string Date/time string in YYYY-MM-DDTHH:MM:SS format.
+ * @return string The same date string, but without the timestamp.
+ */
+function strip_time( $date_string ) {
+	return explode( 'T', $date_string )[0];
 }
 
 /**

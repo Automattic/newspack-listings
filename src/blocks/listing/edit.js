@@ -3,9 +3,9 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Spinner } from '@wordpress/components';
+import { Button, Placeholder, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
-import { Fragment, useEffect, useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -13,6 +13,7 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { Listing } from './listing';
 import { QueryControls } from '../../components';
+import { capitalize, getIcon } from '../../editor/utils';
 
 const ListingEditorComponent = ( {
 	attributes,
@@ -51,7 +52,7 @@ const ListingEditorComponent = ( {
 	}, [] );
 
 	const { post_types } = window.newspack_listings_data;
-	const listingTypeSlug = name.split( '/' ).slice( -1 );
+	const listingTypeSlug = name.split( '/' ).slice( -1 )[ 0 ];
 	const listingType = post_types[ listingTypeSlug ];
 
 	// Fetch listing post data if we have a listing post ID.
@@ -97,7 +98,11 @@ const ListingEditorComponent = ( {
 	// Renders the autocomplete search field to select listings. Will only show listings of the type that matches the block.
 	const renderSearch = () => {
 		return (
-			<div className="newspack-listings__listing-search">
+			<Placeholder
+				className="newspack-listings__listing-search"
+				label={ capitalize( listingTypeSlug ) }
+				icon={ getIcon( listingTypeSlug ) }
+			>
 				<QueryControls
 					label={
 						__( 'Search for a ', 'newspack-listings' ) +
@@ -122,18 +127,26 @@ const ListingEditorComponent = ( {
 						{ __( 'Cancel', 'newspack-listings' ) }
 					</Button>
 				) }
-			</div>
+			</Placeholder>
 		);
 	};
 
 	// Renders selected listing post, or a placeholder if still fetching.
 	const renderPost = () => {
 		if ( ! post && ! error ) {
-			return <Spinner />;
+			return (
+				<Placeholder
+					className="newspack-listings__listing-search is-loading"
+					label={ listingTypeSlug[ 0 ].toUpperCase() + listingTypeSlug.slice( 1 ) }
+					icon={ getIcon( listingTypeSlug ) }
+				>
+					<Spinner />
+				</Placeholder>
+			);
 		}
 
 		return (
-			<Fragment>
+			<div className="newspack-listings__listing-editor newspack-listings__listing">
 				<Listing attributes={ parent.curatedList.attributes } error={ error } post={ post } />
 				{ post && (
 					<Button
@@ -144,15 +157,11 @@ const ListingEditorComponent = ( {
 						{ __( 'Edit this listing', 'newspack-listing' ) }
 					</Button>
 				) }
-			</Fragment>
+			</div>
 		);
 	};
 
-	return (
-		<div className="newspack-listings__listing-editor newspack-listings__listing">
-			{ ! listing || isEditingPost ? renderSearch() : renderPost() }
-		</div>
-	);
+	return ! listing || isEditingPost ? renderSearch() : renderPost();
 };
 
 const mapStateToProps = select => {

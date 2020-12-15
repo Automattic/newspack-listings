@@ -87,7 +87,6 @@ final class Newspack_Listings_Blocks {
 				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
 				'post_types'      => $post_types,
-				'meta_fields'     => Core::get_meta_fields( $post_type ),
 				'taxonomies'      => [
 					'category' => Core::NEWSPACK_LISTINGS_CAT,
 					'tag'      => Core::NEWSPACK_LISTINGS_TAG,
@@ -95,6 +94,8 @@ final class Newspack_Listings_Blocks {
 
 				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
 				'no_listings'     => 0 === $total_count,
+				'date_format'     => get_option( 'date_format' ),
+				'time_format'     => get_option( 'time_format' ),
 			]
 		);
 
@@ -236,29 +237,6 @@ final class Newspack_Listings_Blocks {
 				);
 			}
 		}
-	}
-
-	/**
-	 * Loads a template with given data in scope.
-	 *
-	 * @param string $template Name of the template to be included.
-	 * @param array  $data     Data to be passed into the template to be included.
-	 * @param string $path     (Optional) Path to the folder containing the template.
-	 * @return string
-	 */
-	public static function template_include( $template, $data = [], $path = NEWSPACK_LISTINGS_PLUGIN_FILE . 'src/templates/' ) {
-		if ( ! strpos( $template, '.php' ) ) {
-			$template = $template . '.php';
-		}
-		$path .= $template;
-		if ( ! is_file( $path ) ) {
-			return '';
-		}
-		ob_start();
-		include $path;
-		$contents = ob_get_contents();
-		ob_end_clean();
-		return $contents;
 	}
 }
 

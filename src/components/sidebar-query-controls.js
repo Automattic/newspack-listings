@@ -142,7 +142,14 @@ class QueryControls extends Component {
 	};
 
 	render = () => {
-		const { disabled, loadMoreText, queryOptions, setAttributes, showLoadMore } = this.props;
+		const {
+			disabled,
+			loadMoreText,
+			queryOptions,
+			setAttributes,
+			showAuthor,
+			showLoadMore,
+		} = this.props;
 
 		if ( ! queryOptions || ! setAttributes ) {
 			return null;
@@ -161,6 +168,29 @@ class QueryControls extends Component {
 		} = queryOptions;
 		const { showAdvancedFilters } = this.state;
 		const { post_types } = window.newspack_listings_data;
+		const isEventList = post_types.event.name === type;
+		const sortOptions = [
+			{ label: __( 'Publish Date', 'newspack-listings' ), value: 'date' },
+			{ label: __( 'Title', 'newspack-listings' ), value: 'title' },
+		];
+
+		// Enable event date option only if the list is a list of events.
+		if ( isEventList ) {
+			sortOptions.unshift( {
+				label: __( 'Event Date', 'newspack-listings' ),
+				value: 'event_date',
+			} );
+		}
+
+		// Enable author option only if showing authors.
+		if ( showAuthor ) {
+			sortOptions.push( { label: __( 'Author', 'newspack-listings' ), value: 'author' } );
+		}
+
+		// Enable listing type option only if there's more than one listing type in the list.
+		if ( 'any' === type ) {
+			sortOptions.push( { label: __( 'Listing Type', 'newspack-listings' ), value: 'type' } );
+		}
 
 		return [
 			<BaseControl disabled={ disabled } key="queryControls" { ...this.props } />,
@@ -259,12 +289,7 @@ class QueryControls extends Component {
 						onChange={ value =>
 							setAttributes( { queryOptions: { ...queryOptions, sortBy: value } } )
 						}
-						options={ [
-							{ label: __( 'Publish Date', 'newspack-listings' ), value: 'date' },
-							{ label: __( 'Title', 'newspack-listings' ), value: 'title' },
-							{ label: __( 'Listing Type', 'newspack-listings' ), value: 'type' },
-							{ label: __( 'Random Order', 'newspack-listings' ), value: 'rand' },
-						] }
+						options={ sortOptions }
 					/>
 					<RadioControl
 						disabled={ disabled }

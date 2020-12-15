@@ -8,17 +8,29 @@
 import { useEffect, useRef } from '@wordpress/element';
 
 /**
+ * Internal dependencies
+ */
+import { Event, Generic, Marketplace, Place } from '../svg';
+
+/**
  * Check if the current post in the editor is a listing CPT.
  *
+ * @param {string|null} listingType (Optional) If given, check if the current post is this exact listing type
  * @return {boolean} Whether or not the current post is a listing CPT.
  */
-export const isListing = () => {
+export const isListing = ( listingType = null ) => {
 	if ( ! window.newspack_listings_data ) {
 		return false;
 	}
 
 	const { post_type, post_types } = window.newspack_listings_data;
 
+	// If passed a listingType arg, just check whether it matches the current post type.
+	if ( null !== listingType ) {
+		return listingType === post_type;
+	}
+
+	// Otherwise, check whether the current post type is any listing type.
 	for ( const slug in post_types ) {
 		if ( post_types.hasOwnProperty( slug ) && post_type === post_types[ slug ].name ) {
 			return true;
@@ -40,7 +52,7 @@ export const getCuratedListClasses = ( className, attributes ) => {
 	const {
 		showNumbers,
 		showMap,
-		showSortByDate,
+		showSortUi,
 		showImage,
 		mediaPosition,
 		typeScale,
@@ -51,7 +63,7 @@ export const getCuratedListClasses = ( className, attributes ) => {
 
 	if ( showNumbers ) classes.push( 'show-numbers' );
 	if ( showMap ) classes.push( 'show-map' );
-	if ( showSortByDate ) classes.push( 'has-sort-by-date-ui' );
+	if ( showSortUi ) classes.push( 'has-sort-ui' );
 	if ( showImage ) {
 		classes.push( 'show-image' );
 		classes.push( `media-position-${ mediaPosition }` );
@@ -78,4 +90,32 @@ export const useDidMount = () => {
 	}, []);
 
 	return didMount.current;
+};
+
+/**
+ * Generic utility to capitalize a given string.
+ *
+ * @param {string} str String to capitalize.
+ * @return {string} Same string, with first letter capitalized.
+ */
+export const capitalize = str => str[ 0 ].toUpperCase() + str.slice( 1 );
+
+/**
+ * Map listing type icons to listing type slugs.
+ *
+ * @param {string} listingTypeSlug Slug of the listing type to get an icon for.
+ *               One of: event, generic, marketplace, place
+ * @return {Function} SVG component for the matching icon.
+ */
+export const getIcon = listingTypeSlug => {
+	switch ( listingTypeSlug ) {
+		case 'event':
+			return Event;
+		case 'marketplace':
+			return Marketplace;
+		case 'place':
+			return Place;
+		default:
+			return Generic;
+	}
 };
