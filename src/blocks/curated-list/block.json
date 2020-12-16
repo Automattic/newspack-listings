@@ -81,9 +81,13 @@
 			"type": "string",
 			"default": ""
 		},
-		"customTextColor": {
+		"backgroundColor": {
 			"type": "string",
 			"default": ""
+		},
+		"hasDarkBackground": {
+			"type": "boolean",
+			"default": false
 		},
 		"startup": {
 			"type": "boolean",
