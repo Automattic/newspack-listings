@@ -85,6 +85,10 @@
 			"type": "string",
 			"default": ""
 		},
+		"hasDarkBackground": {
+			"type": "boolean",
+			"default": false
+		},
 		"startup": {
 			"type": "boolean",
 			"default": true

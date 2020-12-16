@@ -62,6 +62,9 @@ function render_block( $attributes, $inner_content ) {
 		$classes[] = 'media-size-' . $attributes['imageScale'];
 	}
 	if ( $attributes['backgroundColor'] ) {
+		if ( $attributes['hasDarkBackground'] ) {
+			$classes[] = 'has-dark-background';
+		}
 		$classes[] = 'has-background-color';
 	}
 

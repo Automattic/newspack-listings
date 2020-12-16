@@ -34,7 +34,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
 import { List, Query, Specific } from '../../svg';
-import { getCuratedListClasses, useDidMount } from '../../editor/utils';
+import { getContrastRatio, getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 /**
  * Debounced fetchPosts function outside of component scope.
@@ -271,6 +271,21 @@ const CuratedListEditorComponent = ( {
 			selectBlock( clientId );
 		}
 	}, [ selectedBlock ]);
+
+	/**
+	 * Determine if the background color is dark or light.
+	 */
+	useEffect(() => {
+		if ( backgroundColor ) {
+			const contrastRatio = getContrastRatio( backgroundColor );
+
+			if ( contrastRatio < 5 ) {
+				return setAttributes( { hasDarkBackground: true } );
+			}
+		}
+
+		setAttributes( { hasDarkBackground: false } );
+	}, [ backgroundColor ]);
 
 	/**
 	 * Render the results of the listing query.

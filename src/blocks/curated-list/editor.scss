@@ -6,7 +6,7 @@
 		clear: both;
 		margin-left: -1rem;
 		margin-right: -1rem;
-		padding: 1em;
+		padding: 0 1rem;
 
 		label,
 		.newspack-listings__label {
@@ -20,8 +20,17 @@
 			+ .wp-block[data-type^='newspack-listings']
 			.newspack-listings__listing-editor,
 		.newspack-listings__listing-editor + .newspack-listings__listing-editor {
-			border-top: 1px solid var( --newspack-listings--grey-light );
+			border-top: 1px solid var( --newspack-listings--border-dark );
 			padding-top: 1rem;
+		}
+
+		.has-dark-background {
+			.wp-block[data-type^='newspack-listings']
+				+ .wp-block[data-type^='newspack-listings']
+				.newspack-listings__listing-editor,
+			.newspack-listings__listing-editor + .newspack-listings__listing-editor {
+				border-top-color: var( --newspack-listings--border-light );
+			}
 		}
 	}
 
