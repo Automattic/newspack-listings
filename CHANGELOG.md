@@ -1,3 +1,16 @@
+# [1.1.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v1.0.0...v1.1.0-alpha.1) (2020-12-17)
+
+
+### Bug Fixes
+
+* "listing type" should be a sort option by default ([684d657](https://github.com/Automattic/newspack-listings/commit/684d65761e10febf7b2e08414aa9f162a3f9976d))
+* avoid a PHP warning when updating a non-single meta value ([f5bcdfe](https://github.com/Automattic/newspack-listings/commit/f5bcdfe5fcfbb5718697c898cbcfa711df068156))
+
+
+### Features
+
+* remove borders and padding in editor to match front-end styles ([#14](https://github.com/Automattic/newspack-listings/issues/14)) ([6c47a17](https://github.com/Automattic/newspack-listings/commit/6c47a1760ea9429facb089f2be7bd71a91924cf0))
+
 # 1.0.0 (2020-12-16)
 
 
