@@ -38,7 +38,13 @@
 		}
 
 		.newspack-listings__listing + .newspack-listings__listing {
-			border-top: 1px solid var( --newspack-listings--grey-light );
+			border-top: 1px solid var( --newspack-listings--border-dark );
+		}
+
+		.has-dark-background & {
+			.newspack-listings__listing + .newspack-listings__listing {
+				border-top-color: var( --newspack-listings--border-light );
+			}
 		}
 	}
 
