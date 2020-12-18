@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/Automattic/newspack-listings/compare/v1.0.0...v1.1.0) (2020-12-18)
+
+
+### Bug Fixes
+
+* minor bug fixes ([#21](https://github.com/Automattic/newspack-listings/issues/21)) ([5f90bc7](https://github.com/Automattic/newspack-listings/commit/5f90bc7d027a2693a9dc4d804484ce0a78c4e4ff))
+
+
+### Features
+
+* remove borders and padding in editor to match front-end styles ([#14](https://github.com/Automattic/newspack-listings/issues/14)) ([6c47a17](https://github.com/Automattic/newspack-listings/commit/6c47a1760ea9429facb089f2be7bd71a91924cf0))
+
 # 1.0.0 (2020-12-16)
 
 
