@@ -107,7 +107,7 @@ function get_data_from_blocks( $blocks, $source ) {
 		}
 
 		// If the source has 'single' specified, only get data from the first found block instance.
-		if ( $source['single'] ) {
+		if ( ! empty( $source['single'] ) ) {
 			$matching_blocks = array_slice( $matching_blocks, 0, 1 );
 		}
 
@@ -138,7 +138,7 @@ function get_data_from_blocks( $blocks, $source ) {
 	}
 
 	// If the source has 'single' specified, only return data from the first found block instance.
-	if ( $source['single'] ) {
+	if ( ! empty( $source['single'] ) ) {
 		return array_shift( $data );
 	}
 
