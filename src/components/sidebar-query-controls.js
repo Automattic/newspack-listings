@@ -188,7 +188,7 @@ class QueryControls extends Component {
 		}
 
 		// Enable listing type option only if there's more than one listing type in the list.
-		if ( 'any' === type ) {
+		if ( 'any' === type || ! type ) {
 			sortOptions.push( { label: __( 'Listing Type', 'newspack-listings' ), value: 'type' } );
 		}
 

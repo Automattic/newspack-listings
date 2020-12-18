@@ -34,7 +34,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
 import { List, Query, Specific } from '../../svg';
-import { getCuratedListClasses, useDidMount } from '../../editor/utils';
+import { getContrastRatio, getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 /**
  * Debounced fetchPosts function outside of component scope.
@@ -81,6 +81,7 @@ const CuratedListEditorComponent = ( {
 		typeScale,
 		imageScale,
 		textColor,
+		backgroundColor,
 		startup,
 		queryMode,
 		queryOptions,
@@ -270,6 +271,21 @@ const CuratedListEditorComponent = ( {
 			selectBlock( clientId );
 		}
 	}, [ selectedBlock ]);
+
+	/**
+	 * Determine if the background color is dark or light.
+	 */
+	useEffect(() => {
+		if ( backgroundColor ) {
+			const contrastRatio = getContrastRatio( backgroundColor );
+
+			if ( contrastRatio < 5 ) {
+				return setAttributes( { hasDarkBackground: true } );
+			}
+		}
+
+		setAttributes( { hasDarkBackground: false } );
+	}, [ backgroundColor ]);
 
 	/**
 	 * Render the results of the listing query.
@@ -556,6 +572,11 @@ const CuratedListEditorComponent = ( {
 							onChange: value => setAttributes( { textColor: value } ),
 							label: __( 'Text Color', 'newspack-listings' ),
 						},
+						{
+							value: backgroundColor,
+							onChange: value => setAttributes( { backgroundColor: value } ),
+							label: __( 'Background Color', 'newspack-listings' ),
+						},
 					] }
 				/>
 				<PanelBody title={ __( 'Meta Settings', 'newspack-listings' ) }>
@@ -585,6 +606,7 @@ const CuratedListEditorComponent = ( {
 			<div
 				className={ classes.join( ' ' ) }
 				style={ {
+					backgroundColor: backgroundColor || '#fff',
 					color: textColor || '#000',
 				} }
 			>
