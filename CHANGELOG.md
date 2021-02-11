@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/Automattic/newspack-listings/compare/v1.1.0...v1.2.0) (2021-02-11)
+
+
+### Features
+
+* add block patterns ([#23](https://github.com/Automattic/newspack-listings/issues/23)) ([a273a40](https://github.com/Automattic/newspack-listings/commit/a273a40c0056cf09879d491083c2ca2321413896))
+
 # [1.1.0](https://github.com/Automattic/newspack-listings/compare/v1.0.0...v1.1.0) (2020-12-18)
 
 
