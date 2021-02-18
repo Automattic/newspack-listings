@@ -146,21 +146,21 @@ final class Newspack_Listings_Api {
 		}
 		if ( ! empty( $query['categories'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+				'taxonomy' => 'category',
 				'field'    => 'term_id',
 				'terms'    => $query['categories'],
 			];
 		}
 		if ( ! empty( $query['tags'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+				'taxonomy' => 'post_tag',
 				'field'    => 'term_id',
 				'terms'    => $query['tags'],
 			];
 		}
 		if ( ! empty( $query['categoryExclusions'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+				'taxonomy' => 'category',
 				'field'    => 'term_id',
 				'terms'    => $query['categoryExclusions'],
 				'operator' => 'NOT IN',
@@ -168,7 +168,7 @@ final class Newspack_Listings_Api {
 		}
 		if ( ! empty( $query['tagExclusions'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+				'taxonomy' => 'post_tag',
 				'field'    => 'term_id',
 				'terms'    => $query['tagExclusions'],
 				'operator' => 'NOT IN',
@@ -259,12 +259,12 @@ final class Newspack_Listings_Api {
 
 						// If $fields includes category, get the post categories.
 						if ( in_array( 'category', $fields ) ) {
-							$item['category'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
+							$item['category'] = get_the_terms( $post->ID, 'category' );
 						}
 
 						// If $fields includes tags, get the post tags.
 						if ( in_array( 'tags', $fields ) ) {
-							$item['tags'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_TAG );
+							$item['tags'] = get_the_terms( $post->ID, 'post_tag' );
 						}
 
 						// If $fields includes author and the post isn't set to hide author, get the post author.
@@ -340,7 +340,7 @@ final class Newspack_Listings_Api {
 		$params = $request->get_params();
 
 		if ( empty( $params['taxonomy'] ) ) {
-			$params['taxonomy'] = Core::NEWSPACK_LISTINGS_CAT;
+			$params['taxonomy'] = 'category';
 		}
 
 		$terms = get_terms( $params );

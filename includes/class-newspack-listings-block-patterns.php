@@ -69,10 +69,7 @@ final class Newspack_Listings_Block_Patterns {
 		// Block pattern config.
 		$block_patterns = [
 			'business_1' => [
-				'post_types' => [
-					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
-					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
-				],
+				'post_types' => [ Core::NEWSPACK_LISTINGS_POST_TYPES['place'] ],
 				'settings'   => [
 					'title'       => __( 'Business Listing 1', 'newspack-listings' ),
 					'categories'  => [ self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY ],
@@ -85,10 +82,7 @@ final class Newspack_Listings_Block_Patterns {
 				],
 			],
 			'business_2' => [
-				'post_types' => [
-					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
-					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
-				],
+				'post_types' => [ Core::NEWSPACK_LISTINGS_POST_TYPES['place'] ],
 				'settings'   => [
 					'title'       => __( 'Business Listing 2', 'newspack-listings' ),
 					'categories'  => [ self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY ],
@@ -101,10 +95,7 @@ final class Newspack_Listings_Block_Patterns {
 				],
 			],
 			'business_3' => [
-				'post_types' => [
-					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
-					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
-				],
+				'post_types' => [ Core::NEWSPACK_LISTINGS_POST_TYPES['place'] ],
 				'settings'   => [
 					'title'       => __( 'Business Listing 3', 'newspack-listings' ),
 					'categories'  => [ self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY ],
@@ -117,10 +108,7 @@ final class Newspack_Listings_Block_Patterns {
 				],
 			],
 			'business_4' => [
-				'post_types' => [
-					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
-					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
-				],
+				'post_types' => [ Core::NEWSPACK_LISTINGS_POST_TYPES['place'] ],
 				'settings'   => [
 					'title'       => __( 'Business Listing 4', 'newspack-listings' ),
 					'categories'  => [ self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY ],
@@ -133,10 +121,7 @@ final class Newspack_Listings_Block_Patterns {
 				],
 			],
 			'business_5' => [
-				'post_types' => [
-					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
-					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
-				],
+				'post_types' => [ Core::NEWSPACK_LISTINGS_POST_TYPES['place'] ],
 				'settings'   => [
 					'title'       => __( 'Business Listing 5', 'newspack-listings' ),
 					'categories'  => [ self::NEWSPACK_LISTINGS_BLOCK_PATTERN_CATEGORY ],

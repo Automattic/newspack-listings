@@ -41,7 +41,7 @@ call_user_func(
 			<div class="newspack-listings__listing-meta">
 				<?php
 				if ( $attributes['showCategory'] ) :
-					$categories = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
+					$categories = get_the_terms( $post->ID, 'category' );
 
 					if ( is_array( $categories ) && 0 < count( $categories ) ) :
 						?>
@@ -49,7 +49,7 @@ call_user_func(
 							<?php
 							$category_index = 0;
 							foreach ( $categories as $category ) {
-								$term_url = get_term_link( $category->slug, Core::NEWSPACK_LISTINGS_CAT );
+								$term_url = get_term_link( $category->slug, 'category' );
 
 								if ( empty( $term_url ) ) {
 									$term_url = '#';
@@ -82,7 +82,7 @@ call_user_func(
 
 				<?php
 				if ( $attributes['showTags'] ) :
-					$tags = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_TAG );
+					$tags = get_the_terms( $post->ID, 'post_tag' );
 
 					if ( is_array( $tags ) && 0 < count( $tags ) ) :
 						?>

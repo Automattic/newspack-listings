@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Main Core class.
- * Sets up CPTs and taxonomies for listings.
+ * Sets up CPTs for listings.
  */
 final class Newspack_Listings_Core {
 
@@ -41,12 +41,6 @@ final class Newspack_Listings_Core {
 		'place'       => 'places',
 
 	];
-
-	/**
-	 * Custom taxonomy slugs for Newspack Listings.
-	 */
-	const NEWSPACK_LISTINGS_CAT = 'newspack_lst_cat';
-	const NEWSPACK_LISTINGS_TAG = 'newspack_lst_tag';
 
 	/**
 	 * The single instance of the class.
@@ -75,7 +69,6 @@ final class Newspack_Listings_Core {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
 		add_filter( 'parent_file', [ __CLASS__, 'highlight_taxonomy_menu_items' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
-		add_action( 'init', [ __CLASS__, 'register_taxonomies' ] );
 		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
 		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
@@ -101,16 +94,16 @@ final class Newspack_Listings_Core {
 		add_submenu_page(
 			'newspack-listings',
 			__( 'Newspack Listings: Categories', 'newspack-listings' ),
-			__( 'Listing Categories', 'newspack-listings' ),
+			__( 'Categories', 'newspack-listings' ),
 			'manage_categories',
-			'edit-tags.php?taxonomy=' . self::NEWSPACK_LISTINGS_CAT
+			'edit-tags.php?taxonomy=category'
 		);
 		add_submenu_page(
 			'newspack-listings',
 			__( 'Newspack Listings: Tags', 'newspack-listings' ),
-			__( 'Listing Tags', 'newspack-listings' ),
+			__( 'Tags', 'newspack-listings' ),
 			'manage_categories',
-			'edit-tags.php?taxonomy=' . self::NEWSPACK_LISTINGS_TAG
+			'edit-tags.php?taxonomy=post_tag'
 		);
 
 		// Settings menu link.
@@ -122,20 +115,6 @@ final class Newspack_Listings_Core {
 			'newspack-listings-settings-admin',
 			[ '\Newspack_Listings\Newspack_Listings_Settings', 'create_admin_page' ]
 		);
-	}
-
-	/**
-	 * Hack to highlight category/tag menu items.
-	 * https://deluxeblogtips.com/move-taxonomy-admin-menu/
-	 *
-	 * @param string $parent_file The parent file.
-	 */
-	public static function highlight_taxonomy_menu_items( $parent_file ) {
-		if ( get_current_screen()->taxonomy == self::NEWSPACK_LISTINGS_CAT || get_current_screen()->taxonomy == self::NEWSPACK_LISTINGS_TAG ) {
-			$parent_file = 'newspack-listings';
-		}
-
-		return $parent_file;
 	}
 
 	/**
@@ -169,6 +148,7 @@ final class Newspack_Listings_Core {
 			'show_in_rest' => true,
 			'show_ui'      => true,
 			'supports'     => [ 'editor', 'excerpt', 'title', 'author', 'custom-fields', 'thumbnail' ],
+			'taxonomies'   => [ 'category', 'post_tag' ],
 		];
 		$post_types_config = [
 			'event'       => [
@@ -270,54 +250,6 @@ final class Newspack_Listings_Core {
 			// Create a rewrite rule to handle the prefixed permalink.
 			add_rewrite_rule( '^' . $prefix . '/' . $permalink . '/([^/]+)/?$', 'index.php?name=$matches[1]&post_type=' . $post_type, 'top' );
 		}
-	}
-
-	/**
-	 * Register custom taxonomies for Listings CPTs.
-	 */
-	public static function register_taxonomies() {
-		$prefix        = Settings::get_settings( 'permalink_prefix' );
-		$category_args = [
-			'hierarchical'  => true,
-			'public'        => true,
-			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'hierarchical' => true, 'slug' => $prefix . '/category' ]
-			'show_in_menu'  => true,
-			'show_in_rest'  => true,
-			'show_tagcloud' => false,
-			'show_ui'       => true,
-		];
-		$tag_args      = [
-			'hierarchical'  => false,
-			'public'        => true,
-			'rewrite'       => false, // phpcs:ignore Squiz.PHP.CommentedOutCode.Found [ 'slug' => $prefix . '/tag' ],
-			'show_in_menu'  => true,
-			'show_in_rest'  => true,
-			'show_tagcloud' => false,
-			'show_ui'       => true,
-		];
-
-		// Register the taxonomies for all Listing CPTs.
-		$post_types = array_values( self::NEWSPACK_LISTINGS_POST_TYPES );
-		register_taxonomy( self::NEWSPACK_LISTINGS_CAT, $post_types, $category_args );
-		register_taxonomy( self::NEWSPACK_LISTINGS_TAG, $post_types, $tag_args );
-
-		// Better safe than sorry: https://developer.wordpress.org/reference/functions/register_taxonomy/#more-information.
-		foreach ( $post_types as $post_type ) {
-			register_taxonomy_for_object_type( self::NEWSPACK_LISTINGS_CAT, $post_type );
-			register_taxonomy_for_object_type( self::NEWSPACK_LISTINGS_TAG, $post_type );
-		}
-
-		// phpcs:ignore Squiz.PHP.CommentedOutCode.Found self::rewrite_taxonomy_urls();
-	}
-
-	/**
-	 * Create rewrite rules for prefixed taxonomy URLs.
-	 */
-	public static function rewrite_taxonomy_urls() {
-		$prefix = Settings::get_settings( 'permalink_prefix' );
-
-		add_rewrite_rule( '^' . $prefix . '/category/([^/]+)/?$', 'index.php?' . self::NEWSPACK_LISTINGS_CAT . '=$matches[1]', 'top' );
-		add_rewrite_rule( '^' . $prefix . '/tag/([^/]+)/?$', 'index.php?' . self::NEWSPACK_LISTINGS_TAG . '=$matches[1]', 'top' );
 	}
 
 	/**
@@ -727,11 +659,10 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * Flush permalinks on plugin activation, ensuring that post types and taxonomies are registered first.
+	 * Flush permalinks on plugin activation, ensuring that post types are registered first.
 	 */
 	public static function activation_hook() {
 		self::register_post_types();
-		self::register_taxonomies();
 		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
 	}
 }
