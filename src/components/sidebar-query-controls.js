@@ -17,9 +17,10 @@ import { addQueryArgs } from '@wordpress/url';
 import { decodeEntities } from '@wordpress/html-entities';
 
 /**
- * Internal dependencies.
+ * External dependencies.
  */
-import AutocompleteTokenField from './autocomplete-tokenfield';
+import { AutocompleteTokenField } from 'newspack-components';
+import './autocomplete-tokenfield.scss';
 
 class QueryControls extends Component {
 	state = {
