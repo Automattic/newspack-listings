@@ -67,7 +67,6 @@ final class Newspack_Listings_Core {
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
-		add_filter( 'parent_file', [ __CLASS__, 'highlight_taxonomy_menu_items' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
 		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
