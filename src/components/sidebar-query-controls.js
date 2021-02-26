@@ -65,8 +65,6 @@ class QueryControls extends Component {
 			return new Promise( resolve => resolve( [] ) );
 		}
 
-		const { taxonomies } = window.newspack_listings_data;
-
 		return apiFetch( {
 			path: addQueryArgs( '/newspack-listings/v1/terms', {
 				search,
@@ -74,7 +72,7 @@ class QueryControls extends Component {
 				_fields: 'id,name',
 				orderby: 'count',
 				order: 'desc',
-				taxonomy: taxonomies.category,
+				taxonomy: 'category',
 			} ),
 		} ).then( function( categories ) {
 			return categories.map( category => ( {
@@ -84,14 +82,12 @@ class QueryControls extends Component {
 		} );
 	};
 	fetchSavedCategories = categoryIDs => {
-		const { taxonomies } = window.newspack_listings_data;
-
 		return apiFetch( {
 			path: addQueryArgs( '/newspack-listings/v1/terms', {
 				per_page: 100,
 				_fields: 'id,name',
 				include: categoryIDs.join( ',' ),
-				taxonomy: taxonomies.category,
+				taxonomy: 'category',
 			} ),
 		} ).then( function( categories ) {
 			return categories.map( category => ( {
@@ -106,8 +102,6 @@ class QueryControls extends Component {
 			return new Promise( resolve => resolve( [] ) );
 		}
 
-		const { taxonomies } = window.newspack_listings_data;
-
 		return apiFetch( {
 			path: addQueryArgs( '/newspack-listings/v1/terms', {
 				search,
@@ -115,7 +109,7 @@ class QueryControls extends Component {
 				_fields: 'id,name',
 				orderby: 'count',
 				order: 'desc',
-				taxonomy: taxonomies.tag,
+				taxonomy: 'post_tag',
 			} ),
 		} ).then( function( tags ) {
 			return tags.map( tag => ( {
@@ -125,14 +119,12 @@ class QueryControls extends Component {
 		} );
 	};
 	fetchSavedTags = tagIDs => {
-		const { taxonomies } = window.newspack_listings_data;
-
 		return apiFetch( {
 			path: addQueryArgs( '/newspack-listings/v1/terms', {
 				per_page: 100,
 				_fields: 'id,name',
 				include: tagIDs.join( ',' ),
-				taxonomy: taxonomies.tag,
+				taxonomy: 'post_tag',
 			} ),
 		} ).then( function( tags ) {
 			return tags.map( tag => ( {
