@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
@@ -9,9 +9,9 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import './editor.scss';
 import { ListingEditor } from './edit';
-import { List } from '../../svg';
 import metadata from './block.json';
 import parentData from '../curated-list/block.json';
+import { getIcon } from '../../editor/utils';
 
 const parentAttributes = parentData.attributes;
 const { attributes, category } = metadata;
@@ -22,7 +22,7 @@ export const registerListingBlock = () => {
 		if ( post_types.hasOwnProperty( listingType ) ) {
 			registerBlockType( `newspack-listings/${ listingType }`, {
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
-				icon: <List />,
+				icon: getIcon( listingType ),
 				category,
 				parent: [ 'newspack-listings/list-container' ],
 				keywords: [
