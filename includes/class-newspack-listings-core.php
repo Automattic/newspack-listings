@@ -149,7 +149,7 @@ final class Newspack_Listings_Core {
 			'show_in_menu' => 'newspack-listings',
 			'show_in_rest' => true,
 			'show_ui'      => true,
-			'supports'     => [ 'editor', 'excerpt', 'title', 'author', 'custom-fields', 'thumbnail', 'newspack_blocks' ],
+			'supports'     => [ 'editor', 'excerpt', 'title', 'author', 'custom-fields', 'thumbnail', 'newspack_blocks', 'revisions' ],
 			'taxonomies'   => [ 'category', 'post_tag' ],
 		];
 		$post_types_config = [
