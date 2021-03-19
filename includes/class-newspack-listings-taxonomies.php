@@ -1,6 +1,6 @@
 <?php
 /**
- * Newspack Listings - Sets up shadow taxonomies to associate different post types with each other.0
+ * Newspack Listings - Sets up shadow taxonomies to associate different post types with each other.
  *
  * @package Newspack_Listings
  */
@@ -64,6 +64,8 @@ final class Newspack_Listings_Taxonomies {
 		register_taxonomy(
 			self::NEWSPACK_LISTINGS_TAXONOMIES['place'],
 			[
+				'post',
+				'page',
 				Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
 				Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 				Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
