@@ -650,9 +650,8 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * If using the single-featured template, apply single-featured body class to listing posts
-	 * so that they inherit theme styles for that template. Default and wide templates don't
-	 * depend on a unique class for styling.
+	 * If using the single-featured or wide templates, apply a body class to listing posts
+	 * so that they inherit theme styles for that template.
 	 *
 	 * @param array $classes Array of body class names.
 	 * @return array Filtered array of body classes.
