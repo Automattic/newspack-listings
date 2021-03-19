@@ -141,7 +141,8 @@ final class Newspack_Listings_Core {
 	 * After WP init, register all the necessary post types and blocks.
 	 */
 	public static function register_post_types() {
-		$prefix            = Settings::get_settings( 'permalink_prefix' );
+		$settings          = Settings::get_settings();
+		$prefix            = $settings['newspack_listings_permalink_prefix'];
 		$default_config    = [
 			'has_archive'  => false,
 			'public'       => true,
@@ -169,7 +170,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite'  => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'rewrite'  => [ 'slug' => $prefix . '/' . $settings['newspack_listings_event_slug'] ],
 				'template' => [ [ 'newspack-listings/event-dates' ] ],
 			],
 			'generic'     => [
@@ -189,7 +190,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_generic_slug'] ],
 			],
 			'marketplace' => [
 				'labels'  => [
@@ -208,7 +209,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No Marketplace listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No Marketplace listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_marketplace_slug'] ],
 			],
 			'place'       => [
 				'labels'  => [
@@ -227,13 +228,13 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No places found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No places found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['place'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_place_slug'] ],
 			],
 		];
 
 		foreach ( $post_types_config as $post_type_slug => $post_type_config ) {
 			$post_type = self::NEWSPACK_LISTINGS_POST_TYPES[ $post_type_slug ];
-			$permalink = self::NEWSPACK_LISTINGS_PERMALINK_SLUGS[ $post_type_slug ];
+			$permalink = reset( $post_type_config['rewrite'] );
 
 			// Register the post type.
 			register_post_type( $post_type, wp_parse_args( $post_type_config, $default_config ) );
@@ -249,7 +250,7 @@ final class Newspack_Listings_Core {
 			}
 
 			// Create a rewrite rule to handle the prefixed permalink.
-			add_rewrite_rule( '^' . $prefix . '/' . $permalink . '/([^/]+)/?$', 'index.php?name=$matches[1]&post_type=' . $post_type, 'top' );
+			add_rewrite_rule( '^' . $permalink . '/([^/]+)/?$', 'index.php?name=$matches[1]&post_type=' . $post_type, 'top' );
 		}
 	}
 
@@ -516,8 +517,8 @@ final class Newspack_Listings_Core {
 				'label'      => __( 'Hide listing author', 'newspack-listings' ),
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => false,
-					'description'       => __( 'Hide the author for this listing?', 'newspack-listings' ),
+					'default'           => Settings::get_settings( 'newspack_listings_hide_author' ), // Configurable in plugin-wide settings.
+					'description'       => __( 'Hide author byline and bio for this listing', 'newspack-listings' ),
 					'type'              => 'boolean',
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
