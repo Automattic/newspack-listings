@@ -68,7 +68,7 @@ final class Newspack_Listings_Core {
 	public function __construct() {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
-		add_action( 'post_insert', [ __CLASS__, 'set_default_template' ] );
+		add_action( 'wp_insert_post', [ __CLASS__, 'set_default_template' ], 10, 3 );
 		add_filter( 'body_class', [ __CLASS__, 'set_template_class' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
 		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
@@ -662,6 +662,8 @@ final class Newspack_Listings_Core {
 			$template = get_page_template_slug();
 			if ( 'single-feature.php' === $template ) {
 				$classes[] = 'post-template-single-feature';
+			} elseif ( 'single-wide.php' === $template ) {
+				$classes[] = 'post-template-single-wide';
 			}
 		}
 
@@ -675,11 +677,10 @@ final class Newspack_Listings_Core {
 	 * @return array Filtered array of supported post types.
 	 */
 	public static function support_featured_image_options( $post_types ) {
-		if ( self::is_listing() ) {
-			$post_types = array_merge( $post_types, array_values( self::NEWSPACK_LISTINGS_POST_TYPES ) );
-		}
-
-		return $post_types;
+		return array_merge(
+			$post_types,
+			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
+		);
 	}
 
 	/**
