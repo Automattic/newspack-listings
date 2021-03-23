@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ * WordPress dependencies
  */
 import { getCategories, setCategories } from '@wordpress/blocks';
 

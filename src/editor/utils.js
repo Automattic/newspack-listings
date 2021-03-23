@@ -3,14 +3,14 @@
  */
 
 /**
- * External dependencies
+ * WordPress dependencies
  */
 import { useEffect, useRef } from '@wordpress/element';
 
 /**
- * Internal dependencies
+ * External dependencies
  */
-import { Event, Generic, Marketplace, Place } from '../svg';
+import { Business, Event, List, LocationOn } from '@material-ui/icons';
 
 /**
  * Check if the current post in the editor is a listing CPT.
@@ -156,12 +156,12 @@ export const capitalize = str => str[ 0 ].toUpperCase() + str.slice( 1 );
 export const getIcon = listingTypeSlug => {
 	switch ( listingTypeSlug ) {
 		case 'event':
-			return Event;
+			return <Event style={ { color: '#36f' } } />;
 		case 'marketplace':
-			return Marketplace;
+			return <Business style={ { color: '#36f' } } />;
 		case 'place':
-			return Place;
+			return <LocationOn style={ { color: '#36f' } } />;
 		default:
-			return Generic;
+			return <List style={ { color: '#36f' } } />;
 	}
 };

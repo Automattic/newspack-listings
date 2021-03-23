@@ -29,11 +29,16 @@ import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
+ * External dependencies
+ */
+import ListAlt from '@material-ui/icons/ListAlt';
+
+/**
  * Internal dependencies
  */
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
-import { List, Query, Specific } from '../../svg';
+import { Query, Specific } from '../../svg';
 import { getContrastRatio, getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 /**
@@ -372,7 +377,10 @@ const CuratedListEditorComponent = ( {
 	 */
 	if ( isEmpty ) {
 		return (
-			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
+			<Placeholder
+				icon={ <ListAlt style={ { color: '#36f' } } /> }
+				label={ __( 'Curated List', 'newspack-listings' ) }
+			>
 				<Notice isDismissible={ false }>
 					{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }
 				</Notice>
@@ -385,7 +393,7 @@ const CuratedListEditorComponent = ( {
 		return (
 			<div className="newspack-listings__placeholder">
 				<BlockVariationPicker
-					icon={ <List /> }
+					icon={ <ListAlt style={ { color: '#36f' } } /> }
 					label={ __( 'Curated List', 'newspack-listings' ) }
 					instructions={ __( 'Select the type of list to start with.' ) }
 					onSelect={ variation => {
