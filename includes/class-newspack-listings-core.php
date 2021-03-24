@@ -517,7 +517,7 @@ final class Newspack_Listings_Core {
 				'label'      => __( 'Hide listing author', 'newspack-listings' ),
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => Settings::get_settings( 'newspack_listings_hide_author' ), // Configurable in plugin-wide settings.
+					'default'           => boolval( Settings::get_settings( 'newspack_listings_hide_author' ) ), // Configurable in plugin-wide settings.
 					'description'       => __( 'Hide author byline and bio for this listing', 'newspack-listings' ),
 					'type'              => 'boolean',
 					'sanitize_callback' => 'rest_sanitize_boolean',
