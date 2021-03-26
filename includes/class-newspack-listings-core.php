@@ -121,13 +121,13 @@ final class Newspack_Listings_Core {
 	/**
 	 * Is the current post a listings post type?
 	 *
-	 * @param string|null $post_type (Optional) Post type to check. If not given, will use the current global post object.
+	 * @param string|null $post_type (Optional) Post type to check. If not given, will try to figure out the current post type.
 	 *
 	 * @returns Boolean Whether or not the current post type matches one of the listings CPTs.
 	 */
 	public static function is_listing( $post_type = null ) {
 		if ( null === $post_type ) {
-			$post_type = get_post_type();
+			$post_type = Utils\get_post_type();
 		}
 
 		if ( in_array( $post_type, self::NEWSPACK_LISTINGS_POST_TYPES ) ) {
