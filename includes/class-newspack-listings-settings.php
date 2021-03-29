@@ -65,7 +65,7 @@ final class Newspack_Listings_Settings {
 			[
 				'description' => __( 'This setting can be overridden per listing.', 'newspack-listings' ),
 				'key'         => 'newspack_listings_hide_author',
-				'label'       => __( 'Hide authors for new listings by default', 'newpack-listings' ),
+				'label'       => __( 'Hide authors for listings by default', 'newpack-listings' ),
 				'type'        => 'checkbox',
 				'value'       => true,
 			],
