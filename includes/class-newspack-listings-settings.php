@@ -7,6 +7,8 @@
 
 namespace Newspack_Listings;
 
+use \Newspack_Listings\Newspack_Listings_Core as Core;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -76,15 +78,18 @@ final class Newspack_Listings_Settings {
 	 * Get current site-wide settings, or defaults if not set.
 	 *
 	 * @param string|null $option (Optional) Key name of a single setting to get. If not given, will return all settings.
-	 * @return array|Boolean Array of current site-wide settings, or false if returning a single option with no value.
+	 * @param boolean     $get_default (Optional) If true, return the default value.
+	 *
+	 * @return array|boolean Array of current site-wide settings, or false if returning a single option with no value.
 	 */
-	public static function get_settings( $option = null ) {
+	public static function get_settings( $option = null, $get_default = false ) {
 		$defaults = self::get_default_settings();
+
 		$settings = array_reduce(
 			$defaults,
-			function( $acc, $setting ) {
+			function( $acc, $setting ) use ( $get_default ) {
 				$key   = $setting['key'];
-				$value = get_option( $key, $setting['value'] );
+				$value = $get_default ? $setting['value'] : get_option( $key, $setting['value'] );
 
 				// Guard against empty strings, which can happen if an option is set and then unset.
 				if ( '' === $value && 'checkbox' !== $setting['type'] ) {
@@ -147,6 +152,12 @@ final class Newspack_Listings_Settings {
 				'newspack_listings_options_group',
 				$setting
 			);
+
+			// Flush permalinks when permalink option is updated.
+			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug)/', $setting['key'] );
+			if ( $is_permalink_option ) {
+				add_action( 'update_option_' . $setting['key'], [ __CLASS__, 'flush_permalinks' ], 10, 3 );
+			}
 		};
 	}
 
@@ -182,6 +193,23 @@ final class Newspack_Listings_Settings {
 				esc_html( $setting['description'] )
 			);
 		}
+	}
+
+	/**
+	 * Flush permalinks automatically if updating a permalink slug option.
+	 *
+	 * @param mixed  $old_value Old option value.
+	 * @param mixed  $new_value New option value.
+	 * @param string $option Name of the option to update.
+	 */
+	public static function flush_permalinks( $old_value, $new_value, $option ) {
+		// Prevent empty slug value.
+		if ( empty( $new_value ) ) {
+			$default = self::get_settings( $option, true );
+			return update_option( $option, $default ); // Return early to prevent flushing rewrite rules twice.
+		}
+
+		Core::activation_hook();
 	}
 }
 
