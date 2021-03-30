@@ -6,11 +6,7 @@
  * External dependencies
  */
 import { useEffect, useRef } from '@wordpress/element';
-
-/**
- * Internal dependencies
- */
-import { Event, Generic, Marketplace, Place } from '../svg';
+import { Icon, calendar, mapMarker, postList, store } from '@wordpress/icons';
 
 /**
  * Check if the current post in the editor is a listing CPT.
@@ -45,7 +41,7 @@ export const isListing = ( listingType = null ) => {
  * From https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
  *
  * @param {string} hex Color in HEX format
- * @return {array} RGB values, e.g. [red, green, blue]
+ * @return {Array} RGB values, e.g. [red, green, blue]
  */
 const hexToRGB = hex =>
 	hex
@@ -56,6 +52,7 @@ const hexToRGB = hex =>
 
 /**
  * Get contrast ratio of the given backgroundColor compared to black.
+ *
  * @param {string} backgroundColor Color HEX value to compare with black.
  * @return {number} Contrast ratio vs. black.
  */
@@ -156,12 +153,12 @@ export const capitalize = str => str[ 0 ].toUpperCase() + str.slice( 1 );
 export const getIcon = listingTypeSlug => {
 	switch ( listingTypeSlug ) {
 		case 'event':
-			return Event;
+			return <Icon icon={ calendar } />;
 		case 'marketplace':
-			return Marketplace;
+			return <Icon icon={ store } />;
 		case 'place':
-			return Place;
+			return <Icon icon={ mapMarker } />;
 		default:
-			return Generic;
+			return <Icon icon={ postList } />;
 	}
 };

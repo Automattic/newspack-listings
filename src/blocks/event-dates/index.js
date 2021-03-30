@@ -3,20 +3,20 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
+import { Icon, calendar } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
 import { EventDatesEditor } from './edit';
-import { Event } from '../../svg';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
 export const registerEventDatesBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Event Dates', 'newspack-listing' ),
-		icon: <Event />,
+		icon: <Icon icon={ calendar } />,
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),

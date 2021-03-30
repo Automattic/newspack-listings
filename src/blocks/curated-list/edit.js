@@ -27,13 +27,14 @@ import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
+import { Icon, loop, postList } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
-import { List, Query, Specific } from '../../svg';
+import { List } from '../../svg';
 import { getContrastRatio, getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 /**
@@ -404,12 +405,12 @@ const CuratedListEditorComponent = ( {
 						{
 							name: 'query',
 							title: __( 'Query', 'newspack-listings' ),
-							icon: <Query />,
+							icon: <Icon icon={ loop } />,
 						},
 						{
 							name: 'specific',
 							title: __( 'Specific Listings', 'newspack-listings' ),
-							icon: <Specific />,
+							icon: <Icon icon={ postList } />,
 						},
 					] }
 				/>
