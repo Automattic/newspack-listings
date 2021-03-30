@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -135,13 +136,7 @@ final class Newspack_Listings_Block_Patterns {
 			],
 		];
 
-		/**
-		 * Register block patterns for particular post types. We need to get the post type using the
-		 * post ID from $_REQUEST since the global $post is not available inside the admin_init hook.
-		 * If we can't determine the current post type, just register the patterns anyway.
-		 */
-		$post_id           = isset( $_REQUEST['post'] ) ? sanitize_text_field( $_REQUEST['post'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current_post_type = ! empty( $post_id ) && function_exists( 'get_post_type' ) ? get_post_type( $post_id ) : null;
+		$current_post_type = Utils\get_post_type();
 
 		foreach ( $block_patterns as $pattern_name => $config ) {
 			if ( empty( $current_post_type ) || in_array( $current_post_type, $config['post_types'] ) ) {

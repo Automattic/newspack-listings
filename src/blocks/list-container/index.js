@@ -1,16 +1,20 @@
 /**
- * External dependencies
+ * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
 
 /**
+ * External dependencies
+ */
+import ListAlt from '@material-ui/icons/ListAlt';
+
+/**
  * Internal dependencies
  */
 import './editor.scss';
 import { ListContainerEditor } from './edit';
-import { List } from '../../svg';
 import parentData from '../curated-list/block.json';
 
 const parentAttributes = parentData.attributes;
@@ -18,7 +22,7 @@ const parentAttributes = parentData.attributes;
 export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
 		title: __( 'Curated List', 'newspack-listing' ),
-		icon: <List />,
+		icon: <ListAlt style={ { color: '#36f' } } />,
 		category: 'newspack',
 		parent: [ 'newspack-listings/curated-list' ],
 		keywords: [

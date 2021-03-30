@@ -1,22 +1,26 @@
 /**
- * External dependencies
+ * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
+
+/**
+ * External dependencies
+ */
+import Event from '@material-ui/icons/Event';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
 import { EventDatesEditor } from './edit';
-import { Event } from '../../svg';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
 export const registerEventDatesBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Event Dates', 'newspack-listing' ),
-		icon: <Event />,
+		icon: <Event style={ { color: '#36f' } } />,
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),
