@@ -7,6 +7,8 @@
 
 namespace Newspack_Listings;
 
+use \Newspack_Listings\Newspack_Listings_Core as Core;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,31 +28,79 @@ final class Newspack_Listings_Settings {
 	 * @return array Array of default settings.
 	 */
 	public static function get_default_settings() {
-		$defaults = [
-			'permalink_prefix' => __( 'listings', 'newspack-listings' ),
+		return [
+			[
+				'description' => __( 'The URL prefix for all listings. This prefix will appear before the listing slug in all listing URLs.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_permalink_prefix',
+				'label'       => __( 'Listings permalink prefix', 'newspack-listings' ),
+				'type'        => 'input',
+				'value'       => __( 'listings', 'newspack-listings' ),
+			],
+			[
+				'description' => __( 'The URL slug for event listings.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_event_slug',
+				'label'       => __( 'Event listings slug', 'newspack-listings' ),
+				'type'        => 'input',
+				'value'       => __( 'events', 'newspack-listings' ),
+			],
+			[
+				'description' => __( 'The URL slug for generic listings.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_generic_slug',
+				'label'       => __( 'Generic listings slug', 'newspack-listings' ),
+				'type'        => 'input',
+				'value'       => __( 'items', 'newspack-listings' ),
+			],
+			[
+				'description' => __( 'The URL slug for marketplace listings.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_marketplace_slug',
+				'label'       => __( 'Marketplace listings slug', 'newspack-listings' ),
+				'type'        => 'input',
+				'value'       => __( 'marketplace', 'newspack-listings' ),
+			],
+			[
+				'description' => __( 'The URL slug for place listings.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_place_slug',
+				'label'       => __( 'Place listings slug', 'newspack-listings' ),
+				'type'        => 'input',
+				'value'       => __( 'places', 'newspack-listings' ),
+			],
+			[
+				'description' => __( 'This setting can be overridden per listing.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_hide_author',
+				'label'       => __( 'Hide authors for listings by default', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => true,
+			],
 		];
-
-		return $defaults;
 	}
 
 	/**
 	 * Get current site-wide settings, or defaults if not set.
 	 *
 	 * @param string|null $option (Optional) Key name of a single setting to get. If not given, will return all settings.
-	 * @return array|Boolean Array of current site-wide settings, or false if returning a single option with no value.
+	 * @param boolean     $get_default (Optional) If true, return the default value.
+	 *
+	 * @return array|boolean Array of current site-wide settings, or false if returning a single option with no value.
 	 */
-	public static function get_settings( $option = null ) {
+	public static function get_settings( $option = null, $get_default = false ) {
 		$defaults = self::get_default_settings();
-		$settings = [
-			'permalink_prefix' => get_option( 'newspack_listings_permalink_prefix', $defaults['permalink_prefix'] ),
-		];
 
-		// Guard against empty strings, which can happen if an option is set and then unset.
-		foreach ( $settings as $key => $value ) {
-			if ( empty( $value ) ) {
-				$settings[ $key ] = $defaults[ $key ];
-			}
-		}
+		$settings = array_reduce(
+			$defaults,
+			function( $acc, $setting ) use ( $get_default ) {
+				$key   = $setting['key'];
+				$value = $get_default ? $setting['value'] : get_option( $key, $setting['value'] );
+
+				// Guard against empty strings, which can happen if an option is set and then unset.
+				if ( '' === $value && 'checkbox' !== $setting['type'] ) {
+					$value = $setting['value'];
+				}
+
+				$acc[ $key ] = $value;
+				return $acc;
+			},
+			[]
+		);
 
 		// If passed an option key name, just give that option.
 		if ( ! empty( $option ) ) {
@@ -59,24 +109,6 @@ final class Newspack_Listings_Settings {
 
 		// Otherwise, return all settings.
 		return $settings;
-	}
-
-	/**
-	 * Get list of settings fields.
-	 *
-	 * @return array Settings list.
-	 */
-	public static function get_settings_list() {
-		$defaults = self::get_default_settings();
-
-		return [
-			[
-				'label' => __( 'Listings permalink prefix', 'newspack-listings' ),
-				'value' => $defaults['permalink_prefix'],
-				'key'   => 'newspack_listings_permalink_prefix',
-				'type'  => 'input',
-			],
-		];
 	}
 
 	/**
@@ -107,7 +139,7 @@ final class Newspack_Listings_Settings {
 			null,
 			'newspack-listings-settings-admin'
 		);
-		foreach ( self::get_settings_list() as $setting ) {
+		foreach ( self::get_default_settings() as $setting ) {
 			register_setting(
 				'newspack_listings_options_group',
 				$setting['key']
@@ -120,6 +152,12 @@ final class Newspack_Listings_Settings {
 				'newspack_listings_options_group',
 				$setting
 			);
+
+			// Flush permalinks when permalink option is updated.
+			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug)/', $setting['key'] );
+			if ( $is_permalink_option ) {
+				add_action( 'update_option_' . $setting['key'], [ __CLASS__, 'flush_permalinks' ], 10, 3 );
+			}
 		};
 	}
 
@@ -131,23 +169,47 @@ final class Newspack_Listings_Settings {
 	public static function newspack_listings_settings_callback( $setting ) {
 		$key   = $setting['key'];
 		$type  = $setting['type'];
-		$value = ( ! empty( get_option( $key, false ) ) ) ? get_option( $key, false ) : $setting['value'];
+		$value = get_option( $key, $setting['value'] );
 
-		if ( 'textarea' === $type ) {
+		if ( 'checkbox' === $type ) {
 			printf(
-				'<textarea id="%s" name="%s" class="widefat" rows="4">%s</textarea>',
+				'<input type="checkbox" id="%s" name="%s" %s /><p class="description" for="%s">%s</p>',
 				esc_attr( $key ),
 				esc_attr( $key ),
-				esc_attr( $value )
+				! empty( $value ) ? 'checked' : '',
+				esc_attr( $key ),
+				esc_html( $setting['description'] )
 			);
 		} else {
+			if ( empty( $value ) ) {
+				$value = $setting['value'];
+			}
 			printf(
-				'<input type="text" id="%s" name="%s" value="%s" class="widefat" />',
+				'<input type="text" id="%s" name="%s" value="%s" class="regular-text" /><p class="description" for="%s">%s</p>',
 				esc_attr( $key ),
 				esc_attr( $key ),
-				esc_attr( $value )
+				esc_attr( $value ),
+				esc_attr( $key ),
+				esc_html( $setting['description'] )
 			);
 		}
+	}
+
+	/**
+	 * Flush permalinks automatically if updating a permalink slug option.
+	 *
+	 * @param mixed  $old_value Old option value.
+	 * @param mixed  $new_value New option value.
+	 * @param string $option Name of the option to update.
+	 */
+	public static function flush_permalinks( $old_value, $new_value, $option ) {
+		// Prevent empty slug value.
+		if ( empty( $new_value ) ) {
+			$default = self::get_settings( $option, true );
+			return update_option( $option, $default ); // Return early to prevent flushing rewrite rules twice.
+		}
+
+		Core::activation_hook();
 	}
 }
 

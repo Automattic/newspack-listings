@@ -54,6 +54,29 @@ function template_include( $template, $data = [], $path = NEWSPACK_LISTINGS_PLUG
 }
 
 /**
+ * Extension of \get_post_type that allows us to get the post type even on very early hooks,
+ * or when adding a new post (before it has a post ID).
+ *
+ * @return string|boolean Post type, or false if all checks fail.
+ */
+function get_post_type() {
+	$post_type = \get_post_type();
+
+	// If checking post type on an early hook or new post, \get_post_type() will fail because the global $post ID isn't available.
+	if ( false === $post_type ) {
+		$post_type = isset( $_REQUEST['post_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['post_type'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$post_id   = isset( $_REQUEST['post'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['post'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	}
+
+	// If editing an existing post on an early hook, we can still use \get_post_type if we pass an explicit post ID.
+	if ( null === $post_type && null !== $post_id ) {
+		$post_type = \get_post_type( $post_id );
+	}
+
+	return $post_type;
+}
+
+/**
  * Given a block name, get all blocks (and recursively, all inner blocks) matching the given type.
  *
  * @param string $block_name Block name to match.

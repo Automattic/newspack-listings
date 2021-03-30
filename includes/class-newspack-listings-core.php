@@ -68,9 +68,11 @@ final class Newspack_Listings_Core {
 	public function __construct() {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
-		add_filter( 'single_template', [ __CLASS__, 'set_default_template' ] );
+		add_action( 'wp_insert_post', [ __CLASS__, 'set_default_template' ], 10, 3 );
+		add_filter( 'body_class', [ __CLASS__, 'set_template_class' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
 		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
+		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -119,13 +121,13 @@ final class Newspack_Listings_Core {
 	/**
 	 * Is the current post a listings post type?
 	 *
-	 * @param string|null $post_type (Optional) Post type to check. If not given, will use the current global post object.
+	 * @param string|null $post_type (Optional) Post type to check. If not given, will try to figure out the current post type.
 	 *
 	 * @returns Boolean Whether or not the current post type matches one of the listings CPTs.
 	 */
 	public static function is_listing( $post_type = null ) {
 		if ( null === $post_type ) {
-			$post_type = get_post_type();
+			$post_type = Utils\get_post_type();
 		}
 
 		if ( in_array( $post_type, self::NEWSPACK_LISTINGS_POST_TYPES ) ) {
@@ -139,14 +141,15 @@ final class Newspack_Listings_Core {
 	 * After WP init, register all the necessary post types and blocks.
 	 */
 	public static function register_post_types() {
-		$prefix            = Settings::get_settings( 'permalink_prefix' );
+		$settings          = Settings::get_settings();
+		$prefix            = $settings['newspack_listings_permalink_prefix'];
 		$default_config    = [
 			'has_archive'  => false,
 			'public'       => true,
 			'show_in_menu' => 'newspack-listings',
 			'show_in_rest' => true,
 			'show_ui'      => true,
-			'supports'     => [ 'editor', 'excerpt', 'title', 'author', 'custom-fields', 'thumbnail' ],
+			'supports'     => [ 'editor', 'excerpt', 'title', 'author', 'custom-fields', 'thumbnail', 'newspack_blocks', 'revisions' ],
 			'taxonomies'   => [ 'category', 'post_tag' ],
 		];
 		$post_types_config = [
@@ -167,7 +170,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite'  => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['event'] ],
+				'rewrite'  => [ 'slug' => $prefix . '/' . $settings['newspack_listings_event_slug'] ],
 				'template' => [ [ 'newspack-listings/event-dates' ] ],
 			],
 			'generic'     => [
@@ -187,7 +190,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['generic'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_generic_slug'] ],
 			],
 			'marketplace' => [
 				'labels'  => [
@@ -206,7 +209,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No Marketplace listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No Marketplace listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['marketplace'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_marketplace_slug'] ],
 			],
 			'place'       => [
 				'labels'  => [
@@ -225,13 +228,13 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No places found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No places found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . self::NEWSPACK_LISTINGS_PERMALINK_SLUGS['place'] ],
+				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_place_slug'] ],
 			],
 		];
 
 		foreach ( $post_types_config as $post_type_slug => $post_type_config ) {
 			$post_type = self::NEWSPACK_LISTINGS_POST_TYPES[ $post_type_slug ];
-			$permalink = self::NEWSPACK_LISTINGS_PERMALINK_SLUGS[ $post_type_slug ];
+			$permalink = reset( $post_type_config['rewrite'] );
 
 			// Register the post type.
 			register_post_type( $post_type, wp_parse_args( $post_type_config, $default_config ) );
@@ -247,7 +250,7 @@ final class Newspack_Listings_Core {
 			}
 
 			// Create a rewrite rule to handle the prefixed permalink.
-			add_rewrite_rule( '^' . $prefix . '/' . $permalink . '/([^/]+)/?$', 'index.php?name=$matches[1]&post_type=' . $post_type, 'top' );
+			add_rewrite_rule( '^' . $permalink . '/([^/]+)/?$', 'index.php?name=$matches[1]&post_type=' . $post_type, 'top' );
 		}
 	}
 
@@ -514,8 +517,8 @@ final class Newspack_Listings_Core {
 				'label'      => __( 'Hide listing author', 'newspack-listings' ),
 				'settings'   => [
 					'object_subtype'    => $post_type,
-					'default'           => false,
-					'description'       => __( 'Hide the author for this listing?', 'newspack-listings' ),
+					'default'           => boolval( Settings::get_settings( 'newspack_listings_hide_author' ) ), // Configurable in plugin-wide settings.
+					'description'       => __( 'Hide author byline and bio for this listing', 'newspack-listings' ),
 					'type'              => 'boolean',
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
@@ -581,8 +584,8 @@ final class Newspack_Listings_Core {
 	 * Sync data from specific content blocks to post meta.
 	 * Source blocks for each meta field are set in the meta config above.
 	 *
-	 * @param int   $post_id ID of the post being created or updated.
-	 * @param array $post Post object of the post being created or updated.
+	 * @param int    $post_id ID of the post being created or updated.
+	 * @param object $post Post object of the post being created or updated.
 	 */
 	public static function sync_post_meta( $post_id, $post ) {
 		if ( ! self::is_listing( $post->post_type ) ) {
@@ -630,31 +633,53 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * If using a Newspack theme, force single listings pages to use the wide template (sans widget sidebar).
+	 * If using a Newspack theme, respect the "default template" option setting in the Customizer.
 	 *
-	 * @param string $template File path of the template to use for the current single post.
-	 * @return string Filtered template file path.
+	 * @param string  $post_id Post ID.
+	 * @param object  $post Post object of the post being created or updated.
+	 * @param boolean $update Whether this is an existing post being updated.
 	 */
-	public static function set_default_template( $template ) {
+	public static function set_default_template( $post_id, $post, $update ) {
+		if ( ! $update && self::is_listing() ) {
+			$post_template_default = get_theme_mod( 'post_template_default', 'default' );
+
+			if ( 'default' !== $post_template_default ) {
+				update_post_meta( $post_id, '_wp_page_template', $post_template_default );
+			}
+		}
+	}
+
+	/**
+	 * If using the single-featured or wide templates, apply a body class to listing posts
+	 * so that they inherit theme styles for that template.
+	 *
+	 * @param array $classes Array of body class names.
+	 * @return array Filtered array of body classes.
+	 */
+	public static function set_template_class( $classes ) {
 		if ( self::is_listing() ) {
-			$wide_template = str_replace( 'single.php', 'single-wide.php', $template );
-
-			if ( file_exists( $wide_template ) ) {
-				$template = $wide_template;
-
-				// Add the single-wide CSS class to the body.
-				add_filter(
-					'body_class',
-					function( $classes ) {
-						$classes[] = 'post-template-single-wide';
-
-						return $classes;
-					}
-				);
+			$template = get_page_template_slug();
+			if ( 'single-feature.php' === $template ) {
+				$classes[] = 'post-template-single-feature';
+			} elseif ( 'single-wide.php' === $template ) {
+				$classes[] = 'post-template-single-wide';
 			}
 		}
 
-		return $template;
+		return $classes;
+	}
+
+	/**
+	 * If using a Newspack theme, add support for featured image options to all listings.
+	 *
+	 * @param array $post_types Array of supported post types.
+	 * @return array Filtered array of supported post types.
+	 */
+	public static function support_featured_image_options( $post_types ) {
+		return array_merge(
+			$post_types,
+			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
+		);
 	}
 
 	/**
