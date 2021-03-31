@@ -8,6 +8,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,7 +18,10 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Newspack_Listings_Taxonomies {
 	const NEWSPACK_LISTINGS_TAXONOMIES = [
-		'place' => 'newspack_lstngs_plc',
+		'event'       => 'newspack_lstngs_evt',
+		'generic'     => 'newspack_lstngs_gen',
+		'marketplace' => 'newspack_lstngs_mkt',
+		'place'       => 'newspack_lstngs_plc',
 	];
 
 	/**
@@ -46,6 +50,8 @@ final class Newspack_Listings_Taxonomies {
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'init' ] );
 		add_action( 'admin_init', [ __CLASS__, 'handle_missing_terms' ] );
+		add_filter( 'the_content', [ __CLASS__, 'maybe_append_related_listings' ] );
+		add_filter( 'wpseo_primary_term_taxonomies', [ __CLASS__, 'disable_yoast_primary_category_picker' ], 10, 2 );
 	}
 
 	/**
@@ -57,16 +63,70 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
-	 * Registers Places taxonomy which can be applied to Marketplace, Event, or other Place listing CPTs.
-	 * Terms in this taxonomy are not created or edited directly, but are linked to Place posts.
+	 * Registers shadow taxonomies which can be applied to other listing CPTs, pages, or posts.
+	 * Terms in these taxonomies are not created or edited directly, but are linked to Listing CPT posts.
 	 */
 	public static function register_tax() {
 		$shadow_taxonomies = [
-			'place' => [
+			'event'       => [
 				'post_types' => [
 					'post',
 					'page',
 					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+				],
+				'config'     => [
+					'hierarchical'  => true,
+					'public'        => true,
+					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['event'] ],
+					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_rest'  => true,
+					'show_tagcloud' => false,
+					'show_ui'       => true,
+					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['event'] )->labels,
+				],
+			],
+			'generic'     => [
+				'post_types' => [
+					'post',
+					'page',
+					Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+				],
+				'config'     => [
+					'hierarchical'  => true,
+					'public'        => true,
+					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['event'] ],
+					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_rest'  => true,
+					'show_tagcloud' => false,
+					'show_ui'       => true,
+					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['generic'] )->labels,
+				],
+			],
+			'marketplace' => [
+				'post_types' => [
+					'post',
+					'page',
+					Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+				],
+				'config'     => [
+					'hierarchical'  => true,
+					'public'        => true,
+					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['marketplace'] ],
+					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_rest'  => true,
+					'show_tagcloud' => false,
+					'show_ui'       => true,
+					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'] )->labels,
+				],
+			],
+			'place'       => [
+				'post_types' => [
+					'post',
+					'page',
+					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
@@ -74,31 +134,11 @@ final class Newspack_Listings_Taxonomies {
 					'hierarchical'  => true,
 					'public'        => true,
 					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
-					'show_in_menu'  => true, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
 					'show_in_rest'  => true,
 					'show_tagcloud' => false,
 					'show_ui'       => true,
-					'labels'        => [
-						'name'                  => __( 'Places', 'newspack-listings' ),
-						'singular_name'         => __( 'Places', 'newspack-listings' ),
-						'search_items'          => __( 'Search Places', 'newspack-listings' ),
-						'all_items'             => __( 'Places', 'newspack-listings' ),
-						'parent_item'           => __( 'Parent Place', 'newspack-listings' ),
-						'parent_item_colon'     => __( 'Parent Place:', 'newspack-listings' ),
-						'edit_item'             => __( 'Edit Place', 'newspack-listings' ),
-						'view_item'             => __( 'View Place', 'newspack-listings' ),
-						'update_item'           => __( 'Update Place', 'newspack-listings' ),
-						'add_new_item'          => __( 'Add New Place', 'newspack-listings' ),
-						'new_item_name'         => __( 'New Place Name', 'newspack-listings' ),
-						'not_found'             => __( 'No places found.', 'newspack-listings' ),
-						'no_terms'              => __( 'No places', 'newspack-listings' ),
-						'items_list_navigation' => __( 'Places list navigation', 'newspack-listings' ),
-						'items_list'            => __( 'Places list', 'newspack-listings' ),
-						'back_to_items'         => __( '&larr; Back to Places', 'newspack-listings' ),
-						'menu_name'             => __( 'Places', 'newspack-listings' ),
-						'name_admin_bar'        => __( 'Places', 'newspack-listings' ),
-						'archives'              => __( 'Places', 'newspack-listings' ),
-					],
+					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['place'] )->labels,
 				],
 			],
 		];
@@ -314,6 +354,98 @@ final class Newspack_Listings_Taxonomies {
 			}
 		}
 	}
+
+	/**
+	 * Get related listing posts for the given shadow taxonomy terms by term slug.
+	 *
+	 * @param array $slugs Array of term slug to use for looking up post.
+	 * @return array Array of related listing posts.
+	 */
+	public static function get_related_listings( $slugs ) {
+		$related_listings = new \WP_Query(
+			[
+				'post_type'      => self::get_post_types_to_shadow(),
+				'posts_per_page' => 100,
+				'post_status'    => 'publish',
+				'post_name__in'  => $slugs,
+				'no_found_rows'  => true,
+				'fields'         => 'ids',
+				'order'          => 'ASC',
+				'orderby'        => 'type title',
+			]
+		);
+
+		if ( empty( $related_listings->posts ) || is_wp_error( $related_listings ) ) {
+			return [];
+		}
+
+		return $related_listings->posts;
+	}
+
+	/**
+	 * If the post has been assigned any listing shadow terms, append a link to the listing at the end of the content.
+	 *
+	 * @param string $content Post content.
+	 * @return string The filtered post content.
+	 */
+	public static function maybe_append_related_listings( $content ) {
+		$post_id       = get_the_ID();
+		$listing_terms = wp_get_post_terms( $post_id, array_values( self::NEWSPACK_LISTINGS_TAXONOMIES ) );
+
+		if ( 0 < count( $listing_terms ) ) {
+			$related_listing_ids = self::get_related_listings( array_column( $listing_terms, 'slug' ) );
+
+			if ( 0 < count( $related_listing_ids ) ) {
+				$related_section_title = Core::is_listing( get_post_type() ) ? __( 'Listed by', 'newspack-listings' ) : __( 'Related listings', 'newspack-listings' );
+				$content              .= '<hr class="wp-block-separator is-style-wide newspack-listings__separator" />';
+				$content              .= '<h3 class="accent-header newspack-listings__related-section-title">' . $related_section_title . '</h3>';
+			}
+
+			foreach ( $related_listing_ids as $related_listing_id ) {
+				$listing_title   = get_the_title( $related_listing_id );
+				$listing_excerpt = Utils\get_listing_excerpt( get_post( $related_listing_id ) );
+				$listing_url     = get_permalink( $related_listing_id );
+				$featured_image  = get_the_post_thumbnail( $related_listing_id, 'thumbnail', [ 'class' => 'avatar' ] );
+
+				$content .= '<div class="author-bio sponsor-bio newspack-listings__related-listing">'; // <a href="'. $listing_url . '">';
+
+				if ( $featured_image ) {
+					$content .= '<a href="' . $listing_url . '">';
+					$content .= $featured_image;
+					$content .= '</a>';
+
+				}
+
+				$content .= '<div class="author-bio-text">';
+				$content .= '<div class="author-bio-header">';
+				$content .= '<h2 class="accent-header">' . $listing_title . '</h2>';
+				$content .= '</div>'; // author-bio-header.
+				$content .= $listing_excerpt;
+				$content .= '<p><a class="author-link" href="' . $listing_url . '">' . __( 'More info about ', 'newspack-listings' ) . $listing_title . '</a></p>';
+				$content .= '</div>'; // author-bio-text.
+				$content .= '</div>'; // author-bio.
+			}
+		}
+
+		return $content;
+	}
+
+	/**
+	 * Disable the Yoast primary category picker for listing posts and terms.
+	 *
+	 * @param array  $taxonomies Array of taxonomies.
+	 * @param string $post_type Post type of the current post.
+	 */
+	public static function disable_yoast_primary_category_picker( $taxonomies, $post_type ) {
+		foreach ( array_values( self::NEWSPACK_LISTINGS_TAXONOMIES ) as $shadow_taxonomy ) {
+			if ( isset( $taxonomies[ $shadow_taxonomy ] ) ) {
+				unset( $taxonomies[ $shadow_taxonomy ] );
+			}
+		}
+
+		return $taxonomies;
+	}
+
 }
 
 Newspack_Listings_Taxonomies::instance();
