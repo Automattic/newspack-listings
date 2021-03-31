@@ -57,49 +57,73 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
-	 * Registers Places taxonomy which can be applied to Marketplace or Event listing CPTs.
+	 * Registers Places taxonomy which can be applied to Marketplace, Event, or other Place listing CPTs.
 	 * Terms in this taxonomy are not created or edited directly, but are linked to Place posts.
 	 */
 	public static function register_tax() {
-		register_taxonomy(
-			self::NEWSPACK_LISTINGS_TAXONOMIES['place'],
-			[
-				'post',
-				'page',
-				Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
-				Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
-				Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
-			],
-			[
-				'hierarchical'  => true,
-				'public'        => true,
-				'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
-				'show_in_menu'  => true, // Set to 'true' to show in WP admin for debugging purposes.
-				'show_in_rest'  => true,
-				'show_tagcloud' => false,
-				'show_ui'       => true,
-				'labels'        => [
-					'name'                  => __( 'Places', 'newspack-listings' ),
-					'singular_name'         => __( 'Places', 'newspack-listings' ),
-					'search_items'          => __( 'Search Places', 'newspack-listings' ),
-					'all_items'             => __( 'Places', 'newspack-listings' ),
-					'parent_item'           => __( 'Parent Place', 'newspack-listings' ),
-					'parent_item_colon'     => __( 'Parent Place:', 'newspack-listings' ),
-					'edit_item'             => __( 'Edit Place', 'newspack-listings' ),
-					'view_item'             => __( 'View Place', 'newspack-listings' ),
-					'update_item'           => __( 'Update Place', 'newspack-listings' ),
-					'add_new_item'          => __( 'Add New Place', 'newspack-listings' ),
-					'new_item_name'         => __( 'New Place Name', 'newspack-listings' ),
-					'not_found'             => __( 'No places found.', 'newspack-listings' ),
-					'no_terms'              => __( 'No places', 'newspack-listings' ),
-					'items_list_navigation' => __( 'Places list navigation', 'newspack-listings' ),
-					'items_list'            => __( 'Places list', 'newspack-listings' ),
-					'back_to_items'         => __( '&larr; Back to Places', 'newspack-listings' ),
-					'menu_name'             => __( 'Places', 'newspack-listings' ),
-					'name_admin_bar'        => __( 'Places', 'newspack-listings' ),
-					'archives'              => __( 'Places', 'newspack-listings' ),
+		$shadow_taxonomies = [
+			'place' => [
+				'post_types' => [
+					'post',
+					'page',
+					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
-			]
+				'config'     => [
+					'hierarchical'  => true,
+					'public'        => true,
+					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
+					'show_in_menu'  => true, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_rest'  => true,
+					'show_tagcloud' => false,
+					'show_ui'       => true,
+					'labels'        => [
+						'name'                  => __( 'Places', 'newspack-listings' ),
+						'singular_name'         => __( 'Places', 'newspack-listings' ),
+						'search_items'          => __( 'Search Places', 'newspack-listings' ),
+						'all_items'             => __( 'Places', 'newspack-listings' ),
+						'parent_item'           => __( 'Parent Place', 'newspack-listings' ),
+						'parent_item_colon'     => __( 'Parent Place:', 'newspack-listings' ),
+						'edit_item'             => __( 'Edit Place', 'newspack-listings' ),
+						'view_item'             => __( 'View Place', 'newspack-listings' ),
+						'update_item'           => __( 'Update Place', 'newspack-listings' ),
+						'add_new_item'          => __( 'Add New Place', 'newspack-listings' ),
+						'new_item_name'         => __( 'New Place Name', 'newspack-listings' ),
+						'not_found'             => __( 'No places found.', 'newspack-listings' ),
+						'no_terms'              => __( 'No places', 'newspack-listings' ),
+						'items_list_navigation' => __( 'Places list navigation', 'newspack-listings' ),
+						'items_list'            => __( 'Places list', 'newspack-listings' ),
+						'back_to_items'         => __( '&larr; Back to Places', 'newspack-listings' ),
+						'menu_name'             => __( 'Places', 'newspack-listings' ),
+						'name_admin_bar'        => __( 'Places', 'newspack-listings' ),
+						'archives'              => __( 'Places', 'newspack-listings' ),
+					],
+				],
+			],
+		];
+
+		// Register shadow taxonomies for each source post type.
+		foreach ( $shadow_taxonomies as $post_type_to_shadow => $shadow_taxonomy ) {
+			register_taxonomy(
+				self::NEWSPACK_LISTINGS_TAXONOMIES[ $post_type_to_shadow ],
+				$shadow_taxonomy['post_types'],
+				$shadow_taxonomy['config']
+			);
+		}
+	}
+
+	/**
+	 * Using the array of shadow taxonomies, get an array of corresponding post types being shadowed.
+	 *
+	 * @return array Array of post types being shadowed.
+	 */
+	public static function get_post_types_to_shadow() {
+		return array_values(
+			array_intersect_key(
+				Core::NEWSPACK_LISTINGS_POST_TYPES,
+				self::NEWSPACK_LISTINGS_TAXONOMIES
+			)
 		);
 	}
 
@@ -120,7 +144,7 @@ final class Newspack_Listings_Taxonomies {
 	 */
 	public static function update_or_delete_shadow_term( $post_id, $post ) {
 		// Bail if the current post type isn't one of the ones to shadow.
-		if ( Core::NEWSPACK_LISTINGS_POST_TYPES['place'] !== $post->post_type ) {
+		if ( ! in_array( $post->post_type, self::get_post_types_to_shadow() ) ) {
 			return;
 		}
 
@@ -240,19 +264,23 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
-	 * Handle any published Place posts that are missing a corresponding shadow term.
+	 * Handle any published posts of the relevant types that are missing a corresponding shadow term.
 	 */
 	public static function handle_missing_terms() {
+		$tax_query = [ 'relation' => 'OR' ];
+
+		foreach ( self::NEWSPACK_LISTINGS_TAXONOMIES as $post_type_to_shadow => $shadow_taxonomy ) {
+			$tax_query[] = [
+				'taxonomy' => $shadow_taxonomy,
+				'operator' => 'NOT EXISTS',
+			];
+		}
+
 		$args = [
-			'post_type'      => Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
+			'post_type'      => self::get_post_types_to_shadow(),
 			'post_status'    => 'publish',
 			'posts_per_page' => 100,
-			'tax_query'      => [  // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'],
-					'operator' => 'NOT EXISTS',
-				],
-			],
+			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 		];
 
 		$query = new \WP_Query( $args );
@@ -260,17 +288,24 @@ final class Newspack_Listings_Taxonomies {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$post_id = get_the_ID();
-				$post    = get_post( $post_id );
+				$post_id   = get_the_ID();
+				$post      = get_post( $post_id );
+				$post_type = $post->post_type;
+				$tax_slug  = reset( array_keys( Core::NEWSPACK_LISTINGS_POST_TYPES, $post_type ) );
+
+				// Bail if not a post type to be shadowed.
+				if ( empty( $tax_slug ) || ! in_array( $tax_slug, array_keys( self::NEWSPACK_LISTINGS_TAXONOMIES ) ) ) {
+					continue;
+				}
 
 				// Check for a shadow term associated with this post.
-				$shadow_term = self::get_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES['place'] );
+				$shadow_term = self::get_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES[ $tax_slug ] );
 
 				// If there isn't already a shadow term, create it. Otherwise, apply the term to the post.
 				if ( empty( $shadow_term ) ) {
-					self::create_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES['place'] );
+					self::create_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES[ $tax_slug ] );
 				} else {
-					wp_set_post_terms( $post_id, $shadow_term->term_id, self::NEWSPACK_LISTINGS_TAXONOMIES['place'] );
+					wp_set_post_terms( $post_id, $shadow_term->term_id, self::NEWSPACK_LISTINGS_TAXONOMIES[ $tax_slug ] );
 				}
 			}
 		}
