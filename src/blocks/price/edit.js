@@ -18,17 +18,15 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 	const { currency, formattedPrice, price, showDecimals } = attributes;
 
 	useEffect(() => {
-		if ( ! formattedPrice ) {
-			setAttributes( {
-				formattedPrice: new Intl.NumberFormat( locale, {
-					style: 'currency',
-					currency: currency || defaultCurrency,
-					minimumFractionDigits: showDecimals ? 2 : 0,
-					maximumFractionDigits: showDecimals ? 2 : 0,
-				} ).format( price ),
-			} );
-		}
-	}, [ formattedPrice ]);
+		setAttributes( {
+			formattedPrice: new Intl.NumberFormat( locale, {
+				style: 'currency',
+				currency: currency || defaultCurrency,
+				minimumFractionDigits: showDecimals ? 2 : 0,
+				maximumFractionDigits: showDecimals ? 2 : 0,
+			} ).format( price ),
+		} );
+	}, [ currency, showDecimals, price ]);
 
 	return (
 		<>
@@ -38,17 +36,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 						<SelectControl
 							label={ __( 'Select currency', 'newspack-listings' ) }
 							value={ currency || defaultCurrency }
-							onChange={ value =>
-								setAttributes( {
-									currency: value,
-									formattedPrice: new Intl.NumberFormat( locale, {
-										style: 'currency',
-										currency: value,
-										minimumFractionDigits: showDecimals ? 2 : 0,
-										maximumFractionDigits: showDecimals ? 2 : 0,
-									} ).format( price ),
-								} )
-							}
+							onChange={ value => setAttributes( { currency: value } ) }
 							options={ Object.keys( currencies )
 								.map( _currency => {
 									return {
@@ -68,17 +56,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 								'newspack-listings'
 							) }
 							checked={ showDecimals }
-							onChange={ value =>
-								setAttributes( {
-									showDecimals: value,
-									formattedPrice: new Intl.NumberFormat( locale, {
-										style: 'currency',
-										currency: currency || defaultCurrency,
-										minimumFractionDigits: value ? 2 : 0,
-										maximumFractionDigits: value ? 2 : 0,
-									} ).format( price ),
-								} )
-							}
+							onChange={ value => setAttributes( { showDecimals: value } ) }
 						/>
 					</PanelRow>
 				</PanelBody>
@@ -98,16 +76,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 						) }
 						value={ price }
 						onChange={ value => {
-							const newPrice = parseFloat( value < 0 ? 0 : value );
-							setAttributes( {
-								price: newPrice,
-								formattedPrice: new Intl.NumberFormat( locale, {
-									style: 'currency',
-									currency: currency || defaultCurrency,
-									minimumFractionDigits: showDecimals ? 2 : 0,
-									maximumFractionDigits: showDecimals ? 2 : 0,
-								} ).format( newPrice ),
-							} );
+							setAttributes( { price: parseFloat( value < 0 ? 0 : value ) } );
 						} }
 					/>
 				) : (
