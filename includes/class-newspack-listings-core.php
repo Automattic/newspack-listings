@@ -507,6 +507,29 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
+			'newspack_listings_price'            => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+				],
+				'label'      => __( 'Price', 'newspack-listings' ),
+				'source'     => [
+					'blockName' => 'newspack-listings/price',
+					'attr'      => 'price',
+					'single'    => true,
+				],
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'description'       => __( 'Price for this listing.', 'newspack-listings' ),
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
 			'newspack_listings_hide_author'      => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
