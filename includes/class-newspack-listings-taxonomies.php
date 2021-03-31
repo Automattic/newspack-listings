@@ -120,7 +120,7 @@ final class Newspack_Listings_Taxonomies {
 	 */
 	public static function update_or_delete_shadow_term( $post_id, $post ) {
 		// Bail if the current post type isn't one of the ones to shadow.
-		if ( Core::NEWSPACK_LISTINGS_POST_TYPES['place'] === $post->post_type ) {
+		if ( Core::NEWSPACK_LISTINGS_POST_TYPES['place'] !== $post->post_type ) {
 			return;
 		}
 
