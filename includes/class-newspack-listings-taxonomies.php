@@ -257,8 +257,11 @@ final class Newspack_Listings_Taxonomies {
 			return false;
 		}
 
+		$post_id     = $post_id;
+		$new_term_id = $new_term->term_id;
+
 		// Apply the term to the parent post.
-		wp_set_post_terms( $post->ID, $new_term->term_id, $taxonomy );
+		wp_set_post_terms( $post_id, $new_term_id, $taxonomy );
 
 		return $new_term;
 	}
@@ -291,21 +294,22 @@ final class Newspack_Listings_Taxonomies {
 				$post_id   = get_the_ID();
 				$post      = get_post( $post_id );
 				$post_type = $post->post_type;
-				$tax_slug  = reset( array_keys( Core::NEWSPACK_LISTINGS_POST_TYPES, $post_type ) );
+				$term_slug = array_keys( Core::NEWSPACK_LISTINGS_POST_TYPES, $post_type );
+				$term_slug = reset( $term_slug );
 
 				// Bail if not a post type to be shadowed.
-				if ( empty( $tax_slug ) || ! in_array( $tax_slug, array_keys( self::NEWSPACK_LISTINGS_TAXONOMIES ) ) ) {
+				if ( empty( $term_slug ) || ! in_array( $term_slug, array_keys( self::NEWSPACK_LISTINGS_TAXONOMIES ) ) ) {
 					continue;
 				}
 
 				// Check for a shadow term associated with this post.
-				$shadow_term = self::get_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES[ $tax_slug ] );
+				$shadow_term = self::get_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES[ $term_slug ] );
 
 				// If there isn't already a shadow term, create it. Otherwise, apply the term to the post.
 				if ( empty( $shadow_term ) ) {
-					self::create_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES[ $tax_slug ] );
+					self::create_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES[ $term_slug ] );
 				} else {
-					wp_set_post_terms( $post_id, $shadow_term->term_id, self::NEWSPACK_LISTINGS_TAXONOMIES[ $tax_slug ] );
+					wp_set_post_terms( $post_id, $shadow_term->term_id, self::NEWSPACK_LISTINGS_TAXONOMIES[ $term_slug ] );
 				}
 			}
 		}
