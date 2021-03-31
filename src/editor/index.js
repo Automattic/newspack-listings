@@ -12,6 +12,7 @@ import {
 	registerListContainerBlock,
 	registerEventDatesBlock,
 	registerListingBlock,
+	registerPriceBlock,
 	setCustomCategory,
 } from '../blocks';
 import { isListing } from './utils';
@@ -32,6 +33,11 @@ if ( isListing() ) {
 	// Register Event Dates block if we're editing an Event.
 	if ( isListing( post_types.event.name ) ) {
 		registerEventDatesBlock();
+	}
+
+	// Register Price block if we're editing a Marketplace listing.
+	if ( isListing( post_types.marketplace.name ) ) {
+		registerPriceBlock();
 	}
 } else {
 	setCustomCategory();

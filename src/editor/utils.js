@@ -45,7 +45,7 @@ export const isListing = ( listingType = null ) => {
  * From https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
  *
  * @param {string} hex Color in HEX format
- * @return {array} RGB values, e.g. [red, green, blue]
+ * @return {Array} RGB values, e.g. [red, green, blue]
  */
 const hexToRGB = hex =>
 	hex
@@ -56,6 +56,7 @@ const hexToRGB = hex =>
 
 /**
  * Get contrast ratio of the given backgroundColor compared to black.
+ *
  * @param {string} backgroundColor Color HEX value to compare with black.
  * @return {number} Contrast ratio vs. black.
  */

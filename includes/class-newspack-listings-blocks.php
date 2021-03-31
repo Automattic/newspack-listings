@@ -80,6 +80,8 @@ final class Newspack_Listings_Blocks {
 				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
 				'post_types'      => $post_types,
+				'currency'        => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
+				'currencies'      => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
 
 				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
 				'no_listings'     => 0 === $total_count,

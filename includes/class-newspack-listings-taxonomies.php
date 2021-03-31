@@ -180,7 +180,7 @@ final class Newspack_Listings_Taxonomies {
 		// Check for a shadow term associated with this post.
 		$shadow_term = self::get_shadow_term( $post, $taxonomy );
 
-		if ( ! empty( $shadow_term ) ) {
+		if ( empty( $shadow_term ) ) {
 			return false;
 		}
 
