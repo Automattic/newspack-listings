@@ -19,13 +19,24 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 	const { currency, formattedPrice, price, showDecimals } = attributes;
 
 	useEffect(() => {
+		// Guard against setting invalid price attribute.
+		if ( isNaN( price ) || '' === price || 0 > price ) {
+			setAttributes( { price: 0 } );
+		}
+	}, [ isSelected ]);
+
+	useEffect(() => {
+		// Guard against rendering invalid price attribute.
+		const priceToFormat = isNaN( price ) || '' === price || 0 > price ? 0 : price;
+
+		// Format price according to editor's locale.
 		setAttributes( {
 			formattedPrice: new Intl.NumberFormat( locale, {
 				style: 'currency',
 				currency: currency || defaultCurrency,
 				minimumFractionDigits: showDecimals ? 2 : 0,
 				maximumFractionDigits: showDecimals ? 2 : 0,
-			} ).format( price ),
+			} ).format( priceToFormat ),
 		} );
 	}, [ currency, showDecimals, price ]);
 
@@ -77,7 +88,9 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 						) }
 						value={ price }
 						onChange={ value => {
-							setAttributes( { price: parseFloat( value < 0 ? 0 : value ) } );
+							setAttributes( {
+								price: parseFloat( value < 0 ? 0 : value ),
+							} );
 						} }
 					/>
 				) : (
