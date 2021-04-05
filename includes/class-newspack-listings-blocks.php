@@ -64,6 +64,7 @@ final class Newspack_Listings_Blocks {
 		$total_count = 0;
 		$post_type   = get_post_type();
 		$post_types  = [];
+		$taxonomies  = [];
 
 		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
 			$post_count           = wp_count_posts( $name )->publish;
