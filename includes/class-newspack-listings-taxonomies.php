@@ -391,6 +391,13 @@ final class Newspack_Listings_Taxonomies {
 	public static function maybe_append_related_listings( $content ) {
 		$post_id       = get_the_ID();
 		$listing_terms = wp_get_post_terms( $post_id, array_values( self::NEWSPACK_LISTINGS_TAXONOMIES ) );
+		$listing_terms = array_filter(
+			$listing_terms,
+			function( $listing_term ) use ( $post_id ) {
+				// Don't show the post on itself.
+				return get_post_field( 'post_name', get_post( $post_id ) ) !== $listing_term->slug;
+			}
+		);
 
 		if ( 0 < count( $listing_terms ) ) {
 			$related_listing_ids = self::get_related_listings( array_column( $listing_terms, 'slug' ) );
