@@ -48,8 +48,8 @@ final class Newspack_Listings_Block_Patterns {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'admin_init', [ __CLASS__, 'register_block_pattern_category' ], 10 );
-		add_action( 'admin_init', [ __CLASS__, 'register_block_patterns' ], 11 );
+		add_action( 'init', [ __CLASS__, 'register_block_pattern_category' ], 10 );
+		add_action( 'init', [ __CLASS__, 'register_block_patterns' ], 11 );
 	}
 
 	/**
