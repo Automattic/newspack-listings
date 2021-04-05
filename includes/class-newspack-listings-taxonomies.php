@@ -13,8 +13,8 @@ use \Newspack_Listings\Utils as Utils;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Blocks class.
- * Sets up custom blocks for listings.
+ * Taxonomies class.
+ * Sets up shadow taxonomies for listings.
  */
 final class Newspack_Listings_Taxonomies {
 	const NEWSPACK_LISTINGS_TAXONOMIES = [

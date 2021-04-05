@@ -20,7 +20,7 @@ function register_block() {
 		true
 	);
 
-	// Register Evend Dates block.
+	// Register Price block.
 	register_block_type(
 		$block_json['name'],
 		[
