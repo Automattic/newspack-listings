@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -73,6 +74,13 @@ final class Newspack_Listings_Blocks {
 			];
 		}
 
+		foreach ( Taxonomies::NEWSPACK_LISTINGS_TAXONOMIES as $label => $name ) {
+			$taxonomies[ $label ] = [
+				'name'  => $name,
+				'label' => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $label ] )->labels->singular_name,
+			];
+		}
+
 		wp_localize_script(
 			'newspack-listings-editor',
 			'newspack_listings_data',
@@ -80,6 +88,7 @@ final class Newspack_Listings_Blocks {
 				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
 				'post_types'      => $post_types,
+				'taxonomies'      => $taxonomies,
 				'currency'        => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
 				'currencies'      => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
 

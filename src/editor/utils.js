@@ -41,6 +41,75 @@ export const isListing = ( listingType = null ) => {
 };
 
 /**
+ * Check if the given taxonomy is a Listings shadow taxonomy.
+ *
+ * @param {string} taxonomyName Name of the taxonomy.
+ * @return {boolean} Whether or not the given taxonomy is a Listings shadow taxonomy.
+ */
+export const isShadowTaxonomy = taxonomyName => {
+	if ( ! window.newspack_listings_data ) {
+		return false;
+	}
+
+	const { taxonomies } = window.newspack_listings_data;
+
+	// Check whether the given taxonomy is a Listings shadow taxonomy.
+	for ( const slug in taxonomies ) {
+		if ( taxonomies.hasOwnProperty( slug ) && taxonomyName === taxonomies[ slug ].name ) {
+			return true;
+		}
+	}
+
+	return false;
+};
+
+/**
+ * Given a shadow taxonomy name, get the human-readable label for the taxonomy.
+ *
+ * @param {string} taxonomyName Name of the taxonomy.
+ * @return {string|boolean} The label of the taxonomy, or false if none
+ */
+export const getTaxonomyLabel = taxonomyName => {
+	if ( ! window.newspack_listings_data ) {
+		return false;
+	}
+
+	const { taxonomies } = window.newspack_listings_data;
+
+	// Check whether the given taxonomy is a Listings shadow taxonomy.
+	for ( const slug in taxonomies ) {
+		if ( taxonomies.hasOwnProperty( slug ) && taxonomyName === taxonomies[ slug ].name ) {
+			return taxonomies[ slug ].label;
+		}
+	}
+
+	return false;
+};
+
+/**
+ * Given a shadow taxonomy name, find the correponding post type it shadows.
+ *
+ * @param {string} taxonomyName Name of the taxonomy.
+ * @return {string|boolean} The post type the given taxonomy shadows, or false if none.
+ */
+export const getPostTypeByTaxonomy = taxonomyName => {
+	if ( ! window.newspack_listings_data ) {
+		return false;
+	}
+
+	const { post_types, taxonomies } = window.newspack_listings_data;
+
+	// Check whether the given taxonomy is a Listings shadow taxonomy.
+	for ( const slug in taxonomies ) {
+		if ( taxonomies.hasOwnProperty( slug ) && taxonomyName === taxonomies[ slug ].name ) {
+			return post_types[ slug ].name;
+		}
+	}
+
+	return false;
+};
+
+/**
  * Convert hex color to RGB.
  * From https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
  *

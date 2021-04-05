@@ -1,6 +1,7 @@
 /**
  * WordPress dependencies
  */
+import { addFilter } from '@wordpress/hooks';
 import { registerPlugin } from '@wordpress/plugins';
 
 /**
@@ -15,6 +16,7 @@ import {
 	registerPriceBlock,
 	setCustomCategory,
 } from '../blocks';
+import { ShadowTaxonomies } from './shadow-taxonomies';
 import { isListing } from './utils';
 
 /**
@@ -39,6 +41,9 @@ if ( isListing() ) {
 	if ( isListing( post_types.marketplace.name ) ) {
 		registerPriceBlock();
 	}
+
+	// Filter taxonomy UI for listing shadow taxonomies.
+	addFilter( 'editor.PostTaxonomyType', 'newspack-listings', ShadowTaxonomies );
 } else {
 	setCustomCategory();
 	registerCuratedListBlock();
