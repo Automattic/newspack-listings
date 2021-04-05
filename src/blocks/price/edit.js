@@ -11,6 +11,7 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
+import { decodeEntities } from '@wordpress/html-entities';
 
 export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 	const { currencies = {}, currency: defaultCurrency = 'USD' } = window.newspack_listings_data;
@@ -41,7 +42,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 								.map( _currency => {
 									return {
 										value: _currency,
-										label: `${ currencies[ _currency ] } (${ _currency })`,
+										label: `${ decodeEntities( currencies[ _currency ] ) } (${ _currency })`,
 									};
 								} )
 								.sort( ( a, b ) => a.label.toUpperCase().localeCompare( b.label.toUpperCase() ) ) }
