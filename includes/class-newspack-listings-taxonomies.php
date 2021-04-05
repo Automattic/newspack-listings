@@ -297,7 +297,7 @@ final class Newspack_Listings_Taxonomies {
 			return false;
 		}
 
-		$post_id     = $post_id;
+		$post_id     = $post->ID;
 		$new_term_id = $new_term->term_id;
 
 		// Apply the term to the parent post.
