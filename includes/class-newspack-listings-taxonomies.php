@@ -168,6 +168,24 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
+	 * Given a post type, get the name of the shadow taxonomy for that post type.
+	 *
+	 * @param string $post_type Post type.
+	 * @return string}boolean The shadow taxonomy for the given post type, or false if none.
+	 */
+	public static function get_taxonomy_by_post_type( $post_type ) {
+		$shadow_taxonomy = false;
+		$post_type_slugs = array_keys( Core::NEWSPACK_LISTINGS_POST_TYPES, $post_type );
+		$post_type_slug  = reset( $post_type_slugs );
+
+		if ( ! empty( $post_type_slug ) && ! empty( self::NEWSPACK_LISTINGS_TAXONOMIES[ $post_type_slug ] ) ) {
+			$shadow_taxonomy = self::NEWSPACK_LISTINGS_TAXONOMIES[ $post_type_slug ];
+		}
+
+		return $shadow_taxonomy;
+	}
+
+	/**
 	 * Create shadow relationships between taxonomies and their posts.
 	 */
 	public static function create_shadow_relationship() {
@@ -188,11 +206,14 @@ final class Newspack_Listings_Taxonomies {
 			return;
 		}
 
+		// Get the taxonomy to update or delete.
+		$shadow_taxonomy = self::get_taxonomy_by_post_type( $post->post_type );
+
 		// If the post is published, create or update the shadow term. Otherwise, delete it.
-		if ( 'publish' === $post->post_status ) {
-			self::update_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES['place'] );
+		if ( 'publish' === $post->post_status && ! empty( $shadow_taxonomy ) ) {
+			self::update_shadow_term( $post, $shadow_taxonomy );
 		} else {
-			self::delete_shadow_term( $post, self::NEWSPACK_LISTINGS_TAXONOMIES['place'] );
+			self::delete_shadow_term( $post, $shadow_taxonomy );
 		}
 	}
 
