@@ -145,11 +145,14 @@ final class Newspack_Listings_Taxonomies {
 
 		// Register shadow taxonomies for each source post type.
 		foreach ( $shadow_taxonomies as $post_type_to_shadow => $shadow_taxonomy ) {
+			$taxonomy_slug = self::NEWSPACK_LISTINGS_TAXONOMIES[ $post_type_to_shadow ];
 			register_taxonomy(
-				self::NEWSPACK_LISTINGS_TAXONOMIES[ $post_type_to_shadow ],
+				$taxonomy_slug,
 				$shadow_taxonomy['post_types'],
 				$shadow_taxonomy['config']
 			);
+
+			add_filter( 'rest_' . $taxonomy_slug . '_query', [ __CLASS__, 'filter_terms_rest' ], 10, 2 );
 		}
 	}
 
@@ -374,6 +377,36 @@ final class Newspack_Listings_Taxonomies {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Filter out the shadow taxonomy for the post being edited in the Gutenberg taxonomy UI.
+	 *
+	 * @param array           $prepared_args Array of arguments to be passed to get_terms().
+	 * @param WP_REST_Request $request The REST API request.
+	 *
+	 * @return array The filtered arguments array.
+	 */
+	public static function filter_terms_rest( $prepared_args, $request ) {
+		$shadow_taxonomy = $prepared_args['taxonomy'];
+
+		// If the taxonomy being queried is a shadow taxonomy.
+		if ( in_array( $shadow_taxonomy, array_values( self::NEWSPACK_LISTINGS_TAXONOMIES ) ) ) {
+			// The global $post object isn't available in REST callbacks, so try to extract the post ID from the referrer URL.
+			parse_str( wp_parse_url( $request->get_header( 'referer' ), PHP_URL_QUERY ), $params );
+			$post_id = ! empty( $params['post'] ) ? $params['post'] : null;
+
+			if ( $post_id ) {
+				$post        = get_post( $post_id );
+				$shadow_term = self::get_shadow_term( $post, $shadow_taxonomy );
+
+				if ( $shadow_term ) {
+					$prepared_args['exclude'] = [ $shadow_term->term_id ];
+				}
+			}
+		}
+
+		return $prepared_args;
 	}
 
 	/**
