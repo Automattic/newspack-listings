@@ -22,7 +22,10 @@ export const registerListingBlock = () => {
 		if ( post_types.hasOwnProperty( listingType ) ) {
 			registerBlockType( `newspack-listings/${ listingType }`, {
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
-				icon: getIcon( listingType ),
+				icon: {
+					src: getIcon( listingType ),
+					foreground: '#36f',
+				},
 				category,
 				parent: [ 'newspack-listings/list-container' ],
 				keywords: [
