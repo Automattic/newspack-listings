@@ -50,6 +50,7 @@ final class Newspack_Listings_Taxonomies {
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'init' ] );
 		add_action( 'admin_init', [ __CLASS__, 'handle_missing_terms' ] );
+		add_action( 'admin_init', [ __CLASS__, 'handle_orphaned_terms' ] );
 		add_filter( 'the_content', [ __CLASS__, 'maybe_append_related_listings' ] );
 		add_filter( 'wpseo_primary_term_taxonomies', [ __CLASS__, 'disable_yoast_primary_category_picker' ], 10, 2 );
 	}
@@ -197,7 +198,7 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
-	 * When a Place changes status, add/update the shadow term if the status is `publish`, otherwise delete it.
+	 * When a listing post type changes status, add/update its shadow term if the status is `publish`, otherwise delete it.
 	 *
 	 * @param int   $post_id ID for the post being inserted or saved.
 	 * @param array $post Post object for the post being inserted or saved.
@@ -287,8 +288,15 @@ final class Newspack_Listings_Taxonomies {
 			return false;
 		}
 
-		$shadow_term = get_term_by( 'name', $post->post_title, $taxonomy );
+		// Try finding the shadow term by slug first.
+		$shadow_term = get_term_by( 'slug', $post->post_name, $taxonomy );
 
+		// If we can't find a term by slug, the post slug may have been updated. Try finding by title instead.
+		if ( empty( $shadow_term ) ) {
+			$shadow_term = get_term_by( 'name', $post->post_title, $taxonomy );
+		}
+
+		// If we can't find a term by either slug or title, it probably doesn't exist.
 		if ( empty( $shadow_term ) ) {
 			return false;
 		}
@@ -322,9 +330,9 @@ final class Newspack_Listings_Taxonomies {
 		}
 
 		$post_id     = $post->ID;
-		$new_term_id = $new_term->term_id;
+		$new_term_id = $new_term['term_id'];
 
-		// Apply the term to the parent post.
+		// Apply the term to the parent post. This lets us check for missing terms.
 		wp_set_post_terms( $post_id, $new_term_id, $taxonomy );
 
 		return $new_term;
@@ -343,14 +351,14 @@ final class Newspack_Listings_Taxonomies {
 			];
 		}
 
-		$args = [
-			'post_type'      => self::get_post_types_to_shadow(),
-			'post_status'    => 'publish',
-			'posts_per_page' => 100,
-			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-		];
-
-		$query = new \WP_Query( $args );
+		$query = new \WP_Query(
+			[
+				'post_type'      => self::get_post_types_to_shadow(),
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+			]
+		);
 
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
@@ -375,6 +383,42 @@ final class Newspack_Listings_Taxonomies {
 				} else {
 					wp_set_post_terms( $post_id, $shadow_term->term_id, self::NEWSPACK_LISTINGS_TAXONOMIES[ $term_slug ] );
 				}
+			}
+		}
+	}
+
+	/**
+	 * Delete any shadow terms that no longer have a post to shadow.
+	 */
+	public static function handle_orphaned_terms() {
+		$all_terms  = get_terms(
+			[
+				'taxonomy'   => array_values( self::NEWSPACK_LISTINGS_TAXONOMIES ),
+				'hide_empty' => false,
+			]
+		);
+		$term_slugs = array_column( $all_terms, 'slug' );
+		$query      = new \WP_Query(
+			[
+				'post_type'      => self::get_post_types_to_shadow(),
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'post_name__in'  => $term_slugs,
+			]
+		);
+
+		if ( $query->have_posts() ) {
+			$post_slugs     = array_column( $query->posts, 'post_name' );
+			$orphaned_slugs = array_diff( $term_slugs, $post_slugs );
+			$orphaned_terms = array_filter(
+				$all_terms,
+				function( $term ) use ( $orphaned_slugs ) {
+					return in_array( $term->slug, $orphaned_slugs );
+				}
+			);
+
+			foreach ( $orphaned_terms as $orphaned_term ) {
+				wp_delete_term( $orphaned_term->term_id, $orphaned_term->taxonomy );
 			}
 		}
 	}
