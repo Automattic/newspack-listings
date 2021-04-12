@@ -6,11 +6,7 @@
  * WordPress dependencies
  */
 import { useEffect, useRef } from '@wordpress/element';
-
-/**
- * External dependencies
- */
-import { Business, Event, List, LocationOn } from '@material-ui/icons';
+import { Icon, calendar, mapMarker, postList, store } from '@wordpress/icons';
 
 /**
  * Check if the current post in the editor is a listing CPT.
@@ -226,12 +222,12 @@ export const capitalize = str => str[ 0 ].toUpperCase() + str.slice( 1 );
 export const getIcon = listingTypeSlug => {
 	switch ( listingTypeSlug ) {
 		case 'event':
-			return <Event style={ { color: '#36f' } } />;
+			return <Icon icon={ calendar } />;
 		case 'marketplace':
-			return <Business style={ { color: '#36f' } } />;
+			return <Icon icon={ store } />;
 		case 'place':
-			return <LocationOn style={ { color: '#36f' } } />;
+			return <Icon icon={ mapMarker } />;
 		default:
-			return <List style={ { color: '#36f' } } />;
+			return <Icon icon={ postList } />;
 	}
 };

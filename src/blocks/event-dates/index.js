@@ -3,11 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-
-/**
- * External dependencies
- */
-import Event from '@material-ui/icons/Event';
+import { Icon, calendar } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -20,7 +16,10 @@ const { attributes, category, name } = metadata;
 export const registerEventDatesBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Event Dates', 'newspack-listing' ),
-		icon: <Event style={ { color: '#36f' } } />,
+		icon: {
+			src: <Icon icon={ calendar } />,
+			foreground: '#36f',
+		},
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),

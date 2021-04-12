@@ -27,18 +27,14 @@ import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
-
-/**
- * External dependencies
- */
-import ListAlt from '@material-ui/icons/ListAlt';
+import { Icon, loop, postList } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
-import { Query, Specific } from '../../svg';
+import { List } from '../../svg';
 import { getContrastRatio, getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 /**
@@ -377,10 +373,7 @@ const CuratedListEditorComponent = ( {
 	 */
 	if ( isEmpty ) {
 		return (
-			<Placeholder
-				icon={ <ListAlt style={ { color: '#36f' } } /> }
-				label={ __( 'Curated List', 'newspack-listings' ) }
-			>
+			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
 				<Notice isDismissible={ false }>
 					{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }
 				</Notice>
@@ -393,7 +386,7 @@ const CuratedListEditorComponent = ( {
 		return (
 			<div className="newspack-listings__placeholder">
 				<BlockVariationPicker
-					icon={ <ListAlt style={ { color: '#36f' } } /> }
+					icon={ <List /> }
 					label={ __( 'Curated List', 'newspack-listings' ) }
 					instructions={ __( 'Select the type of list to start with.' ) }
 					onSelect={ variation => {
@@ -412,12 +405,12 @@ const CuratedListEditorComponent = ( {
 						{
 							name: 'query',
 							title: __( 'Query', 'newspack-listings' ),
-							icon: <Query />,
+							icon: <Icon icon={ loop } />,
 						},
 						{
 							name: 'specific',
 							title: __( 'Specific Listings', 'newspack-listings' ),
-							icon: <Specific />,
+							icon: <Icon icon={ postList } />,
 						},
 					] }
 				/>
@@ -566,8 +559,6 @@ const CuratedListEditorComponent = ( {
 						onChange={ _typeScale => setAttributes( { typeScale: _typeScale } ) }
 						min={ 1 }
 						max={ 10 }
-						beforeIcon="editor-textcolor"
-						afterIcon="editor-textcolor"
 						required
 					/>
 				</PanelBody>

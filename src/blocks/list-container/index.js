@@ -4,11 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
-
-/**
- * External dependencies
- */
-import ListAlt from '@material-ui/icons/ListAlt';
+import { Icon, group } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -21,8 +17,11 @@ const parentAttributes = parentData.attributes;
 
 export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
-		title: __( 'Curated List', 'newspack-listing' ),
-		icon: <ListAlt style={ { color: '#36f' } } />,
+		title: __( 'Container', 'newspack-listing' ),
+		icon: {
+			src: <Icon icon={ group } />,
+			foreground: '#36f',
+		},
 		category: 'newspack',
 		parent: [ 'newspack-listings/curated-list' ],
 		keywords: [
