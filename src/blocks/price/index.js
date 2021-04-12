@@ -3,11 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-
-/**
- * External dependencies
- */
-import Money from '@material-ui/icons/Money';
+import { Icon, currencyDollar } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -20,7 +16,10 @@ const { attributes, category, name } = metadata;
 export const registerPriceBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Price', 'newspack-listing' ),
-		icon: <Money style={ { color: '#36f' } } />,
+		icon: {
+			src: <Icon icon={ currencyDollar } />,
+			foreground: '#36f',
+		},
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),
