@@ -6,22 +6,21 @@ import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
 
 /**
- * External dependencies
- */
-import ListAlt from '@material-ui/icons/ListAlt';
-
-/**
  * Internal dependencies
  */
 import './editor.scss';
 import { CuratedListEditor } from './edit';
+import { List } from '../../svg';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
 export const registerCuratedListBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Curated List', 'newspack-listing' ),
-		icon: <ListAlt style={ { color: '#36f' } } />,
+		icon: {
+			src: <List />,
+			foreground: '#36f',
+		},
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),
