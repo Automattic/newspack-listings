@@ -37,6 +37,29 @@ export const isListing = ( listingType = null ) => {
 };
 
 /**
+ * Given a post type string, get the human-readable label for the post type.
+ *
+ * @param {string} postType Name of the post type.
+ * @return {string} The label of the post type, or the post type itself if we can't determine.
+ */
+export const getPostTypeLabel = postType => {
+	if ( ! window.newspack_listings_data ) {
+		return capitalize( postTypes );
+	}
+
+	const { post_types: postTypes } = window.newspack_listings_data;
+
+	// Check whether the given taxonomy is a Listings shadow taxonomy.
+	for ( const slug in postTypes ) {
+		if ( postTypes.hasOwnProperty( slug ) && postType === postTypes[ slug ].name ) {
+			return postTypes[ slug ].label;
+		}
+	}
+
+	return capitalize( postType );
+};
+
+/**
  * Check if the given taxonomy is a Listings shadow taxonomy.
  *
  * @param {string} taxonomyName Name of the taxonomy.
@@ -63,11 +86,11 @@ export const isShadowTaxonomy = taxonomyName => {
  * Given a shadow taxonomy name, get the human-readable label for the taxonomy.
  *
  * @param {string} taxonomyName Name of the taxonomy.
- * @return {string|boolean} The label of the taxonomy, or false if none
+ * @return {string} The label of the taxonomy, or the taxonomy name itself if we can't determine.
  */
 export const getTaxonomyLabel = taxonomyName => {
 	if ( ! window.newspack_listings_data ) {
-		return false;
+		return capitalize( taxonomyName );
 	}
 
 	const { taxonomies } = window.newspack_listings_data;
@@ -79,7 +102,7 @@ export const getTaxonomyLabel = taxonomyName => {
 		}
 	}
 
-	return false;
+	return capitalize( taxonomyName );
 };
 
 /**
@@ -93,12 +116,35 @@ export const getPostTypeByTaxonomy = taxonomyName => {
 		return false;
 	}
 
-	const { post_types, taxonomies } = window.newspack_listings_data;
+	const { post_types: postTypes, taxonomies } = window.newspack_listings_data;
 
 	// Check whether the given taxonomy is a Listings shadow taxonomy.
 	for ( const slug in taxonomies ) {
 		if ( taxonomies.hasOwnProperty( slug ) && taxonomyName === taxonomies[ slug ].name ) {
-			return post_types[ slug ].name;
+			return postTypes[ slug ].name;
+		}
+	}
+
+	return false;
+};
+
+/**
+ * Given a post type, get the corresopnding shadow taxonomy that shadows it.
+ *
+ * @param {string|null} postType (Optional) Post type to check. If not given, will extract from global data.
+ * @return {Object|boolean} The taxonomy that shadows the given post type, or false if none.
+ */
+export const getTaxonomyForPostType = ( postType = null ) => {
+	if ( ! window.newspack_listings_data ) {
+		return false;
+	}
+
+	const { post_type, post_types: postTypes, taxonomies } = window.newspack_listings_data;
+	const postTypeToCheck = postType || post_type;
+
+	for ( const slug in postTypes ) {
+		if ( postTypes[ slug ].name === postTypeToCheck ) {
+			return taxonomies[ slug ];
 		}
 	}
 

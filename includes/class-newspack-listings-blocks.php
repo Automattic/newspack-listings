@@ -66,19 +66,23 @@ final class Newspack_Listings_Blocks {
 		$post_types  = [];
 		$taxonomies  = [];
 
-		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
-			$post_count           = wp_count_posts( $name )->publish;
-			$total_count          = $total_count + $post_count;
-			$post_types[ $label ] = [
+		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $slug => $name ) {
+			$post_count          = wp_count_posts( $name )->publish;
+			$total_count         = $total_count + $post_count;
+			$post_types[ $slug ] = [
 				'name'             => $name,
+				'label'            => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ] )->labels->singular_name,
 				'show_in_inserter' => 0 < $post_count,
 			];
 		}
 
-		foreach ( Taxonomies::NEWSPACK_LISTINGS_TAXONOMIES as $label => $name ) {
-			$taxonomies[ $label ] = [
-				'name'  => $name,
-				'label' => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $label ] )->labels->singular_name,
+		$shadow_taxonomy_config = Taxonomies::get_shadow_taxonomy_config();
+
+		foreach ( Taxonomies::NEWSPACK_LISTINGS_TAXONOMIES as $slug => $name ) {
+			$taxonomies[ $slug ] = [
+				'name'       => $name,
+				'label'      => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ] )->labels->singular_name,
+				'post_types' => $shadow_taxonomy_config[ $slug ]['post_types'],
 			];
 		}
 

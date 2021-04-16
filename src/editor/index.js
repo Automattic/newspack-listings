@@ -1,7 +1,6 @@
 /**
  * WordPress dependencies
  */
-import { addFilter } from '@wordpress/hooks';
 import { registerPlugin } from '@wordpress/plugins';
 
 /**
@@ -24,7 +23,7 @@ import { isListing } from './utils';
  * (to avoid possibly infinitely nesting lists within list items).
  */
 if ( isListing() ) {
-	const { post_types } = window.newspack_listings_data || {};
+	const { post_types: postTypes } = window.newspack_listings_data || {};
 
 	// Register plugin editor settings.
 	registerPlugin( 'newspack-listings-editor', {
@@ -33,20 +32,26 @@ if ( isListing() ) {
 	} );
 
 	// Register Event Dates block if we're editing an Event.
-	if ( isListing( post_types.event.name ) ) {
+	if ( isListing( postTypes.event.name ) ) {
 		registerEventDatesBlock();
 	}
 
 	// Register Price block if we're editing a Marketplace listing.
-	if ( isListing( post_types.marketplace.name ) ) {
+	if ( isListing( postTypes.marketplace.name ) ) {
 		registerPriceBlock();
 	}
 
 	// Filter taxonomy UI for listing shadow taxonomies.
-	addFilter( 'editor.PostTaxonomyType', 'newspack-listings', ShadowTaxonomies );
+	// addFilter( 'editor.PostTaxonomyType', 'newspack-listings', ShadowTaxonomies );
 } else {
 	setCustomCategory();
 	registerCuratedListBlock();
 	registerListContainerBlock();
 	registerListingBlock();
 }
+
+// Register plugin editor settings.
+registerPlugin( 'newspack-listings-shadow-taxonomies', {
+	render: ShadowTaxonomies,
+	icon: null,
+} );

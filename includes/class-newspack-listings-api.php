@@ -11,6 +11,7 @@ namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
+use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
@@ -78,6 +79,71 @@ final class Newspack_Listings_Api {
 				],
 			]
 		);
+
+		// GET listings taxonomy terms by name search term.
+		register_rest_route(
+			'newspack-listings/v1',
+			'children',
+			[
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ __CLASS__, 'get_children' ],
+					'permission_callback' => '__return_true',
+				],
+			]
+		);
+
+		// GET listings taxonomy terms by name search term.
+		register_rest_route(
+			'newspack-listings/v1',
+			'children',
+			[
+				[
+					'methods'             => \WP_REST_Server::EDITABLE,
+					'callback'            => [ __CLASS__, 'set_children' ],
+					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
+					'args'                => [
+						'parent'   => [
+							'sanitize_callback' => 'absint',
+						],
+						'children' => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+						'removed'  => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Permission callback for authenticated requests.
+	 *
+	 * @return boolean if user can edit stuff.
+	 */
+	public static function api_permissions_check() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error(
+				'newspack_rest_forbidden',
+				esc_html__( 'You cannot use this resource.', 'newspack-listings' ),
+				[
+					'status' => 403,
+				]
+			);
+		}
+		return true;
+	}
+
+	/**
+	 * Sanitize an array of text or number values.
+	 *
+	 * @param array $array Array of text or float values to be sanitized.
+	 * @return array Sanitized array.
+	 */
+	public static function sanitize_array( $array ) {
+		return Utils\sanitize_array( $array );
 	}
 
 	/**
@@ -361,6 +427,47 @@ final class Newspack_Listings_Api {
 		}
 
 		return new \WP_REST_Response( [] );
+	}
+
+	/**
+	 * Look up child posts by post ID.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function get_children( $request ) {
+		$params   = $request->get_params();
+		$children = Taxonomies::get_child_posts( $params );
+
+		if ( is_array( $children ) ) {
+			return new \WP_REST_Response(
+				array_map(
+					function( $post ) {
+						return [
+							'id'   => $post->ID,
+							'name' => $post->post_title,
+						];
+					},
+					$children
+				),
+				200
+			);
+		}
+
+		return new \WP_REST_Response( [] );
+	}
+
+	/**
+	 * Apply shadow term for the parent post to the given children,
+	 * and/or remove the shadow term from the given children to remove.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function set_children( $request ) {
+		$params   = $request->get_params();
+		$response = Taxonomies::set_child_posts( $params );
+		return new \WP_REST_Response( $response );
 	}
 }
 

@@ -176,19 +176,19 @@ final class Newspack_Listings_Core {
 			'generic'     => [
 				'labels'  => [
 					'name'               => _x( 'Generic Listings', 'post type general name', 'newspack-listings' ),
-					'singular_name'      => _x( 'Listing', 'post type singular name', 'newspack-listings' ),
+					'singular_name'      => _x( 'Generic Listing', 'post type singular name', 'newspack-listings' ),
 					'menu_name'          => _x( 'Generic Listings', 'admin menu', 'newspack-listings' ),
-					'name_admin_bar'     => _x( 'Listing', 'add new on admin bar', 'newspack-listings' ),
+					'name_admin_bar'     => _x( 'Generic Listing', 'add new on admin bar', 'newspack-listings' ),
 					'add_new'            => _x( 'Add New', 'popup', 'newspack-listings' ),
-					'add_new_item'       => __( 'Add New Listing', 'newspack-listings' ),
-					'new_item'           => __( 'New Listing', 'newspack-listings' ),
-					'edit_item'          => __( 'Edit Listing', 'newspack-listings' ),
-					'view_item'          => __( 'View Listing', 'newspack-listings' ),
+					'add_new_item'       => __( 'Add New Generic Listing', 'newspack-listings' ),
+					'new_item'           => __( 'New Generic Listing', 'newspack-listings' ),
+					'edit_item'          => __( 'Edit Generic Listing', 'newspack-listings' ),
+					'view_item'          => __( 'View Generic Listing', 'newspack-listings' ),
 					'all_items'          => __( 'Generic Listings', 'newspack-listings' ),
-					'search_items'       => __( 'Search Listings', 'newspack-listings' ),
-					'parent_item_colon'  => __( 'Parent Listing:', 'newspack-listings' ),
-					'not_found'          => __( 'No listings found.', 'newspack-listings' ),
-					'not_found_in_trash' => __( 'No listings found in Trash.', 'newspack-listings' ),
+					'search_items'       => __( 'Search Generic Listings', 'newspack-listings' ),
+					'parent_item_colon'  => __( 'Parent Generic Listing:', 'newspack-listings' ),
+					'not_found'          => __( 'No generic listings found.', 'newspack-listings' ),
+					'not_found_in_trash' => __( 'No generic listings found in Trash.', 'newspack-listings' ),
 				],
 				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_generic_slug'] ],
 			],
@@ -542,6 +542,52 @@ final class Newspack_Listings_Core {
 					'object_subtype'    => $post_type,
 					'default'           => boolval( Settings::get_settings( 'newspack_listings_hide_author' ) ), // Configurable in plugin-wide settings.
 					'description'       => __( 'Hide author byline and bio for this listing', 'newspack-listings' ),
+					'type'              => 'boolean',
+					'sanitize_callback' => 'rest_sanitize_boolean',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_hide_parents'     => [
+				'post_types' => [
+					'page',
+					'post',
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Hide parent listings', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => boolval( Settings::get_settings( 'newspack_listings_hide_parents' ) ), // Configurable in plugin-wide settings.
+					'description'       => __( 'Hide parent listings assigned to this post', 'newspack-listings' ),
+					'type'              => 'boolean',
+					'sanitize_callback' => 'rest_sanitize_boolean',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_hide_children'    => [
+				'post_types' => [
+					'page',
+					'post',
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Hide child listings', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => boolval( Settings::get_settings( 'newspack_listings_hide_children' ) ), // Configurable in plugin-wide settings.
+					'description'       => __( 'Hide child listings assigned to this post', 'newspack-listings' ),
 					'type'              => 'boolean',
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
