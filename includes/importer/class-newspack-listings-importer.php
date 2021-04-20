@@ -91,6 +91,13 @@ final class Newspack_Listings_Importer {
 					],
 					[
 						'type'        => 'assoc',
+						'name'        => 'config',
+						'description' => 'Path of the config file to use for mapping CSV fields to WP data, relative to the plugin’s root directory.',
+						'optional'    => false,
+						'repeating'   => false,
+					],
+					[
+						'type'        => 'assoc',
 						'name'        => 'start',
 						'description' => 'Row number to start at.',
 						'optional'    => true,
@@ -122,16 +129,23 @@ final class Newspack_Listings_Importer {
 	 * @param array $assoc_args Associative args.
 	 */
 	public static function run_cli_command( $args, $assoc_args ) {
-		$file_arg  = isset( $assoc_args['file'] ) ? $assoc_args['file'] : false;
-		$start_row = isset( $assoc_args['start'] ) ? intval( $assoc_args['start'] ) : 0;
-		$max_rows  = isset( $assoc_args['max-rows'] ) ? intval( $assoc_args['max-rows'] ) : false;
+		$file_arg   = isset( $assoc_args['file'] ) ? $assoc_args['file'] : false;
+		$config_arg = isset( $assoc_args['config'] ) ? $assoc_args['config'] : false;
+		$start_row  = isset( $assoc_args['start'] ) ? intval( $assoc_args['start'] ) : 0;
+		$max_rows   = isset( $assoc_args['max-rows'] ) ? intval( $assoc_args['max-rows'] ) : false;
 
 		// If a dry run, we won't persist any data.
 		self::$is_dry_run = isset( $assoc_args['dry-run'] ) ? true : false;
 
+		// Look for config file at the given path.
+		$config_path = self::load_config( $config_arg );
+		if ( ! $config_path ) {
+			WP_CLI::error( 'Could not find config file at ' . $config_arg );
+		}
+
 		$file_path = self::load_file( $file_arg );
 		if ( ! $file_path ) {
-			WP_CLI::error( 'Could not find file at ' . $file_path );
+			WP_CLI::error( 'Could not find file at ' . $file_arg );
 		}
 
 		if ( self::$is_dry_run ) {
@@ -145,6 +159,27 @@ final class Newspack_Listings_Importer {
 		}
 		self::import_data( $file_path, $start_row, $max_rows );
 		WP_CLI::success( 'Completed! Processed ' . ( self::$row_number - $start_row ) . ' records.' );
+	}
+
+	/**
+	 * Load up the config file.
+	 *
+	 * @param string $config_path File path for the config file containing field mappings, relative to the plugin root.
+	 * @return string Full absolute file path of the CSV.
+	 */
+	public static function load_config( $config_path = false ) {
+		if ( empty( $config_path ) ) {
+			return false;
+		}
+
+		$config_path = NEWSPACK_LISTINGS_PLUGIN_FILE . $config_path;
+
+		if ( ! file_exists( $config_path ) ) {
+			return false;
+		}
+
+		include_once $config_path;
+		return $config_path;
 	}
 
 	/**
@@ -247,16 +282,19 @@ final class Newspack_Listings_Importer {
 	public static function import_listing( $data ) {
 		WP_CLI::line( 'Importing data for ' . $data['post_title'] . '...' );
 
+		$field_map           = NEWSPACK_LISTINGS_IMPORT_MAPPING; // Defined in config file.
+		$separator           = NEWSPACK_LISTINGS_IMPORT_SEPARATOR; // Defined in config file.
 		$post_type_to_create = Core::NEWSPACK_LISTINGS_POST_TYPES['place'];
-
-		$existing_post = function_exists( 'wpcom_vip_get_page_by_title' ) ?
+		$existing_post       = function_exists( 'wpcom_vip_get_page_by_title' ) ?
 			wpcom_vip_get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ) :
 			get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_page_by_title_get_page_by_title
-		$post          = [
+
+		// Post data to be inserted in WP.
+		$post = [
 			'post_author' => 1, // Default user in case author isn't defined.
-			'post_date'   => ! empty( $data['post_published'] ) ? gmdate( 'Y-m-d H:i:s', $data['post_published'] ) : gmdate( 'Y-m-d H:i:s', time() ),
+			'post_date'   => ! empty( $data[ $field_map['post_date'] ] ) ? gmdate( 'Y-m-d H:i:s', $data[ $field_map['post_date'] ] ) : gmdate( 'Y-m-d H:i:s', time() ),
 			'post_status' => 'publish',
-			'post_title'  => ! empty( $data['post_title'] ) ? $data['post_title'] : __( '(no title)', 'newspack-listings' ),
+			'post_title'  => ! empty( $data[ $field_map['post_title'] ] ) ? $data[ $field_map['post_title'] ] : __( '(no title)', 'newspack-listings' ),
 			'post_type'   => $post_type_to_create,
 		];
 
@@ -266,21 +304,21 @@ final class Newspack_Listings_Importer {
 		}
 
 		// Handle post author.
-		if ( ! empty( $data['post_author'] ) ) {
-			$post_author = get_user_by( 'slug', $data['post_author'] );
+		if ( ! empty( $data[ $field_map['post_author'] ] ) ) {
+			$post_author = get_user_by( 'slug', $data[ $field_map['post_author'] ] );
 
 			if ( $post_author ) {
 				$post_author_id = $post_author->ID;
 			} else {
-				$post_author_id = wp_create_user( $data['post_author'], wp_generate_password() );
+				$post_author_id = wp_create_user( $data[ $field_map['post_author'] ], wp_generate_password() );
 			}
 
 			$post['post_author'] = $post_author_id;
 		}
 
 		// Handle featured image.
-		if ( ! self::$is_dry_run && ! empty( $data['directory_photos'] ) ) {
-			$featured_image_id = self::process_images( explode( ';', $data['directory_photos'] ) );
+		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['_thumbnail_id'] ] ) ) {
+			$featured_image_id = self::process_images( explode( $separator, $data[ $field_map['_thumbnail_id'] ] ) );
 
 			if ( ! empty( $featured_image_id ) ) {
 				$post['_thumbnail_id'] = $featured_image_id;
@@ -288,25 +326,25 @@ final class Newspack_Listings_Importer {
 		}
 
 		// Handle categories.
-		if ( ! self::$is_dry_run && ! empty( $data['directory_category'] ) ) {
-			$category_names        = explode( ';', $data['directory_category'] );
+		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['post_category'] ] ) ) {
+			$category_names        = explode( $separator, $data[ $field_map['post_category'] ] );
 			$category_ids          = self::handle_terms( $category_names, 'category' );
 			$post['post_category'] = $category_ids;
 		}
 
 		// Handle tags.
-		if ( ! self::$is_dry_run && ! empty( $data['directory_tag'] ) ) {
-			$tag_names          = explode( ';', $data['directory_tag'] );
+		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['tags_input'] ] ) ) {
+			$tag_names          = explode( $separator, $data[ $field_map['tags_input'] ] );
 			$tag_ids            = self::handle_terms( $tag_names, 'post_tag' );
 			$post['tags_input'] = $tag_ids;
 		}
 
 		// If doing a dry run, don't create the post.
 		if ( self::$is_dry_run ) {
-			WP_CLI::success( $data['post_title'] . ' imported successfully.' );
+			WP_CLI::success( $post['post_title'] . ' imported successfully.' );
 		} else {
 			$post_id = wp_insert_post( $post );
-			WP_CLI::success( $data['post_title'] . ' imported successfully as post ID ' . $post_id . '.' );
+			WP_CLI::success( $post['post_title'] . ' imported successfully as post ID ' . $post_id . '.' );
 		}
 	}
 
