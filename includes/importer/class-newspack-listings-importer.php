@@ -318,10 +318,11 @@ final class Newspack_Listings_Importer {
 
 		// Handle featured image.
 		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['_thumbnail_id'] ] ) ) {
-			$featured_image_id = self::process_images( explode( $separator, $data[ $field_map['_thumbnail_id'] ] ) );
+			$image_ids = self::process_images( explode( $separator, $data[ $field_map['_thumbnail_id'] ] ) );
 
-			if ( ! empty( $featured_image_id ) ) {
-				$post['_thumbnail_id'] = $featured_image_id;
+			if ( ! empty( $image_ids ) ) {
+				$post['_thumbnail_id']                             = $image_ids[0];
+				$post['meta_input']['newspack_listings_image_ids'] = $image_ids; // Not yet used, but a way to tie images to a post up front so we can create programmatic slideshows in the future.
 			}
 		}
 
@@ -426,7 +427,7 @@ final class Newspack_Listings_Importer {
 			}
 		}
 
-		return reset( $attachment_ids );
+		return $attachment_ids;
 	}
 }
 
