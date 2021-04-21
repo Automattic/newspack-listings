@@ -136,9 +136,6 @@ function clean_content( $content ) {
 		}
 	}
 
-	// Strip out unwanted tags.
-	$content = wp_kses( $content, $allowed_elements );
-
 	// Strip out style attributes.
 	$content = preg_replace( '/(<[^>]+) style=".*?"/i', '$1', $content );
 
@@ -148,7 +145,8 @@ function clean_content( $content ) {
 	// Add missing <p> tags.
 	$content = wpautop( $content );
 
-	return apply_filters( 'the_content', $content );
+	// Strip out unwanted tags.
+	return wp_kses( $content, $allowed_elements );
 }
 
 /**
