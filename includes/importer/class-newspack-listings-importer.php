@@ -282,7 +282,7 @@ final class Newspack_Listings_Importer {
 	public static function import_listing( $data ) {
 		$field_map           = NEWSPACK_LISTINGS_IMPORT_MAPPING; // Defined in config file.
 		$separator           = NEWSPACK_LISTINGS_IMPORT_SEPARATOR; // Defined in config file.
-		$post_type_to_create = Core::NEWSPACK_LISTINGS_POST_TYPES['place'];
+		$post_type_to_create = self::get_post_type_mapping( $data );
 		$existing_post       = function_exists( 'wpcom_vip_get_page_by_title' ) ?
 			wpcom_vip_get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ) :
 			get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_page_by_title_get_page_by_title
@@ -354,6 +354,29 @@ final class Newspack_Listings_Importer {
 	}
 
 	/**
+	 * Decide which listing type the data should be imported as.
+	 * If we can't determine due to lack of post type data, defaults to the NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE defined in config.php.
+	 * If NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE is not defined, defaults to Generic listing.
+	 *
+	 * @param object $data Row data in associative array format, keyed by column header name.
+	 *
+	 * @return string Post type slug.
+	 */
+	public static function get_post_type_mapping( $data ) {
+		$field_map = NEWSPACK_LISTINGS_IMPORT_MAPPING; // Defined in config file.
+		$post_type = defined( 'NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE' ) ? NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE : Core::NEWSPACK_LISTINGS_POST_TYPES['generic'];
+
+		if ( isset( $data[ $field_map['post_type'] ] ) ) {
+			foreach ( $field_map['post_types'] as $slug => $types ) {
+				if ( in_array( $data[ $field_map['post_type'] ], $types ) ) {
+					$post_type = Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ];
+				}
+			}
+		}
+		return $post_type;
+	}
+
+	/**
 	 * Process raw post content into WP content.
 	 *
 	 * @param object $data Row data in associative array format, keyed by column header name.
@@ -398,6 +421,7 @@ final class Newspack_Listings_Importer {
 		$contact_region   = ! empty( $data[ $field_map['contact_region'] ] ) ? $data[ $field_map['contact_region'] ] : '';
 		$contact_postal   = ! empty( $data[ $field_map['contact_postal'] ] ) ? $data[ $field_map['contact_postal'] ] : '';
 
+		// TO DO: Replace this hard-coded template (based on a Place pattern) into something more flexible that can be used for any listing type.
 		$content = sprintf(
 			'<!-- wp:group {"className":"newspack-listings__business-pattern-2"} --><div class="wp-block-group newspack-listings__business-pattern-2"><div class="wp-block-group__inner-container"><!-- wp:columns --><div class="wp-block-columns"><!-- wp:column {"width":"50%"} --><div class="wp-block-column" ><!-- wp:freeform -->%1$s<!-- /wp:freeform --><!-- wp:jetpack/contact-info --><div class="wp-block-jetpack-contact-info">%2$s%3$s<!-- wp:jetpack/address {"address":"%4$s",%5$s"city":"%7$s","region":"%8$s","postal":"%9$s"} --><div class="wp-block-jetpack-address"><div class="jetpack-address__address jetpack-address__address1">%4$s</div>%6$s<div><span class="jetpack-address__city">%7$s</span>, <span class="jetpack-address__region">%8$s</span> <span class="jetpack-address__postal">%9$s</span></div></div><!-- /wp:jetpack/address --></div><!-- /wp:jetpack/contact-info --></div><!-- /wp:column --><!-- wp:column {"width":"50%"} --><div class="wp-block-column">%10$s</div><!-- /wp:column --></div><!-- /wp:columns --></div></div><!-- /wp:group -->',
 			Importer_Utils\clean_content( $raw_content ),
@@ -442,6 +466,7 @@ final class Newspack_Listings_Importer {
 
 	/**
 	 * Given an array of image filenames, create attachments and return the first image ID to be used as a featured image.
+	 * TODO: Also handle fetching images via URL.
 	 *
 	 * @param array $images Array of image filenames. The importer will look for images in an /images
 	 *                      directory in the same location as the CSV file being imported.
