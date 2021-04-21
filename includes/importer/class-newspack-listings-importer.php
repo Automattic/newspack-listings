@@ -280,8 +280,6 @@ final class Newspack_Listings_Importer {
 	 * @return void
 	 */
 	public static function import_listing( $data ) {
-		WP_CLI::line( 'Importing data for ' . $data['post_title'] . '...' );
-
 		$field_map           = NEWSPACK_LISTINGS_IMPORT_MAPPING; // Defined in config file.
 		$separator           = NEWSPACK_LISTINGS_IMPORT_SEPARATOR; // Defined in config file.
 		$post_type_to_create = Core::NEWSPACK_LISTINGS_POST_TYPES['place'];
@@ -291,17 +289,23 @@ final class Newspack_Listings_Importer {
 
 		// Post data to be inserted in WP.
 		$post = [
-			'post_author' => 1, // Default user in case author isn't defined.
-			'post_date'   => ! empty( $data[ $field_map['post_date'] ] ) ? gmdate( 'Y-m-d H:i:s', $data[ $field_map['post_date'] ] ) : gmdate( 'Y-m-d H:i:s', time() ),
-			'post_status' => 'publish',
-			'post_title'  => ! empty( $data[ $field_map['post_title'] ] ) ? $data[ $field_map['post_title'] ] : __( '(no title)', 'newspack-listings' ),
-			'post_type'   => $post_type_to_create,
+			'post_author'  => 1, // Default user in case author isn't defined.
+			'post_date'    => ! empty( $data[ $field_map['post_date'] ] ) ? gmdate( 'Y-m-d H:i:s', $data[ $field_map['post_date'] ] ) : gmdate( 'Y-m-d H:i:s', time() ),
+			'post_excerpt' => ! empty( $data[ $field_map['post_excerpt'] ] ) ? $data[ $field_map['post_excerpt'] ] : '',
+			'post_status'  => 'publish',
+			'post_title'   => ! empty( $data[ $field_map['post_title'] ] ) ? $data[ $field_map['post_title'] ] : __( '(no title)', 'newspack-listings' ),
+			'post_type'    => $post_type_to_create,
 		];
+
+		WP_CLI::line( 'Importing data for ' . $post['post_title'] . '...' );
 
 		// If a post already exists, update it.
 		if ( $existing_post ) {
 			$post['ID'] = $existing_post->ID;
 		}
+
+		// Handle post content.
+		$post['post_content'] = self::process_content( $data );
 
 		// Handle post author.
 		if ( ! empty( $data[ $field_map['post_author'] ] ) ) {
@@ -347,6 +351,68 @@ final class Newspack_Listings_Importer {
 			$post_id = wp_insert_post( $post );
 			WP_CLI::success( $post['post_title'] . ' imported successfully as post ID ' . $post_id . '.' );
 		}
+	}
+
+	/**
+	 * Process raw post content into WP content.
+	 *
+	 * @param object $data Row data in associative array format, keyed by column header name.
+	 * @param bool   $use_raw If true, don't transform the content, just sanitize it.
+	 *
+	 * @return string Processed post content.
+	 */
+	public static function process_content( $data, $use_raw = false ) {
+		$field_map   = NEWSPACK_LISTINGS_IMPORT_MAPPING; // Defined in config file.
+		$raw_content = ! empty( $data[ $field_map['post_content'] ] ) ? $data[ $field_map['post_content'] ] : '';
+
+		// If no post content, return an empty string.
+		if ( empty( $raw_content ) ) {
+			return '';
+		}
+
+		// If using raw content, just sanitize and return it.
+		if ( $use_raw ) {
+			return Importer_Utils\clean_content( $raw_content );
+		}
+
+		// If there are additional fields to be appended to post content, append them.
+		foreach ( $field_map['additional_content'] as $additional_field ) {
+			if ( ! empty( $data[ $additional_field ] ) ) {
+				$raw_content = $raw_content . "\n\n" . $data[ $additional_field ];
+			}
+		}
+
+		// Location data.
+		$address_full = ! empty( $data[ $field_map['location_address'] ] ) ? $data[ $field_map['location_address'] ] : '';
+		$map_block    = '';
+		if ( ! empty( $address_full ) ) {
+			$map_block = Importer_Utils\get_map( $address_full );
+		}
+
+		// Contact info.
+		$contact_email    = ! empty( $data[ $field_map['contact_email'] ] ) ? $data[ $field_map['contact_email'] ] : '';
+		$contact_phone    = ! empty( $data[ $field_map['contact_phone'] ] ) ? $data[ $field_map['contact_phone'] ] : '';
+		$contact_street_1 = ! empty( $data[ $field_map['contact_street_1'] ] ) ? $data[ $field_map['contact_street_1'] ] : '';
+		$contact_street_2 = ! empty( $data[ $field_map['contact_street_2'] ] ) ? $data[ $field_map['contact_street_2'] ] : '';
+		$contact_city     = ! empty( $data[ $field_map['contact_city'] ] ) ? $data[ $field_map['contact_city'] ] : '';
+		$contact_region   = ! empty( $data[ $field_map['contact_region'] ] ) ? $data[ $field_map['contact_region'] ] : '';
+		$contact_postal   = ! empty( $data[ $field_map['contact_postal'] ] ) ? $data[ $field_map['contact_postal'] ] : '';
+
+		$content = sprintf(
+			'<!-- wp:group {"className":"newspack-listings__business-pattern-2"} --><div class="wp-block-group newspack-listings__business-pattern-2"><div class="wp-block-group__inner-container"><!-- wp:columns --><div class="wp-block-columns"><!-- wp:column {"width":"50%"} --><div class="wp-block-column" ><!-- wp:freeform -->%1$s<!-- /wp:freeform --><!-- wp:jetpack/contact-info --><div class="wp-block-jetpack-contact-info">%2$s%3$s<!-- wp:jetpack/address {"address":"%4$s",%5$s"city":"%7$s","region":"%8$s","postal":"%9$s"} --><div class="wp-block-jetpack-address"><div class="jetpack-address__address jetpack-address__address1">%4$s</div>%6$s<div><span class="jetpack-address__city">%7$s</span>, <span class="jetpack-address__region">%8$s</span> <span class="jetpack-address__postal">%9$s</span></div></div><!-- /wp:jetpack/address --></div><!-- /wp:jetpack/contact-info --></div><!-- /wp:column --><!-- wp:column {"width":"50%"} --><div class="wp-block-column">%10$s</div><!-- /wp:column --></div><!-- /wp:columns --></div></div><!-- /wp:group -->',
+			Importer_Utils\clean_content( $raw_content ),
+			! empty( $contact_email ) ? wp_kses_post( sprintf( '<!-- wp:jetpack/email {"email":"%1$s"} --><div class="wp-block-jetpack-email"><a href="mailto:%1$s">%1$s</a></div><!-- /wp:jetpack/email -->', $contact_email ) ) : '',
+			! empty( $contact_phone ) ? wp_kses_post( sprintf( '<!-- wp:jetpack/phone {"phone":"%1$s"} --><div class="wp-block-jetpack-phone"><a href="tel:%2$s">%1$s</a></div><!-- /wp:jetpack/phone -->', $contact_phone, preg_replace( '/[^0-9]/', '', $contact_phone ) ) ) : '',
+			esc_html( $contact_street_1 ),
+			! empty( $contact_street_2 ) ? esc_html( sprintf( '"addressLine2":"%s"', $contact_street_2 ) ) : '',
+			! empty( $contact_street_2 ) ? wp_kses_post( sprintf( '<div class="jetpack-address__address jetpack-address__address2">%s</div>', $contact_street_2 ) ) : '',
+			esc_html( $contact_city ),
+			esc_html( $contact_region ),
+			esc_html( $contact_postal ),
+			wp_kses_post( $map_block )
+		);
+
+		return $content;
 	}
 
 	/**
