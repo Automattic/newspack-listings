@@ -427,13 +427,13 @@ final class Newspack_Listings_Importer {
 		$term_ids = [];
 
 		foreach ( $term_names as $term_name ) {
-			$term = get_term_by( 'name', $term_name, $taxonomy );
+			$term = get_term_by( 'name', $term_name, $taxonomy, ARRAY_A );
 
 			if ( ! $term ) {
 				$term = wp_insert_term( $term_name, $taxonomy );
 			}
 
-			$term_id    = $term->term_id;
+			$term_id    = $term['term_id'];
 			$term_ids[] = $term_id;
 		}
 
