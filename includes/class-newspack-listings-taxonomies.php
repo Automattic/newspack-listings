@@ -212,8 +212,10 @@ final class Newspack_Listings_Taxonomies {
 	 * @return void
 	 */
 	public static function update_or_delete_shadow_term( $post_id, $post ) {
-		// Bail if the current post type isn't one of the ones to shadow.
-		if ( ! in_array( $post->post_type, self::get_post_types_to_shadow() ) ) {
+		$is_valid_post = self::validate_post( $post );
+
+		// Bail if the current post can't be shadowed.
+		if ( ! $is_valid_post ) {
 			return;
 		}
 
@@ -221,11 +223,43 @@ final class Newspack_Listings_Taxonomies {
 		$shadow_taxonomy = self::get_taxonomy_by_post_type( $post->post_type );
 
 		// If the post is published, create or update the shadow term. Otherwise, delete it.
-		if ( 'publish' === $post->post_status && ! empty( $shadow_taxonomy ) ) {
+		if ( ! empty( $shadow_taxonomy ) ) {
 			self::update_shadow_term( $post, $shadow_taxonomy );
 		} else {
 			self::delete_shadow_term( $post, $shadow_taxonomy );
 		}
+	}
+
+	/**
+	 * Validate a post object to check whether it should have a shadow term.
+	 *
+	 * @param object $post Post object to validate.
+	 * @return bool True if the post should have a shadow term, otherwise false.
+	 */
+	public static function validate_post( $post ) {
+		$is_valid_post = true;
+
+		// Post must be published.
+		if ( 'publish' === $post->post_status ) {
+			$is_valid_post = false;
+		}
+
+		// Post must have a title.
+		if ( ! $post->post_title || 'Auto Draft' === $post->post_title ) {
+			$is_valid_post = false;
+		}
+
+		// Post must have a slug.
+		if ( ! $post->post_name ) {
+			$is_valid_post = false;
+		}
+
+		// Post type must be a shadowable type.
+		if ( ! in_array( $post->post_type, self::get_post_types_to_shadow() ) ) {
+			$is_valid_post = false;
+		}
+
+		return $is_valid_post;
 	}
 
 	/**
@@ -236,8 +270,8 @@ final class Newspack_Listings_Taxonomies {
 	 * @return bool|void Nothing if successful, or false if not.
 	 */
 	public static function update_shadow_term( $post, $taxonomy = null ) {
-		// Bail if post is an auto draft.
-		if ( 'auto-draft' === $post->post_status || 'Auto Draft' === $post->post_title || empty( $taxonomy ) ) {
+		// Bail if post or taxonomy isn't valid.
+		if ( ! self::validate_post( $post ) || empty( $taxonomy ) ) {
 			return false;
 		}
 
@@ -340,7 +374,7 @@ final class Newspack_Listings_Taxonomies {
 		$new_term_id = $new_term['term_id'];
 
 		// Apply the term to the parent post. This lets us check for missing terms.
-		wp_set_post_terms( $post_id, $new_term_id, $taxonomy, append );
+		wp_set_post_terms( $post_id, $new_term_id, $taxonomy, true );
 
 		return $new_term;
 	}
@@ -377,7 +411,7 @@ final class Newspack_Listings_Taxonomies {
 				$term_slug = reset( $term_slug );
 
 				// Bail if not a post type to be shadowed.
-				if ( empty( $term_slug ) || ! in_array( $term_slug, array_keys( self::NEWSPACK_LISTINGS_TAXONOMIES ) ) ) {
+				if ( empty( $term_slug ) || ! self::validate_post( $post ) ) {
 					continue;
 				}
 
@@ -491,11 +525,17 @@ final class Newspack_Listings_Taxonomies {
 		$post            = get_post( $post_id );
 		$shadow_taxonomy = self::get_taxonomy_by_post_type( $post->post_type );
 		$shadow_term     = self::get_shadow_term( $post, $shadow_taxonomy );
-		$child_posts     = new \WP_Query(
+
+		// If no shadow term.
+		if ( ! $shadow_term ) {
+			return [];
+		}
+
+		$child_posts = new \WP_Query(
 			[
 				'post_type'      => $post_type,
 				'posts_per_page' => $per_page,
-				'post_status'    => 'publish',
+				'post_status'    => [ 'publish', 'draft', 'pending', 'future' ], // Can still set parent listings on draft posts.
 				'no_found_rows'  => true,
 				'tax_query'      => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 					[

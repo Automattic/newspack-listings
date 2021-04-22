@@ -54,6 +54,8 @@ export const ShadowTaxonomiesComponent = ( {
 		return null;
 	}
 
+	const postStatus = getEditedPostAttribute( 'status' );
+
 	return (
 		<>
 			{ canHaveParents && (
@@ -122,6 +124,10 @@ export const ShadowTaxonomiesComponent = ( {
 										} );
 									} }
 									fetchSuggestions={ async ( search, tax ) => {
+										if ( ! search ) {
+											return;
+										}
+
 										return await apiFetch( {
 											path: addQueryArgs( '/newspack-listings/v1/terms', {
 												search,
@@ -167,7 +173,12 @@ export const ShadowTaxonomiesComponent = ( {
 						/>
 					</PanelRow>
 
-					{ ! newspack_listings_hide_children &&
+					{ 'publish' !== postStatus && (
+						<p>{ __( 'Publish this listing to assign children.', 'newspack-listings' ) }</p>
+					) }
+
+					{ 'publish' === postStatus &&
+						! newspack_listings_hide_children &&
 						filteredChildPostTypes.map( childPostType => {
 							return (
 								<TaxonomySearch
@@ -183,13 +194,20 @@ export const ShadowTaxonomiesComponent = ( {
 										} );
 									} }
 									fetchSuggestions={ async ( search, type ) => {
+										if ( ! search ) {
+											return;
+										}
+
+										// Standard post and page endpoints are plural.
+										const endpoint = 'post' === type || 'page' === type ? type + 's' : type;
 										const response = await apiFetch( {
-											path: addQueryArgs( `/wp/v2/${ type }`, {
+											path: addQueryArgs( `/wp/v2/${ endpoint }`, {
 												search,
 												per_page: 20,
 												_fields: 'id,title',
 												orderby: 'title',
 												order: 'asc',
+												status: 'publish,draft,pending,future',
 											} ),
 										} );
 
