@@ -40,9 +40,6 @@ if ( isListing() ) {
 	if ( isListing( postTypes.marketplace.name ) ) {
 		registerPriceBlock();
 	}
-
-	// Filter taxonomy UI for listing shadow taxonomies.
-	// addFilter( 'editor.PostTaxonomyType', 'newspack-listings', ShadowTaxonomies );
 } else {
 	setCustomCategory();
 	registerCuratedListBlock();
