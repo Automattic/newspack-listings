@@ -93,7 +93,7 @@ final class Newspack_Listings_Api {
 			]
 		);
 
-		// GET listings taxonomy terms by name search term.
+		// Set listings taxonomy terms.
 		register_rest_route(
 			'newspack-listings/v1',
 			'children',
