@@ -16,7 +16,7 @@ use \Newspack_Listings\Importer_Utils as Importer_Utils;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Blocks class.
+ * Importer class.
  * Sets up CLI-based importer for listings.
  */
 final class Newspack_Listings_Importer {
