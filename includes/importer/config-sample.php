@@ -7,7 +7,7 @@
  * NEWSPACK_LISTINGS_IMPORT_SEPARATOR
  *
  * The following constant is optional. If not defined or not a valid Listing CPT post type,
- * and the CSV data lacks post type info, all rows will be imported as Places by default.
+ * and the CSV data lacks post type info, all rows will be imported as generic listings by default.
  * NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE
  *
  * @package Newspack_Listings

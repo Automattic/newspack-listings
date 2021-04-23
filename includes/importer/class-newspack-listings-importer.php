@@ -364,7 +364,9 @@ final class Newspack_Listings_Importer {
 	 */
 	public static function get_post_type_mapping( $data ) {
 		$field_map = NEWSPACK_LISTINGS_IMPORT_MAPPING; // Defined in config file.
-		$post_type = defined( 'NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE' ) ? NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE : Core::NEWSPACK_LISTINGS_POST_TYPES['generic'];
+		$post_type = defined( 'NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE' ) && Core::is_listing( NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE ) ?
+			NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE :
+			Core::NEWSPACK_LISTINGS_POST_TYPES['generic'];
 
 		if ( isset( $data[ $field_map['post_type'] ] ) ) {
 			foreach ( $field_map['post_types'] as $slug => $types ) {
