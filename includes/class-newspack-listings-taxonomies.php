@@ -136,7 +136,7 @@ final class Newspack_Listings_Taxonomies {
 					'hierarchical'  => true,
 					'public'        => true,
 					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
-					'show_in_menu'  => true, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
 					'show_in_rest'  => true,
 					'show_tagcloud' => false,
 					'show_ui'       => true,
@@ -212,18 +212,16 @@ final class Newspack_Listings_Taxonomies {
 	 * @return void
 	 */
 	public static function update_or_delete_shadow_term( $post_id, $post ) {
-		$is_valid_post = self::validate_post( $post );
-
-		// Bail if the current post can't be shadowed.
-		if ( ! $is_valid_post ) {
-			return;
-		}
-
 		// Get the taxonomy to update or delete.
 		$shadow_taxonomy = self::get_taxonomy_by_post_type( $post->post_type );
 
-		// If the post is published, create or update the shadow term. Otherwise, delete it.
-		if ( ! empty( $shadow_taxonomy ) ) {
+		// Bail if not a shadowable post.
+		if ( ! $shadow_taxonomy ) {
+			return;
+		}
+
+		// If the post is a valid post, update or create the shadow term. Otherwise, delete it.
+		if ( self::validate_post( $post ) ) {
 			self::update_shadow_term( $post, $shadow_taxonomy );
 		} else {
 			self::delete_shadow_term( $post, $shadow_taxonomy );
@@ -240,7 +238,7 @@ final class Newspack_Listings_Taxonomies {
 		$is_valid_post = true;
 
 		// Post must be published.
-		if ( 'publish' === $post->post_status ) {
+		if ( 'publish' !== $post->post_status ) {
 			$is_valid_post = false;
 		}
 
@@ -570,6 +568,10 @@ final class Newspack_Listings_Taxonomies {
 		}
 
 		$parent_post = get_post( $parent );
+		if ( ! self::validate_post( $parent_post ) ) {
+			return false;
+		}
+
 		$taxonomy    = self::get_taxonomy_by_post_type( $parent_post->post_type );
 		$shadow_term = self::get_shadow_term( $parent_post, $taxonomy );
 
