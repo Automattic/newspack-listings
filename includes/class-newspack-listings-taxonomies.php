@@ -221,7 +221,7 @@ final class Newspack_Listings_Taxonomies {
 		}
 
 		// If the post is a valid post, update or create the shadow term. Otherwise, delete it.
-		if ( self::validate_post( $post ) ) {
+		if ( self::should_update_shadow_term( $post ) ) {
 			self::update_shadow_term( $post, $shadow_taxonomy );
 		} else {
 			self::delete_shadow_term( $post, $shadow_taxonomy );
@@ -229,35 +229,35 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
-	 * Validate a post object to check whether it should have a shadow term.
+	 * Check whether a given post object should have a shadow term.
 	 *
-	 * @param object $post Post object to validate.
+	 * @param object $post Post object to check.
 	 * @return bool True if the post should have a shadow term, otherwise false.
 	 */
-	public static function validate_post( $post ) {
-		$is_valid_post = true;
+	public static function should_update_shadow_term( $post ) {
+		$should_update_shadow_term = true;
 
-		// Post must be published.
+		// If post isn't published.
 		if ( 'publish' !== $post->post_status ) {
-			$is_valid_post = false;
+			$should_update_shadow_term = false;
 		}
 
-		// Post must have a title.
+		// If post lacks a valid title.
 		if ( ! $post->post_title || 'Auto Draft' === $post->post_title ) {
-			$is_valid_post = false;
+			$should_update_shadow_term = false;
 		}
 
-		// Post must have a slug.
+		// If post lacks a valid slug.
 		if ( ! $post->post_name ) {
-			$is_valid_post = false;
+			$should_update_shadow_term = false;
 		}
 
-		// Post type must be a shadowable type.
+		// If post type isn't a shadowable type.
 		if ( ! in_array( $post->post_type, self::get_post_types_to_shadow() ) ) {
-			$is_valid_post = false;
+			$should_update_shadow_term = false;
 		}
 
-		return $is_valid_post;
+		return $should_update_shadow_term;
 	}
 
 	/**
@@ -269,7 +269,7 @@ final class Newspack_Listings_Taxonomies {
 	 */
 	public static function update_shadow_term( $post, $taxonomy = null ) {
 		// Bail if post or taxonomy isn't valid.
-		if ( ! self::validate_post( $post ) || empty( $taxonomy ) ) {
+		if ( ! self::should_update_shadow_term( $post ) || empty( $taxonomy ) ) {
 			return false;
 		}
 
@@ -409,7 +409,7 @@ final class Newspack_Listings_Taxonomies {
 				$term_slug = reset( $term_slug );
 
 				// Bail if not a post type to be shadowed.
-				if ( empty( $term_slug ) || ! self::validate_post( $post ) ) {
+				if ( empty( $term_slug ) || ! self::should_update_shadow_term( $post ) ) {
 					continue;
 				}
 
@@ -568,7 +568,7 @@ final class Newspack_Listings_Taxonomies {
 		}
 
 		$parent_post = get_post( $parent );
-		if ( ! self::validate_post( $parent_post ) ) {
+		if ( ! self::should_update_shadow_term( $parent_post ) ) {
 			return false;
 		}
 
