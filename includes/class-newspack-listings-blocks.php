@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -63,13 +64,25 @@ final class Newspack_Listings_Blocks {
 		$total_count = 0;
 		$post_type   = get_post_type();
 		$post_types  = [];
+		$taxonomies  = [];
 
-		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
-			$post_count           = wp_count_posts( $name )->publish;
-			$total_count          = $total_count + $post_count;
-			$post_types[ $label ] = [
+		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $slug => $name ) {
+			$post_count          = wp_count_posts( $name )->publish;
+			$total_count         = $total_count + $post_count;
+			$post_types[ $slug ] = [
 				'name'             => $name,
+				'label'            => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ] )->labels->singular_name,
 				'show_in_inserter' => 0 < $post_count,
+			];
+		}
+
+		$shadow_taxonomy_config = Taxonomies::get_shadow_taxonomy_config();
+
+		foreach ( Taxonomies::NEWSPACK_LISTINGS_TAXONOMIES as $slug => $name ) {
+			$taxonomies[ $slug ] = [
+				'name'       => $name,
+				'label'      => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ] )->labels->singular_name,
+				'post_types' => $shadow_taxonomy_config[ $slug ]['post_types'],
 			];
 		}
 
@@ -80,6 +93,9 @@ final class Newspack_Listings_Blocks {
 				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
 				'post_types'      => $post_types,
+				'taxonomies'      => $taxonomies,
+				'currency'        => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
+				'currencies'      => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
 
 				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
 				'no_listings'     => 0 === $total_count,

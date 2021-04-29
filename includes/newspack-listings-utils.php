@@ -8,7 +8,7 @@
 namespace Newspack_Listings\Utils;
 
 /**
- * Sanitize an array of text values.
+ * Sanitize an array of text or number values.
  *
  * @param array $array Array of text or float values to be sanitized.
  * @return array Sanitized array.

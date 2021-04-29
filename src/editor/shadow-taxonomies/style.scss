@@ -1,0 +1,20 @@
+.newspack-listings {
+	&__shadow-taxonomy-panel {
+		position: relative;
+
+		+ .newspack-listings__shadow-taxonomy-panel {
+			margin-top: 1.5rem;
+		}
+
+		.components-form-token-field__help {
+			display: none;
+		}
+
+		.components-spinner {
+			margin: 0;
+			position: absolute;
+			right: 0.5rem;
+			top: 1.75rem;
+		}
+	}
+}
