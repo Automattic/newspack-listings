@@ -17,4 +17,34 @@
 			top: 1.75rem;
 		}
 	}
+
+	&__modal {
+		.components-notice {
+			margin: 0;
+		}
+	}
+
+	&__term-title {
+		margin-bottom: 0.5em;
+	}
+
+	&__term-button.components-button.is-tertiary {
+		background-color: #ddd;
+		border-radius: 2px;
+		color: #1e1e1e;
+		font-size: 13px;
+		height: auto;
+		padding-left: 8px;
+		padding-right: 8px;
+
+		&::after {
+			content: '✕';
+			margin-left: 8px;
+		}
+
+		&:hover {
+			box-shadow: none;
+			color: black;
+		}
+	}
 }

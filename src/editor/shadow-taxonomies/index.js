@@ -6,7 +6,7 @@
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { ExternalLink, PanelRow, ToggleControl } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
@@ -17,20 +17,20 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
+import { ParentListings } from './parent-listings';
 import { TaxonomySearch } from './taxonomy-search';
-import { getPostTypeByTaxonomy, getTaxonomyForPostType, isListing } from '../utils';
+import { getPostTypeByTaxonomy, getTaxonomyForPostType } from '../utils';
 import './style.scss';
 
-export const ShadowTaxonomiesComponent = ( {
+const ShadowTaxonomiesComponent = ( {
 	createNotice,
-	editPost,
 	getEditedPostAttribute,
 	meta,
 	postId,
 	updateMetaValue,
 } ) => {
 	const { post_type: postType, taxonomies } = window?.newspack_listings_data;
-	const { newspack_listings_hide_children, newspack_listings_hide_parents } = meta;
+	const { newspack_listings_hide_children } = meta;
 	const taxonomyForPostType = getTaxonomyForPostType();
 	const childPostTypes = taxonomyForPostType ? taxonomyForPostType.post_types : [];
 	const filteredChildPostTypes = childPostTypes.filter(
@@ -58,98 +58,7 @@ export const ShadowTaxonomiesComponent = ( {
 
 	return (
 		<>
-			{ canHaveParents && (
-				<PluginDocumentSettingPanel
-					className="newspack-listings__shadow-taxonomies-sidebar"
-					name="newspack-listings-parents"
-					title={
-						isListing()
-							? __( 'Parent Listings', 'newspack-listings' )
-							: __( 'Related Newspack Listings', 'newspack-listings' )
-					}
-				>
-					<PanelRow>
-						<ToggleControl
-							className={ 'newspack-listings__toggle-control' }
-							label={ sprintf(
-								__( 'Hide %s listings', 'newspack-listings' ),
-								isListing()
-									? __( 'parent', 'newspack-listings' )
-									: __( 'related', 'newspack-listings' )
-							) }
-							help={ () => (
-								<p>
-									{ __( 'Overrides ', 'newspack-listings' ) }
-									<ExternalLink href="/wp-admin/admin.php?page=newspack-listings-settings-admin">
-										{ __( 'global settings', 'newspack-listings' ) }
-									</ExternalLink>
-								</p>
-							) }
-							checked={ newspack_listings_hide_parents }
-							onChange={ value => updateMetaValue( 'newspack_listings_hide_parents', value ) }
-						/>
-					</PanelRow>
-
-					{ ! newspack_listings_hide_parents &&
-						Object.keys( taxonomies ).map( slug => {
-							const { name, post_types: childPostTypesForTaxonomy } = taxonomies[ slug ];
-							const taxonomyPostType = getPostTypeByTaxonomy( name );
-
-							/**
-							 * Only show shadow terms for listing types that can own this post type.
-							 * Don't show shadow terms for the same type of listing as the current post.
-							 */
-							if (
-								-1 === childPostTypesForTaxonomy.indexOf( postType ) ||
-								taxonomyPostType === postType
-							) {
-								return null;
-							}
-
-							const terms = getEditedPostAttribute( name );
-							return (
-								<TaxonomySearch
-									key={ slug }
-									postId={ postId }
-									postTitle={ getEditedPostAttribute( 'title' ) }
-									savedIds={ terms }
-									fetchSaved={ async ( ids, tax ) => {
-										return await apiFetch( {
-											path: addQueryArgs( '/newspack-listings/v1/terms', {
-												per_page: 100,
-												_fields: 'id,name',
-												taxonomy: tax,
-												include: ids.join( ',' ),
-											} ),
-										} );
-									} }
-									fetchSuggestions={ async ( search, tax ) => {
-										if ( ! search ) {
-											return;
-										}
-
-										return await apiFetch( {
-											path: addQueryArgs( '/newspack-listings/v1/terms', {
-												search,
-												per_page: 20,
-												_fields: 'id,name',
-												orderby: 'count',
-												order: 'desc',
-												taxonomy: tax,
-											} ),
-										} );
-									} }
-									taxonomy={ taxonomies[ slug ] }
-									update={ termIds => {
-										const newTerms = {};
-										newTerms[ name ] = termIds;
-										editPost( newTerms );
-									} }
-								/>
-							);
-						} ) }
-				</PluginDocumentSettingPanel>
-			) }
+			{ canHaveParents && <ParentListings /> }
 			{ canHaveChildren && (
 				<PluginDocumentSettingPanel
 					className="newspack-listings__shadow-taxonomies-sidebar"
@@ -221,8 +130,8 @@ export const ShadowTaxonomiesComponent = ( {
 									update={ async ( postIds, removedPostIds ) => {
 										const response = await apiFetch( {
 											path: addQueryArgs( '/newspack-listings/v1/children', {
-												children: postIds,
-												parent: postId,
+												post_id: postId,
+												added: postIds,
 												removed: removedPostIds,
 											} ),
 											method: 'POST',

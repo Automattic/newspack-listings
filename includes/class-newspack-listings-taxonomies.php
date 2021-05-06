@@ -179,6 +179,24 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
+	 * Given a shadow taxonomy, get the name of the post type the taxonomy shadows.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return string}boolean The post type the taxonomy shadows, or false if none.
+	 */
+	public static function get_post_type_by_taxonomy( $taxonomy ) {
+		$post_type      = false;
+		$taxonomy_slugs = array_keys( self::NEWSPACK_LISTINGS_TAXONOMIES, $taxonomy );
+		$taxonomy_slug  = reset( $taxonomy_slugs );
+
+		if ( ! empty( $taxonomy_slug ) && ! empty( Core::NEWSPACK_LISTINGS_POST_TYPES[ $taxonomy_slug ] ) ) {
+			$post_type = Core::NEWSPACK_LISTINGS_POST_TYPES[ $taxonomy_slug ];
+		}
+
+		return $post_type;
+	}
+
+	/**
 	 * Given a post type, get the name of the shadow taxonomy for that post type.
 	 *
 	 * @param string $post_type Post type.
@@ -510,6 +528,29 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
+	 * Get parent terms for the given post ID.
+	 * Parents are the listing shadow terms that have been assigned to a post, page, or other listing.
+	 *
+	 * @param object $params Array of WP_Query args, including at least the post ID of the parent post.
+	 * @return array Array of parent terms for the given post ID.
+	 */
+	public static function get_parent_terms( $params ) {
+		$post_id      = $params['post_id'];
+		$per_page     = ! empty( $params['per_page'] ) ? $params['per_page'] : 10;
+		$taxonomy     = ! empty( $params['taxonomy'] ) ? $params['taxonomy'] : array_values( self::NEWSPACK_LISTINGS_TAXONOMIES );
+		$parent_terms = wp_get_post_terms( $post_id, $taxonomy );
+		$parent_terms = array_filter(
+			$parent_terms,
+			function( $parent_term ) use ( $post_id ) {
+				// Don't show the post on itself.
+				return get_post_field( 'post_name', get_post( $post_id ) ) !== $parent_term->slug;
+			}
+		);
+
+		return $parent_terms;
+	}
+
+	/**
 	 * Get child listings, posts, and pages for the given post ID.
 	 * Children are the posts, pages, and other listings that have been assigned a listing shadow term.
 	 *
@@ -518,11 +559,18 @@ final class Newspack_Listings_Taxonomies {
 	 */
 	public static function get_child_posts( $params ) {
 		$post_id         = $params['post_id'];
-		$post_type       = ! empty( $params['post_type'] ) ? $params['post_type'] : 'post';
 		$per_page        = ! empty( $params['per_page'] ) ? $params['per_page'] : 10;
 		$post            = get_post( $post_id );
 		$shadow_taxonomy = self::get_taxonomy_by_post_type( $post->post_type );
 		$shadow_term     = self::get_shadow_term( $post, $shadow_taxonomy );
+		$post_type       = [
+			'post',
+			'page',
+			Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
+			Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+			Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+			Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
+		];
 
 		// If no shadow term.
 		if ( ! $shadow_term ) {
@@ -553,15 +601,65 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
+	 * Apply or remove a parent shadow term to the given child post.
+	 *
+	 * @param object $params Params passed from the REST API request.
+	 * @return bool|WP_Error True if parent was updated successfully, false if missing required params, or WP_Error.
+	 */
+	public static function set_parent_posts( $params ) {
+		$child   = ! empty( $params['post_id'] ) ? $params['post_id'] : null;
+		$added   = ! empty( $params['added'] ) ? $params['added'] : null;
+		$removed = ! empty( $params['removed'] ) ? $params['removed'] : null;
+
+		if ( empty( $child ) ) {
+			return false;
+		}
+
+		// Apply the added parent term to the given child post ID.
+		if ( ! empty( $added ) ) {
+			$added_taxonomy = ! empty( $params['added_taxonomy'] ) ? $params['added_taxonomy'] : null;
+
+			if ( empty( $added_taxonomy ) ) {
+				return false;
+			}
+
+			$added_parent = wp_set_post_terms( $child, $added, $added_taxonomy, true );
+
+			// Bail if error.
+			if ( is_wp_error( $added_parent ) ) {
+				return $added_parent;
+			}
+		}
+
+		// Remove the parent's shadow term from the child post ID.
+		if ( ! empty( $removed ) ) {
+			$removed_taxonomy = ! empty( $params['removed_taxonomy'] ) ? $params['removed_taxonomy'] : null;
+
+			if ( empty( $removed_taxonomy ) ) {
+				return false;
+			}
+
+			$removed_parent = wp_remove_object_terms( $child, $removed, $removed_taxonomy );
+
+			// Bail if error.
+			if ( is_wp_error( $removed_parent ) ) {
+				return $removed_parent;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Apply or remove the given parent post's shadow term to or from the given child posts.
 	 *
 	 * @param object $params Params passed from the REST API request.
-	 * @return bool|WP_Error True if children were updated successfully, or WP_Error.
+	 * @return bool|WP_Error True if children were updated successfully, false if missing required params, or WP_Error.
 	 */
 	public static function set_child_posts( $params ) {
-		$parent   = ! empty( $params['parent'] ) ? $params['parent'] : null;
-		$children = ! empty( $params['children'] ) ? $params['children'] : [];
-		$removed  = ! empty( $params['removed'] ) ? $params['removed'] : [];
+		$parent  = ! empty( $params['post_id'] ) ? $params['post_id'] : null;
+		$added   = ! empty( $params['added'] ) ? $params['added'] : [];
+		$removed = ! empty( $params['removed'] ) ? $params['removed'] : [];
 
 		if ( empty( $parent ) ) {
 			return false;
@@ -576,8 +674,8 @@ final class Newspack_Listings_Taxonomies {
 		$shadow_term = self::get_shadow_term( $parent_post, $taxonomy );
 
 		// Apply the parent's shadow term to the `children` post IDs.
-		foreach ( $children as $child ) {
-			$added_child = wp_set_post_terms( $child, $shadow_term->term_id, $taxonomy, true );
+		foreach ( $added as $child_to_add ) {
+			$added_child = wp_set_post_terms( $child_to_add, $shadow_term->term_id, $taxonomy, true );
 
 			// Bail if error.
 			if ( is_wp_error( $added_child ) ) {
