@@ -6,13 +6,14 @@ import apiFetch from '@wordpress/api-fetch';
 import { Button, Placeholder, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
 import { useEffect, useState } from '@wordpress/element';
+import { decodeEntities } from '@wordpress/html-entities';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import { Listing } from './listing';
-import { QueryControls } from '../../components';
+import { AutocompleteWithSuggestions } from 'newspack-components';
 import { capitalize, getIcon } from '../../editor/utils';
 
 const ListingEditorComponent = ( {
@@ -103,14 +104,54 @@ const ListingEditorComponent = ( {
 				label={ capitalize( listingTypeSlug ) }
 				icon={ getIcon( listingTypeSlug ) }
 			>
-				<QueryControls
+				<AutocompleteWithSuggestions
 					label={
 						__( 'Search for a ', 'newspack-listings' ) +
 						listingTypeSlug +
 						__( ' listing to display.', 'newspack-listings' )
 					}
-					listingType={ listingType }
-					listingTypeSlug={ listingTypeSlug }
+					fetchSavedPosts={ async postIDs => {
+						const posts = await apiFetch( {
+							path: addQueryArgs( 'newspack-listings/v1/listings', {
+								per_page: 100,
+								include: postIDs.join( ',' ),
+								_fields: 'id,title',
+							} ),
+						} );
+
+						return posts.map( _post => ( {
+							value: _post.id,
+							label: decodeEntities( _post.title ) || __( '(no title)', 'newspack-listings' ),
+						} ) );
+					} }
+					fetchSuggestions={ async search => {
+						const posts = await apiFetch( {
+							path: addQueryArgs( '/newspack-listings/v1/listings', {
+								search,
+								per_page: 10,
+								_fields: 'id,title',
+								type: listingType,
+							} ),
+						} );
+
+						// Only show suggestions if they aren't already in the list.
+						const result = posts.reduce( ( acc, _post ) => {
+							if (
+								listItems.indexOf( _post.id ) < 0 &&
+								listItems.indexOf( _post.id.toString() ) < 0
+							) {
+								acc.push( {
+									value: _post.id,
+									label: decodeEntities( _post.title ) || __( '(no title)', 'newspack-listings' ),
+								} );
+							}
+
+							return acc;
+						}, [] );
+						return result;
+					} }
+					postType={ listingType }
+					postTypeSlug={ listingTypeSlug }
 					maxLength={ 1 }
 					onChange={ _listing => {
 						if ( _listing.length ) {

@@ -37,29 +37,6 @@
 		}
 	}
 
-	&__search-suggestions {
-		border-radius: 2px;
-		border: 1px solid var( --newspack-listings--grey-medium );
-		max-height: 204px;
-		padding: 4px;
-		overflow: scroll;
-
-		.components-button {
-			color: var( --newspack-listings--grey-dark );
-			display: block;
-			margin: 0;
-			padding: 10px 12px;
-			text-decoration: none;
-			width: 100%;
-
-			&:active:not( :disabled ),
-			&:hover:not( :disabled ) {
-				background: var( --wp-admin-theme-color );
-				color: white;
-			}
-		}
-	}
-
 	&__error {
 		margin: 1rem auto 2rem;
 	}
