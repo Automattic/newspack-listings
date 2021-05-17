@@ -29,6 +29,7 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-core.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-blocks.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-block-patterns.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-taxonomies.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-api.php';
 
 // CLI importer files.
