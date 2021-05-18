@@ -295,6 +295,10 @@ final class Newspack_Listings_Importer {
 			'post_status'  => 'publish',
 			'post_title'   => ! empty( $data[ $field_map['post_title'] ] ) ? $data[ $field_map['post_title'] ] : __( '(no title)', 'newspack-listings' ),
 			'post_type'    => $post_type_to_create,
+			'meta_input'   => [
+				'_wp_page_template'                => 'single-wide.php',
+				'newspack_featured_image_position' => 'hidden', // Featured image is shown in listing content.
+			],
 		];
 
 		WP_CLI::line( 'Importing data for ' . $post['post_title'] . '...' );
@@ -303,9 +307,6 @@ final class Newspack_Listings_Importer {
 		if ( $existing_post ) {
 			$post['ID'] = $existing_post->ID;
 		}
-
-		// Handle post content.
-		$post['post_content'] = self::process_content( $data );
 
 		// Handle post author.
 		if ( ! empty( $data[ $field_map['post_author'] ] ) ) {
@@ -327,8 +328,14 @@ final class Newspack_Listings_Importer {
 			if ( ! empty( $image_ids ) ) {
 				$post['_thumbnail_id']                             = $image_ids[0];
 				$post['meta_input']['newspack_listings_image_ids'] = $image_ids; // Not yet used, but a way to tie images to a post up front so we can create programmatic slideshows in the future.
+
+				// Add featured image ID to post data.
+				$data['featured_image'] = $image_ids[0];
 			}
 		}
+
+		// Handle post content.
+		$post['post_content'] = self::process_content( $data );
 
 		// Handle categories.
 		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['post_category'] ] ) ) {
@@ -423,9 +430,20 @@ final class Newspack_Listings_Importer {
 		$contact_region   = ! empty( $data[ $field_map['contact_region'] ] ) ? $data[ $field_map['contact_region'] ] : '';
 		$contact_postal   = ! empty( $data[ $field_map['contact_postal'] ] ) ? $data[ $field_map['contact_postal'] ] : '';
 
+		// Featured image.
+		$featured_image = ! empty( $data['featured_image'] ) ? $data['featured_image'] : false;
+
+		// Social media links.
+		$facebook_handle  = ! empty( $data[ $field_map['facebook'] ] ) ? self::strip_url( $data[ $field_map['facebook'] ], 'facebook' ) : '';
+		$twitter_handle   = ! empty( $data[ $field_map['twitter'] ] ) ? self::strip_url( $data[ $field_map['twitter'] ], 'twitter' ) : '';
+		$instagram_handle = ! empty( $data[ $field_map['facebook'] ] ) ? self::strip_url( $data[ $field_map['facebook'] ], 'instagram' ) : '';
+
 		// TO DO: Replace this hard-coded template (based on a Place pattern) into something more flexible that can be used for any listing type.
 		$content = sprintf(
-			'<!-- wp:group {"className":"newspack-listings__business-pattern-2"} --><div class="wp-block-group newspack-listings__business-pattern-2"><div class="wp-block-group__inner-container"><!-- wp:columns --><div class="wp-block-columns"><!-- wp:column {"width":"50%"} --><div class="wp-block-column" ><!-- wp:freeform -->%1$s<!-- /wp:freeform --><!-- wp:jetpack/contact-info --><div class="wp-block-jetpack-contact-info">%2$s%3$s<!-- wp:jetpack/address {"address":"%4$s",%5$s"city":"%7$s","region":"%8$s","postal":"%9$s"} --><div class="wp-block-jetpack-address"><div class="jetpack-address__address jetpack-address__address1">%4$s</div>%6$s<div><span class="jetpack-address__city">%7$s</span>, <span class="jetpack-address__region">%8$s</span> <span class="jetpack-address__postal">%9$s</span></div></div><!-- /wp:jetpack/address --></div><!-- /wp:jetpack/contact-info --></div><!-- /wp:column --><!-- wp:column {"width":"50%"} --><div class="wp-block-column">%10$s</div><!-- /wp:column --></div><!-- /wp:columns --></div></div><!-- /wp:group -->',
+			'<!-- wp:columns --><div class="wp-block-columns"><!-- wp:column {"width":"25%%"} --><div class="wp-block-column" style="flex-basis:25%%">%1$s%2$s</div><!-- /wp:column --><!-- wp:column {"width":"50%%"} --><div class="wp-block-column" style="flex-basis:50%%">%3$s<!-- wp:freeform -->%4$s<!-- /wp:freeform --><!-- wp:jetpack/contact-info --><div class="wp-block-jetpack-contact-info">%5$s%6$s<!-- wp:jetpack/address {"address":"%7$s",%8$s"city":"%10$s","region":"%11$s","postal":"%12$s"} --><div class="wp-block-jetpack-address"><div class="jetpack-address__address jetpack-address__address1">%7$s</div>%9$s<div><span class="jetpack-address__city">%10$s</span>, <span class="jetpack-address__region">%11$s</span> <span class="jetpack-address__postal">%12$s</span></div></div><!-- /wp:jetpack/address --></div><!-- /wp:jetpack/contact-info --></div><!-- /wp:column --><!-- wp:column {"width":"25%%"} --><div class="wp-block-column" style="flex-basis:25%%">%13$s%14$s</div><!-- /wp:column --></div><!-- /wp:columns -->',
+			! empty( $facebook_handle ) ? sprintf( '<!-- wp:html --><iframe src="https://www.facebook.com/plugins/page.php?adapt_container_width=true&amp;height=1000&amp;href=https%%3A%%2F%%2Fwww.facebook.com%%2F%1$s&amp;show_facepile=true&amp;small_header=false&amp;tabs=timeline" height="	00" style="border:none;overflow:hidden;width:100%%;" scrolling="yes" allowtransparency="true"></iframe><!-- /wp:html -->', $facebook_handle ) : '',
+			! empty( $twitter_handle ) ? wp_kses_post( sprintf( '<!-- wp:embed {"url":"https://twitter.com/%1$s","type":"rich","providerNameSlug":"twitter","responsive":true,"className":"newspack-listings__twitter-embed"} --><figure class="wp-block-embed is-type-rich is-provider-twitter wp-block-embed-twitter"><div class="wp-block-embed__wrapper">https://twitter.com/%1$s</div></figure><!-- /wp:embed -->', $twitter_handle ) ) : '',
+			! empty( $featured_image ) ? wp_kses_post( sprintf( '<!-- wp:image {"id":%1$s,"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="%2$s" alt="" class="wp-image-%1$s"/></figure><!-- /wp:image -->', $featured_image, esc_url( wp_get_attachment_image_url( $featured_image, 'large' ) ) ) ) : '',
 			Importer_Utils\clean_content( $raw_content ),
 			! empty( $contact_email ) ? wp_kses_post( sprintf( '<!-- wp:jetpack/email {"email":"%1$s"} --><div class="wp-block-jetpack-email"><a href="mailto:%1$s">%1$s</a></div><!-- /wp:jetpack/email -->', $contact_email ) ) : '',
 			! empty( $contact_phone ) ? wp_kses_post( sprintf( '<!-- wp:jetpack/phone {"phone":"%1$s"} --><div class="wp-block-jetpack-phone"><a href="tel:%2$s">%1$s</a></div><!-- /wp:jetpack/phone -->', $contact_phone, preg_replace( '/[^0-9]/', '', $contact_phone ) ) ) : '',
@@ -435,10 +453,43 @@ final class Newspack_Listings_Importer {
 			esc_html( $contact_city ),
 			esc_html( $contact_region ),
 			esc_html( $contact_postal ),
-			wp_kses_post( $map_block )
+			wp_kses_post( $map_block ),
+			wp_kses_post(
+				sprintf(
+					'<!-- wp:social-links --><ul class="wp-block-social-links"><!-- wp:social-link {%1$s"service":"facebook"} /--><!-- wp:social-link {%2$s"service":"twitter"} /--><!-- wp:social-link {%3$s"service":"instagram"} /--></ul><!-- /wp:social-links -->',
+					! empty( $facebook_handle ) ? '"url": "' . esc_url( 'https://facebook.com/' . $facebook_handle ) . '",' : '',
+					! empty( $twitter_handle ) ? '"url": "' . esc_url( 'https://twitter.com/' . $twitter_handle ) . '",' : '',
+					! empty( $instagram_handle ) ? '"url": "' . esc_url( 'https://instagram.com/' . $instagram_handle ) . '",' : ''
+				)
+			)
 		);
 
 		return $content;
+	}
+
+	/**
+	 * Social media data is inconsistent; some contain URLs, others don't.
+	 * Let's standardize the data we import by stripping the URL part of the data.
+	 *
+	 * @param string $handle Raw social media data from the CSV.
+	 * @param string $service Which service is this, e.g. 'facebook', 'instagram', 'twitter', etc.
+	 *
+	 * @return string Handle stripped of the URL.
+	 */
+	public static function strip_url( $handle, $service ) {
+		if ( empty( $handle ) || 'none' === strtolower( $handle ) ) {
+			return '';
+		}
+
+		// Data contains domain. Strip it.
+		if ( 'http' === substr( $handle, 0, 4 ) ) {
+			$handle = str_replace( 'http://' . $service . '.com/', '', $handle );
+			$handle = str_replace( 'https://' . $service . '.com/', '', $handle );
+			$handle = str_replace( 'http://www.' . $service . '.com/', '', $handle );
+			$handle = str_replace( 'https://www.' . $service . '.com/', '', $handle );
+		}
+
+		return $handle;
 	}
 
 	/**

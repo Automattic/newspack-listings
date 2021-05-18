@@ -49,6 +49,11 @@ define(
 		'contact_region'     => 'location_address__province',
 		'contact_postal'     => 'location_address__zip',
 
+		// Social media accounts.
+		'facebook'           => 'field_social_accounts__facebook',
+		'twitter'            => 'field_social_accounts__twitter',
+		'instagram'          => 'field_social_accounts__instagram',
+
 		// Additional fields which should be appended to post content.
 		'additional_content' => [ 'field_gen_hours' ],
 	]
