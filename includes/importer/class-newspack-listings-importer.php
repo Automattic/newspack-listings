@@ -346,9 +346,35 @@ final class Newspack_Listings_Importer {
 
 		// Handle tags.
 		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['tags_input'] ] ) ) {
-			$tag_names          = explode( $separator, $data[ $field_map['tags_input'] ] );
-			$tag_ids            = self::handle_terms( $tag_names, 'post_tag' );
-			$post['tags_input'] = $tag_ids;
+			$tag_names = explode( $separator, $data[ $field_map['tags_input'] ] );
+			$tag_ids   = self::handle_terms( $tag_names, 'category' ); // For GDG, they want tags and categories to all be tags.
+
+			// For GDG, they want tags and categories to all be tags.
+			$post['post_category'] = array_merge( $post['post_category'], $tag_ids );
+		}
+
+
+		// GDG only: handle primary category. ALL-CAPS categories are primary.
+		$category_names   = ! empty( $category_names ) ? $category_names : [];
+		$tag_names        = ! empty( $tag_names ) ? $tag_names : [];
+		$primary_category = array_filter(
+			array_merge( $category_names, $tag_names ),
+			function( $cat_name ) {
+				return strtoupper( $cat_name ) === $cat_name;
+			}
+		);
+		if ( 0 < count( $primary_category ) ) {
+			$primary_category    = reset( $primary_category );
+			$primary_category_id = get_term_by( 'name', $primary_category, 'category' );
+
+			if ( $primary_category_id ) {
+				$post['meta_input']['_yoast_wpseo_primary_category'] = $primary_category_id;
+			}
+		}
+
+		// GDG only: remove post tags since we're importing them as categories.
+		if ( $existing_post ) {
+			wp_set_post_tags( $existing_post->ID, [] );
 		}
 
 		// If doing a dry run, don't create the post.
@@ -436,13 +462,20 @@ final class Newspack_Listings_Importer {
 		// Social media links.
 		$facebook_handle  = ! empty( $data[ $field_map['facebook'] ] ) ? self::strip_url( $data[ $field_map['facebook'] ], 'facebook' ) : '';
 		$twitter_handle   = ! empty( $data[ $field_map['twitter'] ] ) ? self::strip_url( $data[ $field_map['twitter'] ], 'twitter' ) : '';
-		$instagram_handle = ! empty( $data[ $field_map['facebook'] ] ) ? self::strip_url( $data[ $field_map['facebook'] ], 'instagram' ) : '';
+		$instagram_handle = ! empty( $data[ $field_map['instagram'] ] ) ? self::strip_url( $data[ $field_map['instagram'] ], 'instagram' ) : '';
 
 		// TO DO: Replace this hard-coded template (based on a Place pattern) into something more flexible that can be used for any listing type.
 		$content = sprintf(
-			'<!-- wp:columns --><div class="wp-block-columns"><!-- wp:column {"width":"25%%"} --><div class="wp-block-column" style="flex-basis:25%%">%1$s%2$s</div><!-- /wp:column --><!-- wp:column {"width":"50%%"} --><div class="wp-block-column" style="flex-basis:50%%">%3$s<!-- wp:freeform -->%4$s<!-- /wp:freeform --><!-- wp:jetpack/contact-info --><div class="wp-block-jetpack-contact-info">%5$s%6$s<!-- wp:jetpack/address {"address":"%7$s",%8$s"city":"%10$s","region":"%11$s","postal":"%12$s"} --><div class="wp-block-jetpack-address"><div class="jetpack-address__address jetpack-address__address1">%7$s</div>%9$s<div><span class="jetpack-address__city">%10$s</span>, <span class="jetpack-address__region">%11$s</span> <span class="jetpack-address__postal">%12$s</span></div></div><!-- /wp:jetpack/address --></div><!-- /wp:jetpack/contact-info --></div><!-- /wp:column --><!-- wp:column {"width":"25%%"} --><div class="wp-block-column" style="flex-basis:25%%">%13$s%14$s</div><!-- /wp:column --></div><!-- /wp:columns -->',
-			! empty( $facebook_handle ) ? sprintf( '<!-- wp:html --><iframe src="https://www.facebook.com/plugins/page.php?adapt_container_width=true&amp;height=1000&amp;href=https%%3A%%2F%%2Fwww.facebook.com%%2F%1$s&amp;show_facepile=true&amp;small_header=false&amp;tabs=timeline" height="	00" style="border:none;overflow:hidden;width:100%%;" scrolling="yes" allowtransparency="true"></iframe><!-- /wp:html -->', $facebook_handle ) : '',
-			! empty( $twitter_handle ) ? wp_kses_post( sprintf( '<!-- wp:embed {"url":"https://twitter.com/%1$s","type":"rich","providerNameSlug":"twitter","responsive":true,"className":"newspack-listings__twitter-embed"} --><figure class="wp-block-embed is-type-rich is-provider-twitter wp-block-embed-twitter"><div class="wp-block-embed__wrapper">https://twitter.com/%1$s</div></figure><!-- /wp:embed -->', $twitter_handle ) ) : '',
+			'<!-- wp:columns {"className":"newspack-listings__column-reverse"} --><div class="wp-block-columns newspack-listings__column-reverse"><!-- wp:column {"width":"25%%"} --><div class="wp-block-column" style="flex-basis:25%%">%1$s%2$s</div><!-- /wp:column --><!-- wp:column {"width":"50%%"} --><div class="wp-block-column" style="flex-basis:50%%">%3$s<!-- wp:freeform -->%4$s<!-- /wp:freeform --><!-- wp:jetpack/contact-info --><div class="wp-block-jetpack-contact-info">%5$s%6$s<!-- wp:jetpack/address {"address":"%7$s",%8$s"city":"%10$s","region":"%11$s","postal":"%12$s"} --><div class="wp-block-jetpack-address"><div class="jetpack-address__address jetpack-address__address1">%7$s</div>%9$s<div><span class="jetpack-address__city">%10$s</span>, <span class="jetpack-address__region">%11$s</span> <span class="jetpack-address__postal">%12$s</span></div></div><!-- /wp:jetpack/address --></div><!-- /wp:jetpack/contact-info --></div><!-- /wp:column --><!-- wp:column {"width":"25%%"} --><div class="wp-block-column" style="flex-basis:25%%">%13$s%14$s</div><!-- /wp:column --></div><!-- /wp:columns -->',
+			wp_kses_post( $map_block ),
+			wp_kses_post(
+				sprintf(
+					'<!-- wp:social-links --><ul class="wp-block-social-links"><!-- wp:social-link {%1$s"service":"facebook"} /--><!-- wp:social-link {%2$s"service":"twitter"} /--><!-- wp:social-link {%3$s"service":"instagram"} /--></ul><!-- /wp:social-links -->',
+					! empty( $facebook_handle ) ? '"url": "' . esc_url( 'https://facebook.com/' . $facebook_handle ) . '",' : '',
+					! empty( $twitter_handle ) ? '"url": "' . esc_url( 'https://twitter.com/' . $twitter_handle ) . '",' : '',
+					! empty( $instagram_handle ) ? '"url": "' . esc_url( 'https://instagram.com/' . $instagram_handle ) . '",' : ''
+				)
+			),
 			! empty( $featured_image ) ? wp_kses_post( sprintf( '<!-- wp:image {"id":%1$s,"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="%2$s" alt="" class="wp-image-%1$s"/></figure><!-- /wp:image -->', $featured_image, esc_url( wp_get_attachment_image_url( $featured_image, 'large' ) ) ) ) : '',
 			Importer_Utils\clean_content( $raw_content ),
 			! empty( $contact_email ) ? wp_kses_post( sprintf( '<!-- wp:jetpack/email {"email":"%1$s"} --><div class="wp-block-jetpack-email"><a href="mailto:%1$s">%1$s</a></div><!-- /wp:jetpack/email -->', $contact_email ) ) : '',
@@ -453,15 +486,8 @@ final class Newspack_Listings_Importer {
 			esc_html( $contact_city ),
 			esc_html( $contact_region ),
 			esc_html( $contact_postal ),
-			wp_kses_post( $map_block ),
-			wp_kses_post(
-				sprintf(
-					'<!-- wp:social-links --><ul class="wp-block-social-links"><!-- wp:social-link {%1$s"service":"facebook"} /--><!-- wp:social-link {%2$s"service":"twitter"} /--><!-- wp:social-link {%3$s"service":"instagram"} /--></ul><!-- /wp:social-links -->',
-					! empty( $facebook_handle ) ? '"url": "' . esc_url( 'https://facebook.com/' . $facebook_handle ) . '",' : '',
-					! empty( $twitter_handle ) ? '"url": "' . esc_url( 'https://twitter.com/' . $twitter_handle ) . '",' : '',
-					! empty( $instagram_handle ) ? '"url": "' . esc_url( 'https://instagram.com/' . $instagram_handle ) . '",' : ''
-				)
-			)
+			! empty( $twitter_handle ) ? wp_kses_post( sprintf( '<!-- wp:embed {"url":"https://twitter.com/%1$s","type":"rich","providerNameSlug":"twitter","responsive":true,"className":"newspack-listings__twitter-embed"} --><figure class="wp-block-embed is-type-rich is-provider-twitter wp-block-embed-twitter"><div class="wp-block-embed__wrapper">https://twitter.com/%1$s</div></figure><!-- /wp:embed -->', $twitter_handle ) ) : '',
+			! empty( $facebook_handle ) ? sprintf( '<!-- wp:html --><iframe src="https://www.facebook.com/plugins/page.php?adapt_container_width=true&amp;height=1000&amp;href=https%%3A%%2F%%2Fwww.facebook.com%%2F%1$s&amp;show_facepile=true&amp;small_header=false&amp;tabs=timeline" height="750" style="border:none;overflow:hidden;width:100%%;" scrolling="yes" allowtransparency="true"></iframe><!-- /wp:html -->', $facebook_handle ) : ''
 		);
 
 		return $content;
@@ -508,6 +534,12 @@ final class Newspack_Listings_Importer {
 
 			if ( ! $term ) {
 				$term = wp_insert_term( $term_name, $taxonomy );
+			}
+
+			// GDG only: remove existing tags, since they're being imported as categories.
+			$tag = get_term_by( 'name', $term_name, 'post_tag', ARRAY_A );
+			if ( $tag ) {
+				wp_delete_term( $tag['term_id'], 'post_tag' );
 			}
 
 			$term_id    = $term['term_id'];
