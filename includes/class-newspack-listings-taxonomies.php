@@ -563,7 +563,7 @@ final class Newspack_Listings_Taxonomies {
 		$post            = get_post( $post_id );
 		$shadow_taxonomy = self::get_taxonomy_by_post_type( $post->post_type );
 		$shadow_term     = self::get_shadow_term( $post, $shadow_taxonomy );
-		$post_type       = [
+		$post_type       = ! empty( $params['post_type'] ) ? $params['post_type'] : [
 			'post',
 			'page',
 			Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
@@ -597,7 +597,13 @@ final class Newspack_Listings_Taxonomies {
 			return [];
 		}
 
-		return $child_posts->posts;
+		// Filter out the passed post ID.
+		return array_filter(
+			$child_posts->posts,
+			function( $post ) use ( $post_id ) {
+				return $post->ID !== $post_id;
+			}
+		);
 	}
 
 	/**
