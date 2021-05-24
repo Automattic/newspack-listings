@@ -72,6 +72,7 @@ final class Newspack_Listings_Core {
 		add_filter( 'body_class', [ __CLASS__, 'set_template_class' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
 		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
+		add_filter( 'newspack_listings_hide_publish_date', [ __CLASS__, 'hide_publish_date' ] );
 		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
@@ -267,7 +268,7 @@ final class Newspack_Listings_Core {
 		}
 
 		$all_meta_fields = [
-			'newspack_listings_contact_email'    => [
+			'newspack_listings_contact_email'     => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -299,7 +300,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_phone'    => [
+			'newspack_listings_contact_phone'     => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -331,7 +332,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_contact_address'  => [
+			'newspack_listings_contact_address'   => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -380,7 +381,7 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_business_hours'   => [
+			'newspack_listings_business_hours'    => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
@@ -427,7 +428,7 @@ final class Newspack_Listings_Core {
 					],
 				],
 			],
-			'newspack_listings_locations'        => [
+			'newspack_listings_locations'         => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -484,7 +485,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_event_start_date' => [
+			'newspack_listings_event_start_date'  => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 				],
@@ -507,7 +508,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_price'            => [
+			'newspack_listings_price'             => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 				],
@@ -530,7 +531,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_hide_author'      => [
+			'newspack_listings_hide_author'       => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
@@ -551,7 +552,28 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_hide_parents'     => [
+			'newspack_listings_hide_publish_date' => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Hide publish date', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => boolval( Settings::get_settings( 'newspack_listings_hide_publish_date' ) ), // Configurable in plugin-wide settings.
+					'description'       => __( 'Hide publish and updated dates for this listing', 'newspack-listings' ),
+					'type'              => 'boolean',
+					'sanitize_callback' => 'rest_sanitize_boolean',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_hide_parents'      => [
 				'post_types' => [
 					'page',
 					'post',
@@ -574,7 +596,7 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
-			'newspack_listings_hide_children'    => [
+			'newspack_listings_hide_children'     => [
 				'post_types' => [
 					'page',
 					'post',
@@ -699,6 +721,23 @@ final class Newspack_Listings_Core {
 		}
 
 		return $hide_author;
+	}
+
+	/**
+	 * Filter callback to decide whether to show the publish and updated dates for the current singular post.
+	 * Can be used from other plugins and/or themes to modify default template behavior.
+	 *
+	 * @param boolean $hide_publish_dates Whether or not to hide the publish and updated dates.
+	 * @return boolean If the current post a.) is a listing and b.) has enabled the option to hide publish and updated dates.
+	 */
+	public static function hide_publish_date( $hide_publish_dates = false ) {
+		$post_id = get_the_ID();
+
+		if ( self::is_listing() && ! empty( get_post_meta( $post_id, 'newspack_listings_hide_publish_date', true ) ) ) {
+			return true;
+		}
+
+		return $hide_publish_dates;
 	}
 
 	/**
