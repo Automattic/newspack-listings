@@ -207,7 +207,10 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 							: __( 'Related', 'newspack-listings' ),
 						isListing() ? '' : _x( 's', 'pluralization', 'newspack-listings' )
 					) }
-					onRequestClose={ () => setModalVisible( false ) }
+					onRequestClose={ () => {
+						setModalVisible( false );
+						setMessage( null );
+					} }
 				>
 					{ message && <Notice { ...message } /> }
 					{ parentTerms && 0 === parentTerms.length && (

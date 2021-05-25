@@ -175,7 +175,10 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 				<Modal
 					className="newspack-listings__modal"
 					title={ __( 'Manage Child Listings' ) }
-					onRequestClose={ () => setModalVisible( false ) }
+					onRequestClose={ () => {
+						setModalVisible( false );
+						setMessage( null );
+					} }
 				>
 					{ message && <Notice { ...message } /> }
 					{ childPosts && 0 === childPosts.length && (
