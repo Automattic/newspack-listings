@@ -135,7 +135,7 @@ final class Newspack_Listings_Taxonomies {
 					'hierarchical'  => true,
 					'public'        => true,
 					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
-					'show_in_menu'  => true, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
 					'show_in_rest'  => true,
 					'show_tagcloud' => false,
 					'show_ui'       => true,
