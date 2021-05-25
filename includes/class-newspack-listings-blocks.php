@@ -90,8 +90,9 @@ final class Newspack_Listings_Blocks {
 			'newspack-listings-editor',
 			'newspack_listings_data',
 			[
-				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
 				'post_type'       => $post_type,
+				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
+				'post_type_slug'  => array_search( $post_type, Core::NEWSPACK_LISTINGS_POST_TYPES ),
 				'post_types'      => $post_types,
 				'taxonomies'      => $taxonomies,
 				'currency'        => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),

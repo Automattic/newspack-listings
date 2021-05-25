@@ -116,20 +116,14 @@ final class Newspack_Listings_Api {
 					'callback'            => [ __CLASS__, 'set_parents' ],
 					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
 					'args'                => [
-						'post_id'          => [
+						'post_id' => [
 							'sanitize_callback' => 'absint',
 						],
-						'added'            => [
-							'sanitize_callback' => 'absint',
+						'added'   => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
 						],
-						'added_taxonomy'   => [
-							'sanitize_callback' => 'sanitize_text_field',
-						],
-						'removed'          => [
-							'sanitize_callback' => 'absint',
-						],
-						'removed_taxonomy' => [
-							'sanitize_callback' => 'sanitize_text_field',
+						'removed' => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
 						],
 					],
 				],
@@ -487,10 +481,9 @@ final class Newspack_Listings_Api {
 				array_map(
 					function( $term ) {
 						return [
-							'id'    => $term->term_id,
-							'name'  => $term->name,
-							'label' => get_post_type_object( Taxonomies::get_post_type_by_taxonomy( $term->taxonomy ) )->labels->singular_name,
-							'type'  => $term->taxonomy,
+							'value'     => $term->term_id,
+							'label'     => $term->name,
+							'post_type' => $term->taxonomy,
 						];
 					},
 					$parents
@@ -517,10 +510,9 @@ final class Newspack_Listings_Api {
 				array_map(
 					function( $post ) {
 						return [
-							'id'    => $post->ID,
-							'name'  => $post->post_title,
-							'label' => get_post_type_object( $post->post_type )->labels->name,
-							'type'  => $post->post_type,
+							'value'     => $post->ID,
+							'label'     => $post->post_title,
+							'post_type' => $post->post_type,
 						];
 					},
 					$children

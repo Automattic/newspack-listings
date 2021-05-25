@@ -52,7 +52,6 @@ final class Newspack_Listings_Taxonomies {
 		add_action( 'admin_init', [ __CLASS__, 'handle_missing_terms' ] );
 		add_action( 'admin_init', [ __CLASS__, 'handle_orphaned_terms' ] );
 		add_filter( 'rest_prepare_taxonomy', [ __CLASS__, 'hide_taxonomy_sidebar' ], 10, 2 );
-		add_filter( 'the_content', [ __CLASS__, 'maybe_append_parent_listings' ] );
 	}
 
 	/**
@@ -136,7 +135,7 @@ final class Newspack_Listings_Taxonomies {
 					'hierarchical'  => true,
 					'public'        => true,
 					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
-					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
+					'show_in_menu'  => true, // Set to 'true' to show in WP admin for debugging purposes.
 					'show_in_rest'  => true,
 					'show_tagcloud' => false,
 					'show_ui'       => true,
@@ -601,7 +600,7 @@ final class Newspack_Listings_Taxonomies {
 		return array_filter(
 			$child_posts->posts,
 			function( $post ) use ( $post_id ) {
-				return $post->ID !== $post_id;
+				return $post->ID != $post_id;
 			}
 		);
 	}
@@ -623,33 +622,45 @@ final class Newspack_Listings_Taxonomies {
 
 		// Apply the added parent term to the given child post ID.
 		if ( ! empty( $added ) ) {
-			$added_taxonomy = ! empty( $params['added_taxonomy'] ) ? $params['added_taxonomy'] : null;
+			$taxonomies_to_add = [];
 
-			if ( empty( $added_taxonomy ) ) {
-				return false;
+			foreach ( $added as $term_to_add ) {
+				if ( ! isset( $taxonomies_to_add[ $term_to_add['taxonomy'] ] ) ) {
+					$taxonomies_to_add[ $term_to_add['taxonomy'] ] = [];
+				}
+
+				$taxonomies_to_add[ $term_to_add['taxonomy'] ][] = intval( $term_to_add['id'] );
 			}
 
-			$added_parent = wp_set_post_terms( $child, $added, $added_taxonomy, true );
+			foreach ( $taxonomies_to_add as $taxonomy_to_add => $terms_to_add ) {
+				$added_parents = wp_set_post_terms( $child, $terms_to_add, $taxonomy_to_add, true );
 
-			// Bail if error.
-			if ( is_wp_error( $added_parent ) ) {
-				return $added_parent;
+				// Bail if error.
+				if ( is_wp_error( $added_parents ) ) {
+					return $added_parents;
+				}
 			}
 		}
 
 		// Remove the parent's shadow term from the child post ID.
 		if ( ! empty( $removed ) ) {
-			$removed_taxonomy = ! empty( $params['removed_taxonomy'] ) ? $params['removed_taxonomy'] : null;
+			$taxonomies_to_remove = [];
 
-			if ( empty( $removed_taxonomy ) ) {
-				return false;
-			}
+			foreach ( $removed as $term_to_remove ) {
+				if ( ! isset( $taxonomies_to_remove[ $term_to_remove['taxonomy'] ] ) ) {
+					$taxonomies_to_remove[ $term_to_remove['taxonomy'] ] = [];
+				}
 
-			$removed_parent = wp_remove_object_terms( $child, $removed, $removed_taxonomy );
+				$taxonomies_to_remove[ $term_to_remove['taxonomy'] ][] = intval( $term_to_remove['id'] );
+			};
 
-			// Bail if error.
-			if ( is_wp_error( $removed_parent ) ) {
-				return $removed_parent;
+			foreach ( $taxonomies_to_remove as $taxonomy_to_remove => $terms_to_remove ) {
+				$removed_parents = wp_remove_object_terms( $child, $terms_to_remove, $taxonomy_to_remove );
+
+				// Bail if error.
+				if ( is_wp_error( $removed_parents ) ) {
+					return $removed_parents;
+				}
 			}
 		}
 
@@ -679,7 +690,7 @@ final class Newspack_Listings_Taxonomies {
 		$taxonomy    = self::get_taxonomy_by_post_type( $parent_post->post_type );
 		$shadow_term = self::get_shadow_term( $parent_post, $taxonomy );
 
-		// Apply the parent's shadow term to the `children` post IDs.
+		// Apply the parent's shadow term to the `added` post IDs.
 		foreach ( $added as $child_to_add ) {
 			$added_child = wp_set_post_terms( $child_to_add, $shadow_term->term_id, $taxonomy, true );
 
@@ -700,68 +711,6 @@ final class Newspack_Listings_Taxonomies {
 		}
 
 		return true;
-	}
-
-	/**
-	 * If the post has been assigned any parent listings, append a link to the listing at the end of the content.
-	 *
-	 * @param string $content Post content.
-	 * @return string The filtered post content.
-	 */
-	public static function maybe_append_parent_listings( $content ) {
-		$post_id      = get_the_ID();
-		$hide_parents = get_post_meta( $post_id, 'newspack_listings_hide_parents', true );
-
-		// Bail early if the post is set to not show parent listings.
-		if ( $hide_parents ) {
-			return $content;
-		}
-
-		$listing_terms = wp_get_post_terms( $post_id, array_values( self::NEWSPACK_LISTINGS_TAXONOMIES ) );
-		$listing_terms = array_filter(
-			$listing_terms,
-			function( $listing_term ) use ( $post_id ) {
-				// Don't show the post on itself.
-				return get_post_field( 'post_name', get_post( $post_id ) ) !== $listing_term->slug;
-			}
-		);
-
-		if ( 0 < count( $listing_terms ) ) {
-			$parent_listing_ids = self::get_parent_listings( array_column( $listing_terms, 'slug' ) );
-
-			if ( 0 < count( $parent_listing_ids ) ) {
-				$parent_section_title = Core::is_listing( get_post_type() ) ? __( 'Listed by', 'newspack-listings' ) : __( 'Related listings', 'newspack-listings' );
-				$content             .= '<hr class="wp-block-separator is-style-wide newspack-listings__separator" />';
-				$content             .= '<h3 class="accent-header newspack-listings__related-section-title">' . $parent_section_title . '</h3>';
-			}
-
-			foreach ( $parent_listing_ids as $parent_listing_id ) {
-				$listing_title   = get_the_title( $parent_listing_id );
-				$listing_excerpt = Utils\get_listing_excerpt( get_post( $parent_listing_id ) );
-				$listing_url     = get_permalink( $parent_listing_id );
-				$featured_image  = get_the_post_thumbnail( $parent_listing_id, 'thumbnail', [ 'class' => 'avatar' ] );
-
-				$content .= '<div class="author-bio sponsor-bio newspack-listings__related-listing">'; // <a href="'. $listing_url . '">';
-
-				if ( $featured_image ) {
-					$content .= '<a href="' . $listing_url . '">';
-					$content .= $featured_image;
-					$content .= '</a>';
-
-				}
-
-				$content .= '<div class="author-bio-text">';
-				$content .= '<div class="author-bio-header">';
-				$content .= '<h2 class="accent-header">' . $listing_title . '</h2>';
-				$content .= '</div>'; // author-bio-header.
-				$content .= $listing_excerpt;
-				$content .= '<p><a class="author-link" href="' . $listing_url . '">' . __( 'More info about ', 'newspack-listings' ) . $listing_title . '</a></p>';
-				$content .= '</div>'; // author-bio-text.
-				$content .= '</div>'; // author-bio.
-			}
-		}
-
-		return $content;
 	}
 }
 
