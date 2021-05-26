@@ -31,14 +31,15 @@ import { AutocompleteWithSuggestions } from 'newspack-components';
 /**
  * Internal dependencies
  */
-import { isListing } from '../utils';
+import { getTaxonomyLabel, isListing } from '../utils';
 import './style.scss';
 
 const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => {
 	const [ isUpdating, setIsUpdating ] = useState( false );
 	const [ modalVisible, setModalVisible ] = useState( false );
-	const [ initialParentTerms, setInitialParentTerms ] = useState( null );
-	const [ parentTerms, setParentTerms ] = useState( null );
+	const [ initialParentTerms, setInitialParentTerms ] = useState( [] );
+	const [ parentTerms, setParentTerms ] = useState( [] );
+	const [ selectedPostType, setSelectedPostType ] = useState( null );
 	const [ message, setMessage ] = useState( null );
 	const postType = window?.newspack_listings_data.post_type;
 	const postTypes = window?.newspack_listings_data.post_types || {};
@@ -161,6 +162,24 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 		setIsUpdating( false );
 	};
 
+	const getLabel = () => {
+		if ( selectedPostType ) {
+			switch ( selectedPostType ) {
+				case 'post':
+					return __( 'Search Posts', 'newspack-listings' );
+				case 'page':
+					return __( 'Search Pages', 'newspack-listings' );
+				default:
+					return sprintf(
+						__( 'Search %ss', 'newspack-listings' ),
+						getTaxonomyLabel( selectedPostType )
+					);
+			}
+		}
+
+		return __( 'Search', 'newspack-listings' );
+	};
+
 	return (
 		<PluginDocumentSettingPanel
 			className="newspack-listings__parent-listings"
@@ -232,7 +251,7 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 					<AutocompleteWithSuggestions
 						hideHelp
 						multiSelect={ ! isListing() } // Listings can only have one parent, but posts and pages can have many.
-						label={ __( 'Search listings', 'newspack' ) }
+						label={ getLabel() }
 						help={ __(
 							'Begin typing listing title, click autocomplete result to select.',
 							'newspack'
@@ -253,14 +272,15 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 									postType: term.taxonomy,
 								} ) );
 							}
+
+							return [];
 						} }
 						onChange={ items => {
 							setMessage( null );
 							setParentTerms( items );
 						} }
+						onPostTypeChange={ _postType => setSelectedPostType( _postType ) }
 						postTypes={ validTaxonomies }
-						postTypeLabel={ 'listing' }
-						postTypeLabelPlural={ 'listings' }
 						selectedItems={ parentTerms }
 					/>
 					<div className="newspack-listings__modal-actions">

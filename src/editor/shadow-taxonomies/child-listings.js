@@ -5,7 +5,7 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
@@ -29,7 +29,7 @@ import { AutocompleteWithSuggestions } from 'newspack-components';
 /**
  * Internal dependencies
  */
-import { isListing } from '../utils';
+import { getPostTypeLabel, isListing } from '../utils';
 import './style.scss';
 
 const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => {
@@ -37,6 +37,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 	const [ isUpdating, setIsUpdating ] = useState( false );
 	const [ initialChildPosts, setInitialChildPosts ] = useState( [] );
 	const [ childPosts, setChildPosts ] = useState( [] );
+	const [ selectedPostType, setSelectedPostType ] = useState( null );
 	const [ message, setMessage ] = useState( null );
 	const postType = window?.newspack_listings_data.post_type;
 	const postTypeSlug = window?.newspack_listings_data.post_type_slug;
@@ -153,11 +154,22 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 		setIsUpdating( false );
 	};
 
+	const getLabel = () => {
+		if ( selectedPostType ) {
+			return sprintf(
+				__( 'Search %ss', 'newspack-listings' ),
+				getPostTypeLabel( selectedPostType )
+			);
+		}
+
+		return __( 'Search', 'newspack-listings' );
+	};
+
 	return (
 		<PluginDocumentSettingPanel
 			className="newspack-listings__child-listings"
 			name="newspack-listings-children"
-			title={ __( 'Child Listings', 'newspack-listings' ) }
+			title={ __( 'Child Listings and Related Posts', 'newspack-listings' ) }
 		>
 			<PanelRow>
 				<ToggleControl
@@ -183,7 +195,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 			{ modalVisible && (
 				<Modal
 					className="newspack-listings__modal"
-					title={ __( 'Manage Child Listings' ) }
+					title={ __( 'Manage Child Listings and Related Posts' ) }
 					onRequestClose={ () => {
 						setModalVisible( false );
 						setMessage( null );
@@ -198,7 +210,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 					<AutocompleteWithSuggestions
 						hideHelp
 						multiSelect
-						label={ __( 'Search posts', 'newspack' ) }
+						label={ getLabel() }
 						help={ __(
 							'Begin typing post title, click autocomplete result to select.',
 							'newspack'
@@ -207,9 +219,8 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 							setMessage( null );
 							setChildPosts( items );
 						} }
+						onPostTypeChange={ _postType => setSelectedPostType( _postType ) }
 						postTypes={ validPostTypes }
-						postTypeLabel={ 'post' }
-						postTypeLabelPlural={ 'posts' }
 						selectedItems={ childPosts }
 					/>
 					<div className="newspack-listings__modal-actions">
