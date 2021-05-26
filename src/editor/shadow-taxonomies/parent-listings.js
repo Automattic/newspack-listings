@@ -52,20 +52,29 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 	}, [] );
 
 	useEffect(() => {
+		setMessage( null );
 		apiFetch( {
 			path: addQueryArgs( '/newspack-listings/v1/parents', {
 				per_page: 100,
 				post_id: postId,
 			} ),
-		} ).then( response => {
-			const mappedResponse = response.map( post => ( {
-				value: post.value,
-				label: post.label,
-				postType: post.post_type,
-			} ) );
-			setParentTerms( mappedResponse );
-			setInitialParentTerms( mappedResponse );
-		} );
+		} )
+			.then( response => {
+				const mappedResponse = response.map( post => ( {
+					value: post.value,
+					label: post.label,
+					postType: post.post_type,
+				} ) );
+				setParentTerms( mappedResponse );
+				setInitialParentTerms( mappedResponse );
+			} )
+			.catch( e => {
+				setMessage( {
+					status: 'error',
+					children: e.message || __( 'Error fetching suggestions.', 'newspack-listings' ),
+					isDismissible: false,
+				} );
+			} );
 	}, []);
 
 	// For now, only show parent listings UI with posts and pages, not listings.
