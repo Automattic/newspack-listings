@@ -204,7 +204,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 					{ message && <Notice { ...message } /> }
 					{ childPosts && 0 === childPosts.length && (
 						<p className="newspack-listings__empty-message">
-							{ __( 'No posts selected.', 'newspack-listings' ) }
+							{ __( 'No items selected.', 'newspack-listings' ) }
 						</p>
 					) }
 					<AutocompleteWithSuggestions

@@ -243,7 +243,7 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 					{ message && <Notice { ...message } /> }
 					{ parentTerms && 0 === parentTerms.length && (
 						<p className="newspack-listings__empty-message">
-							{ __( 'No listings selected.', 'newspack-listings' ) }
+							{ __( 'No items selected.', 'newspack-listings' ) }
 						</p>
 					) }
 					{ null === parentTerms && <Spinner /> }
