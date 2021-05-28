@@ -29,7 +29,7 @@ import { AutocompleteWithSuggestions } from 'newspack-components';
 /**
  * Internal dependencies
  */
-import { getPostTypeLabel, isListing } from '../utils';
+import { getPostTypeLabel, getTaxonomyForPostType, isListing } from '../utils';
 import './style.scss';
 
 const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => {
@@ -40,29 +40,15 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 	const [ selectedPostType, setSelectedPostType ] = useState( null );
 	const [ message, setMessage ] = useState( null );
 	const postType = window?.newspack_listings_data.post_type;
-	const postTypeSlug = window?.newspack_listings_data.post_type_slug;
-	const childPostTypes = postTypeSlug
-		? window?.newspack_listings_data.taxonomies[ postTypeSlug ].post_types
-		: [];
 	const listingPostTypes = window?.newspack_listings_data.post_types || {};
-	const validPostTypes = [
-		...Object.keys( listingPostTypes ).reduce( ( acc, listingType ) => {
-			if (
-				-1 < childPostTypes.indexOf( listingPostTypes[ listingType ].name ) &&
-				listingPostTypes[ listingType ].name !== postType
-			) {
-				acc.push( {
-					slug: listingPostTypes[ listingType ].name,
-					label: listingPostTypes[ listingType ].label,
-				} );
-			}
+	const taxonomyForPostType = getTaxonomyForPostType();
+	const childPostTypes = taxonomyForPostType?.post_types || [];
+	const filteredChildPostTypes = childPostTypes.filter(
+		childPostType => childPostType !== postType
+	);
+	const canHaveChildren = 0 < filteredChildPostTypes.length;
 
-			return acc;
-		}, [] ),
-		{ slug: 'post', label: 'Post' },
-		{ slug: 'page', label: 'Page' },
-	];
-
+	// Fetch suggestions for suggestions list on component mount.
 	useEffect(() => {
 		setMessage( null );
 		apiFetch( {
@@ -91,10 +77,31 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 			} );
 	}, []);
 
-	if ( ! isListing() ) {
+	// Bail early if the post type can't have child listings.
+	if ( ! canHaveChildren || ! isListing() ) {
 		return null;
 	}
 
+	// Get an array of post types that can be children of this post.
+	const validPostTypes = [
+		...Object.keys( listingPostTypes ).reduce( ( acc, listingType ) => {
+			if (
+				-1 < childPostTypes.indexOf( listingPostTypes[ listingType ].name ) &&
+				listingPostTypes[ listingType ].name !== postType
+			) {
+				acc.push( {
+					slug: listingPostTypes[ listingType ].name,
+					label: listingPostTypes[ listingType ].label,
+				} );
+			}
+
+			return acc;
+		}, [] ),
+		{ slug: 'post', label: 'Post' },
+		{ slug: 'page', label: 'Page' },
+	];
+
+	// Update shadow terms for the children selected for this post.
 	const update = async () => {
 		setIsUpdating( true );
 		setMessage( null );

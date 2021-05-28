@@ -31,7 +31,7 @@ import { AutocompleteWithSuggestions } from 'newspack-components';
 /**
  * Internal dependencies
  */
-import { getTaxonomyLabel, isListing } from '../utils';
+import { getPostTypeByTaxonomy, getTaxonomyLabel, isListing } from '../utils';
 import './style.scss';
 
 const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => {
@@ -44,14 +44,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 	const postType = window?.newspack_listings_data.post_type;
 	const postTypes = window?.newspack_listings_data.post_types || {};
 	const taxonomies = window?.newspack_listings_data.taxonomies || {};
-	const validTaxonomies = Object.keys( taxonomies ).reduce( ( acc, type ) => {
-		const taxonomy = taxonomies[ type ];
-		if ( -1 < taxonomy.post_types.indexOf( postType ) && postTypes[ type ].name !== postType ) {
-			acc.push( { slug: taxonomy.name, label: taxonomy.label } );
-		}
-		return acc;
-	}, [] );
 
+	// Fetch suggestions for suggestions list on component mount.
 	useEffect(() => {
 		setMessage( null );
 		apiFetch( {
@@ -78,11 +72,33 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 			} );
 	}, []);
 
-	// For now, only show parent listings UI with posts and pages, not listings.
-	if ( isListing() ) {
+	// Determine whether the current post can have parent listings.
+	let canHaveParents = false;
+	for ( const taxonomy in taxonomies ) {
+		const taxonomyPostType = getPostTypeByTaxonomy( taxonomies[ taxonomy ].name );
+		const postTypeIsChild = -1 < taxonomies[ taxonomy ].post_types.indexOf( postType );
+
+		// Posts, pages, and listings can have parents if they can be assigned listing shadow terms.
+		if ( postTypeIsChild && taxonomyPostType !== postType ) {
+			canHaveParents = true;
+		}
+	}
+
+	// Bail early if the post type can't have parent listings.
+	if ( ! canHaveParents || isListing() ) {
 		return null;
 	}
 
+	// Get an array of taxonomies that can be parents of this post.
+	const validTaxonomies = Object.keys( taxonomies ).reduce( ( acc, type ) => {
+		const taxonomy = taxonomies[ type ];
+		if ( -1 < taxonomy.post_types.indexOf( postType ) && postTypes[ type ].name !== postType ) {
+			acc.push( { slug: taxonomy.name, label: taxonomy.label } );
+		}
+		return acc;
+	}, [] );
+
+	// Update shadow terms for this post.
 	const update = async () => {
 		setIsUpdating( true );
 		setMessage( null );
