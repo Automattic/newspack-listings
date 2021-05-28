@@ -551,6 +551,34 @@ final class Newspack_Listings_Core {
 					},
 				],
 			],
+			'newspack_listings_image_ids'        => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Images associated with this listing.', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => [],
+					'description'       => __( 'Images associated with this listing.', 'newspack-listings' ),
+					'type'              => 'array',
+					'sanitize_callback' => 'Utils\sanitize_array',
+					'single'            => false,
+					'show_in_rest'      => [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type' => 'integer',
+							],
+						],
+					],
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
 			'newspack_listings_hide_parents'     => [
 				'post_types' => [
 					'page',

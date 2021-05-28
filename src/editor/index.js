@@ -17,6 +17,7 @@ import {
 } from '../blocks';
 import { ShadowTaxonomies } from './shadow-taxonomies';
 import { isListing } from './utils';
+import './style.scss';
 
 /**
  * Register Curated List blocks. Don't register if we're in a listing already

@@ -121,4 +121,8 @@
 			margin: 0 0 0.75rem;
 		}
 	}
+
+	&__column-reverse {
+		flex-direction: row-reverse;
+	}
 }
