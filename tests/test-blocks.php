@@ -50,7 +50,7 @@ class BlocksTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Basic Block rendering - Single Prompt block.
+	 * Basic Block rendering - Curated List block.
 	 */
 	public function test_curated_list_block_query_types() {
 		$place = self::create_listing( 'place' );
