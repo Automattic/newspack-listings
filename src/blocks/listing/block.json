@@ -7,8 +7,8 @@
       "default": ""
     },
     "listing": {
-      "type": "string",
-      "default": ""
+      "type": "number",
+      "default": 0
     },
     "locations": {
       "type": "array",
