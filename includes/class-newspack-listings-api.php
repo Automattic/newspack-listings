@@ -333,11 +333,6 @@ final class Newspack_Listings_Api {
 							$item['tags'] = get_the_terms( $post->ID, 'post_tag' );
 						}
 
-						// If $fields includes author and the post isn't set to hide author, get the post author.
-						if ( in_array( 'author', $fields ) && empty( get_post_meta( $post->ID, 'newspack_listings_hide_author', true ) ) ) {
-							$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
-						}
-
 						// If $fields includes excerpt, get the post excerpt.
 						if ( in_array( 'excerpt', $fields ) ) {
 							$item['excerpt'] = Utils\get_listing_excerpt( $post );
@@ -352,11 +347,21 @@ final class Newspack_Listings_Api {
 						}
 
 						// If $fields includes meta, get all Newspack Listings meta fields.
-						if ( in_array( 'meta', $fields ) ) {
-							$post_meta = Core::get_meta_values( $post->ID, $post->post_type );
+						// Append sponsors and author info to this field so we can avoid having to register custom REST fields.
+						if ( in_array( 'meta', $fields ) || in_array( 'author', $fields ) ) {
+							$item['meta'] = [];
+							$post_meta    = Core::get_meta_values( $post->ID, $post->post_type );
 
 							if ( ! empty( $post_meta ) ) {
 								$item['meta'] = $post_meta;
+							}
+
+							// Include sponsors info.
+							$item['meta']['sponsors'] = Utils\get_sponsors( $post->ID, 'native' );
+
+							// If $fields includes author and the post isn't set to hide author, get the post author.
+							if ( in_array( 'author', $fields ) && empty( get_post_meta( $post->ID, 'newspack_listings_hide_author', true ) ) ) {
+								$item['meta']['author'] = get_the_author_meta( 'display_name', $post->post_author );
 							}
 						}
 

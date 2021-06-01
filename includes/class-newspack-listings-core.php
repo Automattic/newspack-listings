@@ -74,6 +74,7 @@ final class Newspack_Listings_Core {
 		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
 		add_filter( 'newspack_listings_hide_publish_date', [ __CLASS__, 'hide_publish_date' ] );
 		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
+		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_newspack_sponsors' ] );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -824,6 +825,19 @@ final class Newspack_Listings_Core {
 	public static function activation_hook() {
 		self::register_post_types();
 		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
+	}
+
+	/**
+	 * If using the Newspack Sponsors plugin, add support for sponsors to all listings.
+	 *
+	 * @param array $post_types Array of supported post types.
+	 * @return array Filtered array of supported post types.
+	 */
+	public static function support_newspack_sponsors( $post_types ) {
+		return array_merge(
+			$post_types,
+			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
+		);
 	}
 }
 

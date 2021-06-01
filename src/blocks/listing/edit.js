@@ -188,7 +188,7 @@ const ListingEditorComponent = ( {
 
 		return (
 			<div className="newspack-listings__listing-editor newspack-listings__listing">
-				<Listing attributes={ parent.curatedList.attributes } error={ error } post={ post } />
+				<Listing attributes={ attributes } error={ error } post={ post } />
 				{ post && (
 					<Button
 						isLink
