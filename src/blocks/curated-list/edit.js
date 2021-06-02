@@ -274,10 +274,10 @@ const CuratedListEditorComponent = ( {
 	}, [ selectedBlock ]);
 
 	/**
-	 * If in specific listings mode, sync parent attributes to inner blocks.
+	 * Sync parent attributes to inner blocks.
 	 */
 	useEffect(() => {
-		if ( list && list.innerBlocks ) {
+		if ( list ) {
 			updateBlockAttributes(
 				[ list.clientId ].concat( list.innerBlocks.map( innerBlock => innerBlock.clientId ) ), // Array of client IDs for both list container and individual listings.
 				attributes,
