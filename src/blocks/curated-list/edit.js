@@ -274,6 +274,19 @@ const CuratedListEditorComponent = ( {
 	}, [ selectedBlock ]);
 
 	/**
+	 * If in specific listings mode, sync parent attributes to inner blocks.
+	 */
+	useEffect(() => {
+		if ( list && list.innerBlocks ) {
+			updateBlockAttributes(
+				[ list.clientId ].concat( list.innerBlocks.map( innerBlock => innerBlock.clientId ) ), // Array of client IDs for both list container and individual listings.
+				attributes,
+				false
+			);
+		}
+	}, [ JSON.stringify( attributes ) ]);
+
+	/**
 	 * Determine if the background color is dark or light.
 	 */
 	useEffect(() => {
