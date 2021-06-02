@@ -157,7 +157,7 @@ const ListingEditorComponent = ( {
 						if ( _listing.length ) {
 							setIsEditingPost( false );
 							setPost( null );
-							setAttributes( { listing: _listing[ 0 ] } );
+							setAttributes( { listing: _listing.shift().value.toString() } );
 						}
 					} }
 					selectedPost={ isEditingPost ? null : listing }
