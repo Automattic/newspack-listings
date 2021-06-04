@@ -70,16 +70,16 @@ final class Newspack_Listings_Api {
 					'callback'            => [ __CLASS__, 'get_items' ],
 					'args'                => [
 						'query'      => [
-							'sanitize_callback' => 'Utils\sanitize_array',
+							'sanitize_callback' => '\Newspack_Listings\Utils\sanitize_array',
 						],
 						'id'         => [
 							'sanitize_callback' => 'absint',
 						],
 						'type'       => [
-							'sanitize_callback' => 'Utils\sanitize_array',
+							'sanitize_callback' => '\Newspack_Listings\Utils\sanitize_array',
 						],
 						'attributes' => [
-							'sanitize_callback' => 'Utils\sanitize_array',
+							'sanitize_callback' => '\Newspack_Listings\Utils\sanitize_array',
 						],
 						'offset'     => [
 							'sanitize_callback' => 'absint',
@@ -290,7 +290,7 @@ final class Newspack_Listings_Api {
 	 * @return WP_REST_Response.
 	 */
 	public static function get_items( $request ) {
-		$listings   = [];
+		$response   = [];
 		$params     = $request->get_params();
 		$fields     = explode( ',', $params['_fields'] );
 		$search     = ! empty( $params['search'] ) ? $params['search'] : null;
@@ -414,6 +414,8 @@ final class Newspack_Listings_Api {
 				$listings_query->posts
 			);
 
+			$response = new \WP_REST_Response( $listings );
+
 			// Provide next URL if there are more pages.
 			if ( $next_page <= $listings_query->max_num_pages ) {
 				$next_url = add_query_arg(
@@ -433,7 +435,6 @@ final class Newspack_Listings_Api {
 			}
 		}
 
-		$response = new \WP_REST_Response( $listings );
 		return rest_ensure_response( $response );
 	}
 
