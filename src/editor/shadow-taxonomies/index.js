@@ -25,7 +25,7 @@ export const ShadowTaxonomiesComponent = ( {
 	createNotice,
 	editPost,
 	getEditedPostAttribute,
-	meta,
+	meta = {},
 	postId,
 	updateMetaValue,
 } ) => {
