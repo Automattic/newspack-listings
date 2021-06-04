@@ -36,8 +36,6 @@ const ListingEditorComponent = ( {
 
 		if ( 'newspack-listings/list-container' === blockInfo.name ) {
 			acc.listContainer = blockInfo;
-		} else if ( 'newspack-listings/curated-list' === blockInfo.name ) {
-			acc.curatedList = blockInfo;
 		}
 
 		return acc;
@@ -58,15 +56,10 @@ const ListingEditorComponent = ( {
 
 	// Fetch listing post data if we have a listing post ID.
 	useEffect(() => {
-		if ( listing ) {
+		if ( ! post && listing ) {
 			fetchPost( listing );
 		}
 	}, [ listing ]);
-
-	// Sync parent attributes to listing attributes, so that we can use parent attributes in the PHP render callback.
-	useEffect(() => {
-		setAttributes( { ...parent.curatedList.attributes } );
-	}, [ JSON.stringify( parent.curatedList.attributes ) ]);
 
 	// Fetch listing post by listingId.
 	const fetchPost = async listingId => {
@@ -157,7 +150,7 @@ const ListingEditorComponent = ( {
 						if ( _listing.length ) {
 							setIsEditingPost( false );
 							setPost( null );
-							setAttributes( { listing: _listing[ 0 ] } );
+							setAttributes( { listing: _listing.shift().value.toString() } );
 						}
 					} }
 					selectedPost={ isEditingPost ? null : listing }
@@ -188,7 +181,7 @@ const ListingEditorComponent = ( {
 
 		return (
 			<div className="newspack-listings__listing-editor newspack-listings__listing">
-				<Listing attributes={ parent.curatedList.attributes } error={ error } post={ post } />
+				<Listing attributes={ attributes } error={ error } post={ post } />
 				{ post && (
 					<Button
 						isLink
