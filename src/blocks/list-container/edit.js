@@ -6,23 +6,11 @@ import { InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { Notice, PanelRow, Spinner } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
-import { useEffect } from '@wordpress/element';
 
-const ListContainerEditorComponent = ( {
-	clientId,
-	innerBlocks,
-	isSelected,
-	parent,
-	setAttributes,
-} ) => {
+const ListContainerEditorComponent = ( { clientId, innerBlocks, isSelected, parent } ) => {
 	const parentAttributes = parent.attributes || {};
 	const { queryMode, queryOptions, isSelected: parentIsSelected, showSortUi } = parentAttributes;
 	const { order } = queryOptions;
-
-	// Sync parent attributes to list container attributes, so that we can use parent attributes in the PHP render callback.
-	useEffect(() => {
-		setAttributes( { ...parentAttributes } );
-	}, [ JSON.stringify( parentAttributes ) ]);
 
 	if ( queryMode && ! showSortUi ) {
 		return null;
