@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/Automattic/newspack-listings/compare/v1.2.0...v1.2.1) (2021-06-08)
+
+
+### Bug Fixes
+
+* syncing attributes from curated list block to inner blocks ([#64](https://github.com/Automattic/newspack-listings/issues/64)) ([cdbc0bb](https://github.com/Automattic/newspack-listings/commit/cdbc0bb63bf4d8b18dc30fab87ce1a3ab68c7ddd))
+
 # [1.2.0](https://github.com/Automattic/newspack-listings/compare/v1.1.0...v1.2.0) (2021-02-11)
 
 
