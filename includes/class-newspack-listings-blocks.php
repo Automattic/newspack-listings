@@ -133,24 +133,35 @@ final class Newspack_Listings_Blocks {
 			}
 			$type = $block_directory->getFilename();
 
-			/* If view.php is found, include it and use for block rendering. */
+			// If view.php is found, include it and use for block rendering.
 			$view_php_path = $src_directory . $type . '/view.php';
 			if ( file_exists( $view_php_path ) ) {
 				include_once $view_php_path;
 				continue;
 			}
 
-			/* If view.php is missing but view Javascript file is found, do generic view asset loading. */
+			// If block.json exists, use it to register the block with default attributes.
+			$block_config_file        = $src_directory . $type . '/block.json';
+			$block_name               = "newspack-listings/{$type}";
+			$block_default_attributes = null;
+			if ( file_exists( $block_config_file ) ) {
+				$block_config             = json_decode( file_get_contents( $block_config_file ), true ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
+				$block_name               = $block_config['name'];
+				$block_default_attributes = $block_config['attributes'];
+			}
+
+			// If view.php is missing but view Javascript file is found, do generic view asset loading.
 			$view_js_path = $dist_directory . $type . '/view.js';
 			if ( file_exists( $view_js_path ) ) {
 				register_block_type(
-					"newspack-listings/{$type}",
-					array(
+					$block_name,
+					[
 						'render_callback' => function( $attributes, $content ) use ( $type ) {
 							Newspack_Blocks::enqueue_view_assets( $type );
 							return $content;
 						},
-					)
+						'attributes'      => $block_default_attributes,
+					]
 				);
 			}
 		}
