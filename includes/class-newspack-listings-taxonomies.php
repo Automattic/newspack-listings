@@ -53,6 +53,7 @@ final class Newspack_Listings_Taxonomies {
 		add_action( 'admin_init', [ __CLASS__, 'handle_orphaned_terms' ] );
 		add_filter( 'rest_prepare_taxonomy', [ __CLASS__, 'hide_taxonomy_sidebar' ], 10, 2 );
 		add_filter( 'the_content', [ __CLASS__, 'maybe_append_parent_listings' ] );
+		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
 	/**
@@ -658,6 +659,13 @@ final class Newspack_Listings_Taxonomies {
 		}
 
 		return $content;
+	}
+
+	/**
+	 * Register taxonomies on plugin activation.
+	 */
+	public static function activation_hook() {
+		self::register_tax();
 	}
 }
 
