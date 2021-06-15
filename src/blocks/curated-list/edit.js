@@ -117,7 +117,7 @@ const CuratedListEditorComponent = ( {
 			const posts = await apiFetch( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					query: { ...query, maxItems: MAX_EDITOR_ITEMS }, // Get up to MAX_EDITOR_ITEMS listings in the editor so we can show all locations.
-					_fields: 'id,title,author,category,tags,excerpt,media,meta,type',
+					_fields: 'id,title,author,category,tags,excerpt,media,meta,type,sponsors',
 				} ),
 			} );
 			setAttributes( { listingIds: posts.map( post => post.id ) } );
@@ -287,6 +287,19 @@ const CuratedListEditorComponent = ( {
 
 		setAttributes( { hasDarkBackground: false } );
 	}, [ backgroundColor ]);
+
+	/**
+	 * Sync parent attributes to inner blocks.
+	 */
+	useEffect(() => {
+		if ( list ) {
+			updateBlockAttributes(
+				[ list.clientId ].concat( list.innerBlocks.map( innerBlock => innerBlock.clientId ) ), // Array of client IDs for both list container and individual listings.
+				attributes,
+				false
+			);
+		}
+	}, [ JSON.stringify( attributes ) ]);
 
 	/**
 	 * Render the results of the listing query.

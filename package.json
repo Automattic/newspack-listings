@@ -12,7 +12,6 @@
     "lint": "npm-run-all --parallel lint:*",
     "lint:js": "eslint --ext .js,.jsx src",
     "lint:scss": "stylelint \"**/*.scss\" --syntax scss",
-    "lint:php": "./vendor/bin/phpcs .",
     "format:js": "prettier 'src/**/*.{js,jsx}' --write",
     "format:scss": "prettier --write 'src/**/*.scss'",
     "format:php": "./vendor/bin/phpcbf .",
