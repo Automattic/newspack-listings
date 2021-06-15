@@ -346,3 +346,25 @@ function generate_amp_partial( $html ) {
 	}
 	return \AMP_DOM_Utils::get_content_from_dom( $dom );
 }
+
+/**
+ * Get sponsors for the given listing.
+ *
+ * @param int    $post_id ID of the listing.
+ * @param string $scope 'Native' or 'underwritten'.
+ * @param string $type 'Post' or 'archive'.
+ *
+ * @return array|boolean Array of sponsors, or false if none.
+ */
+function get_sponsors( $post_id = null, $scope = null, $type = 'post' ) {
+	// Bail if we don't have the Sponsors plugin.
+	if ( ! function_exists( '\Newspack_Sponsors\get_all_sponsors' ) ) {
+		return false;
+	}
+
+	if ( null === $post_id ) {
+		$post_id = get_the_ID();
+	}
+
+	return \Newspack_Sponsors\get_all_sponsors( $post_id, $scope, $type );
+}
