@@ -519,22 +519,24 @@ final class Newspack_Listings_Api {
 		$parents = Taxonomies::get_parent_terms( $params );
 
 		if ( is_array( $parents ) ) {
-			return new \WP_REST_Response(
-				array_map(
-					function( $term ) {
-						return [
-							'value'     => $term->term_id,
-							'label'     => $term->name,
-							'post_type' => $term->taxonomy,
-						];
-					},
-					$parents
+			return rest_ensure_response(
+				array_values(
+					array_map(
+						function( $term ) {
+							return [
+								'value'     => $term->term_id,
+								'label'     => $term->name,
+								'post_type' => $term->taxonomy,
+							];
+						},
+						$parents
+					)
 				),
 				200
 			);
 		}
 
-		return new \WP_REST_Response( [] );
+		return rest_ensure_response( [] );
 	}
 
 	/**
@@ -548,22 +550,24 @@ final class Newspack_Listings_Api {
 		$children = Taxonomies::get_child_posts( $params );
 
 		if ( is_array( $children ) ) {
-			return new \WP_REST_Response(
-				array_map(
-					function( $post ) {
-						return [
-							'value'     => $post->ID,
-							'label'     => $post->post_title,
-							'post_type' => $post->post_type,
-						];
-					},
-					$children
+			return rest_ensure_response(
+				array_values(
+					array_map(
+						function( $post ) {
+							return [
+								'value'     => $post->ID,
+								'label'     => $post->post_title,
+								'post_type' => $post->post_type,
+							];
+						},
+						$children
+					)
 				),
 				200
 			);
 		}
 
-		return new \WP_REST_Response( [] );
+		return rest_ensure_response( [] );
 	}
 
 	/**

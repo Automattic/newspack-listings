@@ -45,33 +45,6 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 	const postTypes = window?.newspack_listings_data.post_types || {};
 	const taxonomies = window?.newspack_listings_data.taxonomies || {};
 
-	// Fetch suggestions for suggestions list on component mount.
-	useEffect(() => {
-		setMessage( null );
-		apiFetch( {
-			path: addQueryArgs( '/newspack-listings/v1/parents', {
-				per_page: 100,
-				post_id: postId,
-			} ),
-		} )
-			.then( response => {
-				const mappedResponse = response.map( post => ( {
-					value: post.value,
-					label: post.label,
-					postType: post.post_type,
-				} ) );
-				setParentTerms( mappedResponse );
-				setInitialParentTerms( mappedResponse );
-			} )
-			.catch( e => {
-				setMessage( {
-					status: 'error',
-					children: e.message || __( 'Error fetching suggestions.', 'newspack-listings' ),
-					isDismissible: false,
-				} );
-			} );
-	}, []);
-
 	// Determine whether the current post can have parent listings.
 	let canHaveParents = false;
 	for ( const taxonomy in taxonomies ) {
@@ -79,13 +52,42 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 		const postTypeIsChild = -1 < taxonomies[ taxonomy ].post_types.indexOf( postType );
 
 		// Posts, pages, and listings can have parents if they can be assigned listing shadow terms.
-		if ( postTypeIsChild && taxonomyPostType !== postType ) {
+		if ( ! isListing() && postTypeIsChild && taxonomyPostType !== postType ) {
 			canHaveParents = true;
 		}
 	}
 
+	// Fetch suggestions for suggestions list on component mount.
+	useEffect(() => {
+		if ( canHaveParents ) {
+			setMessage( null );
+			apiFetch( {
+				path: addQueryArgs( '/newspack-listings/v1/parents', {
+					per_page: 100,
+					post_id: postId,
+				} ),
+			} )
+				.then( response => {
+					const mappedResponse = response.map( post => ( {
+						value: post.value,
+						label: post.label,
+						postType: post.post_type,
+					} ) );
+					setParentTerms( mappedResponse );
+					setInitialParentTerms( mappedResponse );
+				} )
+				.catch( e => {
+					setMessage( {
+						status: 'error',
+						children: e.message || __( 'Error fetching suggestions.', 'newspack-listings' ),
+						isDismissible: false,
+					} );
+				} );
+		}
+	}, []);
+
 	// Bail early if the post type can't have parent listings.
-	if ( ! canHaveParents || isListing() ) {
+	if ( ! canHaveParents ) {
 		return null;
 	}
 

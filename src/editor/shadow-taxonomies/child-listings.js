@@ -46,39 +46,41 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 	const filteredChildPostTypes = childPostTypes.filter(
 		childPostType => childPostType !== postType
 	);
-	const canHaveChildren = 0 < filteredChildPostTypes.length;
+	const canHaveChildren = 0 < filteredChildPostTypes.length && isListing();
 
 	// Fetch suggestions for suggestions list on component mount.
 	useEffect(() => {
-		setMessage( null );
-		apiFetch( {
-			path: addQueryArgs( '/newspack-listings/v1/children', {
-				per_page: 100,
-				post_id: postId,
-			} ),
-		} )
-			.then( response => {
-				if ( response ) {
-					const mappedResponse = response.map( post => ( {
-						value: post.value,
-						label: post.label,
-						postType: post.post_type,
-					} ) );
-					setChildPosts( mappedResponse );
-					setInitialChildPosts( mappedResponse );
-				}
+		if ( canHaveChildren ) {
+			setMessage( null );
+			apiFetch( {
+				path: addQueryArgs( '/newspack-listings/v1/children', {
+					per_page: 100,
+					post_id: postId,
+				} ),
 			} )
-			.catch( e => {
-				setMessage( {
-					status: 'error',
-					children: e.message || __( 'Error fetching suggestions.', 'newspack-listings' ),
-					isDismissible: false,
+				.then( response => {
+					if ( response ) {
+						const mappedResponse = response.map( post => ( {
+							value: post.value,
+							label: post.label,
+							postType: post.post_type,
+						} ) );
+						setChildPosts( mappedResponse );
+						setInitialChildPosts( mappedResponse );
+					}
+				} )
+				.catch( e => {
+					setMessage( {
+						status: 'error',
+						children: e.message || __( 'Error fetching suggestions.', 'newspack-listings' ),
+						isDismissible: false,
+					} );
 				} );
-			} );
+		}
 	}, []);
 
 	// Bail early if the post type can't have child listings.
-	if ( ! canHaveChildren || ! isListing() ) {
+	if ( ! canHaveChildren ) {
 		return null;
 	}
 
