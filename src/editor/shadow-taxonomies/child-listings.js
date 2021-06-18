@@ -142,20 +142,20 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 				setInitialChildPosts( childPosts ); // Update saved state.
 				setMessage( {
 					status: 'success',
-					children: __( 'Child listings updated.', 'newspack-listings' ),
+					children: __( 'Related content updated.', 'newspack-listings' ),
 					isDismissible: false,
 				} );
 			} else {
 				setMessage( {
 					status: 'error',
-					children: __( 'Error updating child listings.', 'newspack-listings' ),
+					children: __( 'Error updating related content.', 'newspack-listings' ),
 					isDismissible: false,
 				} );
 			}
 		} catch ( e ) {
 			setMessage( {
 				status: 'error',
-				children: e.message || __( 'Error updating child listings.', 'newspack-listings' ),
+				children: e.message || __( 'Error updating related content.', 'newspack-listings' ),
 				isDismissible: false,
 			} );
 		}
@@ -178,12 +178,12 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 		<PluginDocumentSettingPanel
 			className="newspack-listings__child-listings"
 			name="newspack-listings-children"
-			title={ __( 'Child Listings and Related Posts', 'newspack-listings' ) }
+			title={ __( 'Related Content', 'newspack-listings' ) }
 		>
 			<PanelRow>
 				<ToggleControl
 					className={ 'newspack-listings__toggle-control' }
-					label={ __( 'Hide child listings', 'newspack-listings' ) }
+					label={ __( 'Hide related content', 'newspack-listings' ) }
 					help={ () => (
 						<p>
 							{ __( 'Overrides ', 'newspack-listings' ) }
@@ -198,13 +198,13 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 			</PanelRow>
 			{ ! hideChildren && (
 				<Button isSecondary onClick={ () => setModalVisible( true ) }>
-					{ __( 'Manage Child Listings' ) }
+					{ __( 'Manage Related Content' ) }
 				</Button>
 			) }
 			{ modalVisible && (
 				<Modal
 					className="newspack-listings__modal"
-					title={ __( 'Manage Child Listings and Related Posts' ) }
+					title={ __( 'Manage Related Content' ) }
 					onRequestClose={ () => {
 						setModalVisible( false );
 						setMessage( null );
