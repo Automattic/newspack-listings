@@ -37,7 +37,7 @@ function register_block() {
  * @return string $content content.
  */
 function render_block( $attributes ) {
-	return '<h2 class="newspack-listings__price">' . esc_html( $attributes['formattedPrice'] ) . '</h2>';
+	return '<p class="newspack-listings__price has-large-font-size"><strong>' . esc_html( $attributes['formattedPrice'] ) . '</strong></p>';
 }
 
 register_block();
