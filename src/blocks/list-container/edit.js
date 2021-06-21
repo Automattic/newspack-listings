@@ -7,9 +7,8 @@ import { Notice, PanelRow, Spinner } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 
-const ListContainerEditorComponent = ( { clientId, innerBlocks, parent } ) => {
-	const parentAttributes = parent.attributes || {};
-	const { queryMode, queryOptions, showSortUi } = parentAttributes;
+const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) => {
+	const { queryMode, queryOptions, showSortUi } = attributes;
 	const { order } = queryOptions;
 
 	if ( queryMode && ! showSortUi ) {
@@ -101,14 +100,11 @@ const ListContainerEditorComponent = ( { clientId, innerBlocks, parent } ) => {
 
 const mapStateToProps = ( select, ownProps ) => {
 	const { clientId } = ownProps;
-	const { getBlock, getBlockParents } = select( 'core/block-editor' );
+	const { getBlock } = select( 'core/block-editor' );
 	const innerBlocks = getBlock( clientId ).innerBlocks || [];
-	const parentId = getBlockParents( clientId )[ 0 ] || null;
-	const parent = getBlock( parentId );
 
 	return {
 		innerBlocks,
-		parent,
 	};
 };
 
