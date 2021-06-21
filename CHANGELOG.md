@@ -1,3 +1,43 @@
+# [2.0.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v1.2.1...v2.0.0-alpha.1) (2021-06-21)
+
+
+### Bug Fixes
+
+* activation PHP warning ([#70](https://github.com/Automattic/newspack-listings/issues/70)) ([29b0a34](https://github.com/Automattic/newspack-listings/commit/29b0a34faa1c479cd9f873b4d17aa70eb5f698a5))
+* failing npm ci command ([f509f36](https://github.com/Automattic/newspack-listings/commit/f509f3676c6b8c74dba4d898f5493c269649efba))
+* guard against nonexistent meta object ([#66](https://github.com/Automattic/newspack-listings/issues/66)) ([c821a09](https://github.com/Automattic/newspack-listings/commit/c821a0919fff3caaa07babbfe1c49e38658bd738))
+* missing condition for block appender in list container ([#74](https://github.com/Automattic/newspack-listings/issues/74)) ([2c49896](https://github.com/Automattic/newspack-listings/commit/2c498961b80324d8cbea61c7fbc356ca7ccb8de5))
+* newspack_blocks support slug ([a2bda56](https://github.com/Automattic/newspack-listings/commit/a2bda564a3b5844df965bad824c1a8acb3984d00))
+* remove material packages ([b489015](https://github.com/Automattic/newspack-listings/commit/b48901546198df8a982c41fb1da714862ccf3412))
+* use synced attributes for ListContainer directly ([#73](https://github.com/Automattic/newspack-listings/issues/73)) ([f8641a7](https://github.com/Automattic/newspack-listings/commit/f8641a726ce7c2949c01b232829f8923f06b61ad))
+* use value property of selection from AutocompleteWithSuggestions ([#61](https://github.com/Automattic/newspack-listings/issues/61)) ([c7c4cea](https://github.com/Automattic/newspack-listings/commit/c7c4ceaf3c9d9682d8441028f2f64516638d6aca))
+* util for checking post type on new posts ([fb61530](https://github.com/Automattic/newspack-listings/commit/fb6153050fb08c29864fb8f304f583d82056f411))
+* warning about default meta value ([16af17b](https://github.com/Automattic/newspack-listings/commit/16af17b7cf2338e001efc0a4064b69b28c30d39e))
+* wp_insert_post filter name and theme_mod filter ([5befca7](https://github.com/Automattic/newspack-listings/commit/5befca7085cbcdb346d31ed24d2001e6eb0d042f))
+
+
+### Features
+
+* add a new global setting and post option to hide date ([#57](https://github.com/Automattic/newspack-listings/issues/57)) ([896f68f](https://github.com/Automattic/newspack-listings/commit/896f68f8371cfacae0acdf3977e0faa859c1149e))
+* add revisions support for listings ([42d04d2](https://github.com/Automattic/newspack-listings/commit/42d04d2ccb0d87df75df00a01fa53ddda758cb95))
+* add settings for individual listing type URL slugs ([d78a3f7](https://github.com/Automattic/newspack-listings/commit/d78a3f7ca9eb7387dd63b71318ed86f7d41c8ac5)), closes [#41](https://github.com/Automattic/newspack-listings/issues/41)
+* better integration with Newspack Theme features ([823f66a](https://github.com/Automattic/newspack-listings/commit/823f66a22cbcf2d987a69f8b44e5b89081c94ee4))
+* child and related listings UI ([#58](https://github.com/Automattic/newspack-listings/issues/58)) ([06aff81](https://github.com/Automattic/newspack-listings/commit/06aff8195b14d643e4c2c27db50c990e67a5589a))
+* convert legacy custom terms to regular post terms ([#67](https://github.com/Automattic/newspack-listings/issues/67)) ([a2fcf84](https://github.com/Automattic/newspack-listings/commit/a2fcf84d160a7ed2f0c5ebd906e1931d0df8f49b))
+* CSV importer script ([#51](https://github.com/Automattic/newspack-listings/issues/51)) ([ffbea00](https://github.com/Automattic/newspack-listings/commit/ffbea0057af3a2702587ef494c5f3fd7e7a29955))
+* flush permalinks automatically if updating slug option ([988521e](https://github.com/Automattic/newspack-listings/commit/988521e2359d71ed9bfbd4acc3678c6aff6e4727))
+* support Newspack Sponsors for listings ([#65](https://github.com/Automattic/newspack-listings/issues/65)) ([7d2ef64](https://github.com/Automattic/newspack-listings/commit/7d2ef649611b85794f8c950c706af737fc4b955f))
+* update cpt icon and block icons ([7b59032](https://github.com/Automattic/newspack-listings/commit/7b59032250fda599de449dfdcbf15a7b00e1fe86)), closes [#49](https://github.com/Automattic/newspack-listings/issues/49)
+* update price block to use placeholder and large font size ([#71](https://github.com/Automattic/newspack-listings/issues/71)) ([710f34c](https://github.com/Automattic/newspack-listings/commit/710f34ce415447ba52359e8dd2fee04c0e795542))
+* use post categories and tags for all listing post types ([#39](https://github.com/Automattic/newspack-listings/issues/39)) ([f223053](https://github.com/Automattic/newspack-listings/commit/f2230534cc3d34f088d38ac3669a54c566858f8f)), closes [#32](https://github.com/Automattic/newspack-listings/issues/32)
+
+
+### BREAKING CHANGES
+
+* This feature will deprecate existing custom taxonomies, so any existing terms for those taxonomies will be lost.
+
+To fix, we can convert terms from the deprecated taxonomies to standard post categories/tags via a migration script.
+
 ## [1.2.1](https://github.com/Automattic/newspack-listings/compare/v1.2.0...v1.2.1) (2021-06-08)
 
 

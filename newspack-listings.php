@@ -7,7 +7,7 @@
  * Author URI:      https://newspack.pub
  * Text Domain:     newspack-listings
  * Domain Path:     /languages
- * Version:         1.2.1
+ * Version:         2.0.0-alpha.1
  *
  * @package         Newspack_Listings
  */
