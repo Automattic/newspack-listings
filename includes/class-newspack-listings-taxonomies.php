@@ -52,7 +52,6 @@ final class Newspack_Listings_Taxonomies {
 		add_action( 'admin_init', [ __CLASS__, 'handle_missing_terms' ] );
 		add_action( 'admin_init', [ __CLASS__, 'handle_orphaned_terms' ] );
 		add_filter( 'rest_prepare_taxonomy', [ __CLASS__, 'hide_taxonomy_sidebar' ], 10, 2 );
-		add_filter( 'the_content', [ __CLASS__, 'maybe_append_parent_listings' ] );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -177,6 +176,24 @@ final class Newspack_Listings_Taxonomies {
 				self::NEWSPACK_LISTINGS_TAXONOMIES
 			)
 		);
+	}
+
+	/**
+	 * Given a shadow taxonomy, get the name of the post type the taxonomy shadows.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return string}boolean The post type the taxonomy shadows, or false if none.
+	 */
+	public static function get_post_type_by_taxonomy( $taxonomy ) {
+		$post_type      = false;
+		$taxonomy_slugs = array_keys( self::NEWSPACK_LISTINGS_TAXONOMIES, $taxonomy );
+		$taxonomy_slug  = reset( $taxonomy_slugs );
+
+		if ( ! empty( $taxonomy_slug ) && ! empty( Core::NEWSPACK_LISTINGS_POST_TYPES[ $taxonomy_slug ] ) ) {
+			$post_type = Core::NEWSPACK_LISTINGS_POST_TYPES[ $taxonomy_slug ];
+		}
+
+		return $post_type;
 	}
 
 	/**
@@ -511,6 +528,29 @@ final class Newspack_Listings_Taxonomies {
 	}
 
 	/**
+	 * Get parent terms for the given post ID.
+	 * Parents are the listing shadow terms that have been assigned to a post, page, or other listing.
+	 *
+	 * @param object $params Array of WP_Query args, including at least the post ID of the parent post.
+	 * @return array Array of parent terms for the given post ID.
+	 */
+	public static function get_parent_terms( $params ) {
+		$post_id      = $params['post_id'];
+		$per_page     = ! empty( $params['per_page'] ) ? $params['per_page'] : 10;
+		$taxonomy     = ! empty( $params['taxonomy'] ) ? $params['taxonomy'] : array_values( self::NEWSPACK_LISTINGS_TAXONOMIES );
+		$parent_terms = wp_get_post_terms( $post_id, $taxonomy );
+		$parent_terms = array_filter(
+			$parent_terms,
+			function( $parent_term ) use ( $post_id ) {
+				// Don't show the post on itself.
+				return get_post_field( 'post_name', get_post( $post_id ) ) !== $parent_term->slug;
+			}
+		);
+
+		return $parent_terms;
+	}
+
+	/**
 	 * Get child listings, posts, and pages for the given post ID.
 	 * Children are the posts, pages, and other listings that have been assigned a listing shadow term.
 	 *
@@ -519,11 +559,18 @@ final class Newspack_Listings_Taxonomies {
 	 */
 	public static function get_child_posts( $params ) {
 		$post_id         = $params['post_id'];
-		$post_type       = ! empty( $params['post_type'] ) ? $params['post_type'] : 'post';
 		$per_page        = ! empty( $params['per_page'] ) ? $params['per_page'] : 10;
 		$post            = get_post( $post_id );
 		$shadow_taxonomy = self::get_taxonomy_by_post_type( $post->post_type );
 		$shadow_term     = self::get_shadow_term( $post, $shadow_taxonomy );
+		$post_type       = ! empty( $params['post_type'] ) ? $params['post_type'] : [
+			'post',
+			'page',
+			Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
+			Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+			Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+			Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
+		];
 
 		// If no shadow term.
 		if ( ! $shadow_term ) {
@@ -550,19 +597,87 @@ final class Newspack_Listings_Taxonomies {
 			return [];
 		}
 
-		return $child_posts->posts;
+		// Filter out the passed post ID.
+		return array_filter(
+			$child_posts->posts,
+			function( $post ) use ( $post_id ) {
+				return $post->ID != $post_id;
+			}
+		);
+	}
+
+	/**
+	 * Apply or remove a parent shadow term to the given child post.
+	 *
+	 * @param object $params Params passed from the REST API request.
+	 * @return bool|WP_Error True if parent was updated successfully, false if missing required params, or WP_Error.
+	 */
+	public static function set_parent_posts( $params ) {
+		$child   = ! empty( $params['post_id'] ) ? $params['post_id'] : null;
+		$added   = ! empty( $params['added'] ) ? $params['added'] : null;
+		$removed = ! empty( $params['removed'] ) ? $params['removed'] : null;
+
+		if ( empty( $child ) ) {
+			return false;
+		}
+
+		// Apply the added parent term to the given child post ID.
+		if ( ! empty( $added ) ) {
+			$taxonomies_to_add = [];
+
+			foreach ( $added as $term_to_add ) {
+				if ( ! isset( $taxonomies_to_add[ $term_to_add['taxonomy'] ] ) ) {
+					$taxonomies_to_add[ $term_to_add['taxonomy'] ] = [];
+				}
+
+				$taxonomies_to_add[ $term_to_add['taxonomy'] ][] = intval( $term_to_add['id'] );
+			}
+
+			foreach ( $taxonomies_to_add as $taxonomy_to_add => $terms_to_add ) {
+				$added_parents = wp_set_post_terms( $child, $terms_to_add, $taxonomy_to_add, true );
+
+				// Bail if error.
+				if ( is_wp_error( $added_parents ) ) {
+					return $added_parents;
+				}
+			}
+		}
+
+		// Remove the parent's shadow term from the child post ID.
+		if ( ! empty( $removed ) ) {
+			$taxonomies_to_remove = [];
+
+			foreach ( $removed as $term_to_remove ) {
+				if ( ! isset( $taxonomies_to_remove[ $term_to_remove['taxonomy'] ] ) ) {
+					$taxonomies_to_remove[ $term_to_remove['taxonomy'] ] = [];
+				}
+
+				$taxonomies_to_remove[ $term_to_remove['taxonomy'] ][] = intval( $term_to_remove['id'] );
+			};
+
+			foreach ( $taxonomies_to_remove as $taxonomy_to_remove => $terms_to_remove ) {
+				$removed_parents = wp_remove_object_terms( $child, $terms_to_remove, $taxonomy_to_remove );
+
+				// Bail if error.
+				if ( is_wp_error( $removed_parents ) ) {
+					return $removed_parents;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**
 	 * Apply or remove the given parent post's shadow term to or from the given child posts.
 	 *
 	 * @param object $params Params passed from the REST API request.
-	 * @return bool|WP_Error True if children were updated successfully, or WP_Error.
+	 * @return bool|WP_Error True if children were updated successfully, false if missing required params, or WP_Error.
 	 */
 	public static function set_child_posts( $params ) {
-		$parent   = ! empty( $params['parent'] ) ? $params['parent'] : null;
-		$children = ! empty( $params['children'] ) ? $params['children'] : [];
-		$removed  = ! empty( $params['removed'] ) ? $params['removed'] : [];
+		$parent  = ! empty( $params['post_id'] ) ? $params['post_id'] : null;
+		$added   = ! empty( $params['added'] ) ? $params['added'] : [];
+		$removed = ! empty( $params['removed'] ) ? $params['removed'] : [];
 
 		if ( empty( $parent ) ) {
 			return false;
@@ -576,9 +691,9 @@ final class Newspack_Listings_Taxonomies {
 		$taxonomy    = self::get_taxonomy_by_post_type( $parent_post->post_type );
 		$shadow_term = self::get_shadow_term( $parent_post, $taxonomy );
 
-		// Apply the parent's shadow term to the `children` post IDs.
-		foreach ( $children as $child ) {
-			$added_child = wp_set_post_terms( $child, $shadow_term->term_id, $taxonomy, true );
+		// Apply the parent's shadow term to the `added` post IDs.
+		foreach ( $added as $child_to_add ) {
+			$added_child = wp_set_post_terms( $child_to_add, $shadow_term->term_id, $taxonomy, true );
 
 			// Bail if error.
 			if ( is_wp_error( $added_child ) ) {
@@ -597,68 +712,6 @@ final class Newspack_Listings_Taxonomies {
 		}
 
 		return true;
-	}
-
-	/**
-	 * If the post has been assigned any parent listings, append a link to the listing at the end of the content.
-	 *
-	 * @param string $content Post content.
-	 * @return string The filtered post content.
-	 */
-	public static function maybe_append_parent_listings( $content ) {
-		$post_id      = get_the_ID();
-		$hide_parents = get_post_meta( $post_id, 'newspack_listings_hide_parents', true );
-
-		// Bail early if the post is set to not show parent listings.
-		if ( $hide_parents ) {
-			return $content;
-		}
-
-		$listing_terms = wp_get_post_terms( $post_id, array_values( self::NEWSPACK_LISTINGS_TAXONOMIES ) );
-		$listing_terms = array_filter(
-			$listing_terms,
-			function( $listing_term ) use ( $post_id ) {
-				// Don't show the post on itself.
-				return get_post_field( 'post_name', get_post( $post_id ) ) !== $listing_term->slug;
-			}
-		);
-
-		if ( 0 < count( $listing_terms ) ) {
-			$parent_listing_ids = self::get_parent_listings( array_column( $listing_terms, 'slug' ) );
-
-			if ( 0 < count( $parent_listing_ids ) ) {
-				$parent_section_title = Core::is_listing( get_post_type() ) ? __( 'Listed by', 'newspack-listings' ) : __( 'Related listings', 'newspack-listings' );
-				$content             .= '<hr class="wp-block-separator is-style-wide newspack-listings__separator" />';
-				$content             .= '<h3 class="accent-header newspack-listings__related-section-title">' . $parent_section_title . '</h3>';
-			}
-
-			foreach ( $parent_listing_ids as $parent_listing_id ) {
-				$listing_title   = get_the_title( $parent_listing_id );
-				$listing_excerpt = Utils\get_listing_excerpt( get_post( $parent_listing_id ) );
-				$listing_url     = get_permalink( $parent_listing_id );
-				$featured_image  = get_the_post_thumbnail( $parent_listing_id, 'thumbnail', [ 'class' => 'avatar' ] );
-
-				$content .= '<div class="author-bio sponsor-bio newspack-listings__related-listing">'; // <a href="'. $listing_url . '">';
-
-				if ( $featured_image ) {
-					$content .= '<a href="' . $listing_url . '">';
-					$content .= $featured_image;
-					$content .= '</a>';
-
-				}
-
-				$content .= '<div class="author-bio-text">';
-				$content .= '<div class="author-bio-header">';
-				$content .= '<h2 class="accent-header">' . $listing_title . '</h2>';
-				$content .= '</div>'; // author-bio-header.
-				$content .= $listing_excerpt;
-				$content .= '<p><a class="author-link" href="' . $listing_url . '">' . __( 'More info about ', 'newspack-listings' ) . $listing_title . '</a></p>';
-				$content .= '</div>'; // author-bio-text.
-				$content .= '</div>'; // author-bio.
-			}
-		}
-
-		return $content;
 	}
 
 	/**

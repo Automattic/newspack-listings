@@ -116,7 +116,20 @@ final class Newspack_Listings_Api {
 			]
 		);
 
-		// GET listings taxonomy terms by name search term.
+		// GET listings parent terms.
+		register_rest_route(
+			'newspack-listings/v1',
+			'parents',
+			[
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ __CLASS__, 'get_parents' ],
+					'permission_callback' => '__return_true',
+				],
+			]
+		);
+
+		// GET listings child posts.
 		register_rest_route(
 			self::$namespace,
 			'children',
@@ -129,7 +142,31 @@ final class Newspack_Listings_Api {
 			]
 		);
 
-		// Set listings taxonomy terms.
+		// Set listings parent posts.
+		register_rest_route(
+			'newspack-listings/v1',
+			'parents',
+			[
+				[
+					'methods'             => \WP_REST_Server::EDITABLE,
+					'callback'            => [ __CLASS__, 'set_parents' ],
+					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
+					'args'                => [
+						'post_id' => [
+							'sanitize_callback' => 'absint',
+						],
+						'added'   => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+						'removed' => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+					],
+				],
+			]
+		);
+
+		// Set listings child posts.
 		register_rest_route(
 			self::$namespace,
 			'children',
@@ -139,13 +176,13 @@ final class Newspack_Listings_Api {
 					'callback'            => [ __CLASS__, 'set_children' ],
 					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
 					'args'                => [
-						'parent'   => [
+						'post_id' => [
 							'sanitize_callback' => 'absint',
 						],
-						'children' => [
+						'added'   => [
 							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
 						],
-						'removed'  => [
+						'removed' => [
 							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
 						],
 					],
@@ -439,7 +476,7 @@ final class Newspack_Listings_Api {
 	}
 
 	/**
-	 * Look up Listing taxonomy terms by name.
+	 * Get all terms for a specific taxonomy.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response.
@@ -472,6 +509,37 @@ final class Newspack_Listings_Api {
 	}
 
 	/**
+	 * Look up parent terms by post ID.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function get_parents( $request ) {
+		$params  = $request->get_params();
+		$parents = Taxonomies::get_parent_terms( $params );
+
+		if ( is_array( $parents ) ) {
+			return rest_ensure_response(
+				array_values(
+					array_map(
+						function( $term ) {
+							return [
+								'value'     => $term->term_id,
+								'label'     => $term->name,
+								'post_type' => $term->taxonomy,
+							];
+						},
+						$parents
+					)
+				),
+				200
+			);
+		}
+
+		return rest_ensure_response( [] );
+	}
+
+	/**
 	 * Look up child posts by post ID.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -482,21 +550,37 @@ final class Newspack_Listings_Api {
 		$children = Taxonomies::get_child_posts( $params );
 
 		if ( is_array( $children ) ) {
-			return new \WP_REST_Response(
-				array_map(
-					function( $post ) {
-						return [
-							'id'   => $post->ID,
-							'name' => $post->post_title,
-						];
-					},
-					$children
+			return rest_ensure_response(
+				array_values(
+					array_map(
+						function( $post ) {
+							return [
+								'value'     => $post->ID,
+								'label'     => $post->post_title,
+								'post_type' => $post->post_type,
+							];
+						},
+						$children
+					)
 				),
 				200
 			);
 		}
 
-		return new \WP_REST_Response( [] );
+		return rest_ensure_response( [] );
+	}
+
+	/**
+	 * Apply shadow term for the parent post to the given post_id,
+	 * and/or remove the shadow term from the given children to remove.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function set_parents( $request ) {
+		$params   = $request->get_params();
+		$response = Taxonomies::set_parent_posts( $params );
+		return new \WP_REST_Response( $response );
 	}
 
 	/**
