@@ -105,7 +105,6 @@ const mapStateToProps = ( select, ownProps ) => {
 
 	return {
 		innerBlocks,
-		parent,
 	};
 };
 
