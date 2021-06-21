@@ -92,7 +92,7 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 					'newspack-listings/marketplace',
 					'newspack-listings/place',
 				] }
-				renderAppender={ () => <InnerBlocks.ButtonBlockAppender /> }
+				renderAppender={ () => ( queryMode ? null : <InnerBlocks.ButtonBlockAppender /> ) }
 			/>
 		</div>
 	);
