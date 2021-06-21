@@ -8,7 +8,6 @@ import { Icon, currencyDollar } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import './editor.scss';
 import { PriceEditor } from './edit';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;

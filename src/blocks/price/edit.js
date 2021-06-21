@@ -6,12 +6,14 @@ import { InspectorControls } from '@wordpress/block-editor';
 import {
 	PanelBody,
 	PanelRow,
+	Placeholder,
 	SelectControl,
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
+import { currencyDollar } from '@wordpress/icons';
 
 export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 	const { currencies = {}, currency: defaultCurrency = 'USD' } = window.newspack_listings_data;
@@ -74,18 +76,18 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 				</PanelBody>
 			</InspectorControls>
 
-			<h2 className="newspack-listings__price">
-				{ isSelected ? (
+			{ isSelected ? (
+				<Placeholder
+					icon={ currencyDollar }
+					label={ __( 'Price', 'newspack-listings' ) }
+					isColumnLayout
+				>
 					<TextControl
 						label={ sprintf(
-							__( 'Enter price in %s', 'newspack-listings' ),
-							currency || defaultCurrency
-						) }
-						type="number"
-						placeholder={ sprintf(
 							__( 'Price in %s', 'newspack-listings' ),
 							currency || defaultCurrency
 						) }
+						type="number"
 						value={ price }
 						onChange={ value => {
 							setAttributes( {
@@ -93,10 +95,12 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 							} );
 						} }
 					/>
-				) : (
-					<>{ formattedPrice }</>
-				) }
-			</h2>
+				</Placeholder>
+			) : (
+				<p className="newspack-listings__price has-large-font-size">
+					<strong>{ formattedPrice }</strong>
+				</p>
+			) }
 		</>
 	);
 };
