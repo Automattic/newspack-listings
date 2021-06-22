@@ -936,7 +936,9 @@ final class Newspack_Listings_Core {
 			}
 
 			// Finally, delete the legacy term.
-			wp_delete_term( $term->term_id, $term->taxonomy );
+			if ( defined( 'NEWSPACK_LISTINGS_ENV' ) && 'production' === NEWSPACK_LISTINGS_ENV ) {
+				wp_delete_term( $term->term_id, $term->taxonomy );
+			}
 		}
 
 		// Unregister the legacy taxonomies.
