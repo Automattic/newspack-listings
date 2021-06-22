@@ -1,3 +1,11 @@
+## [1.2.2](https://github.com/Automattic/newspack-listings/compare/v1.2.1...v1.2.2) (2021-06-22)
+
+
+### Bug Fixes
+
+* missing condition for block appender in list container ([#74](https://github.com/Automattic/newspack-listings/issues/74)) ([2c49896](https://github.com/Automattic/newspack-listings/commit/2c498961b80324d8cbea61c7fbc356ca7ccb8de5))
+* use synced attributes for ListContainer directly ([#73](https://github.com/Automattic/newspack-listings/issues/73)) ([f8641a7](https://github.com/Automattic/newspack-listings/commit/f8641a726ce7c2949c01b232829f8923f06b61ad))
+
 ## [1.2.1](https://github.com/Automattic/newspack-listings/compare/v1.2.0...v1.2.1) (2021-06-08)
 
 
