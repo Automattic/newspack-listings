@@ -69,7 +69,6 @@ final class Newspack_Listings_Core {
 		add_action( 'admin_menu', [ __CLASS__, 'add_plugin_page' ] );
 		add_action( 'init', [ __CLASS__, 'register_post_types' ] );
 		add_action( 'admin_init', [ __CLASS__, 'convert_legacy_taxonomies' ] );
-		add_action( 'wp_insert_post', [ __CLASS__, 'set_default_template' ], 10, 3 );
 		add_filter( 'body_class', [ __CLASS__, 'set_template_class' ] );
 		add_action( 'save_post', [ __CLASS__, 'sync_post_meta' ], 10, 2 );
 		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
@@ -270,6 +269,26 @@ final class Newspack_Listings_Core {
 		}
 
 		$all_meta_fields = [
+			'_wp_page_template'                   => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Template', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => get_theme_mod( 'newspack_listing_default_template', 'single-wide.php' ),
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
 			'newspack_listings_contact_email'     => [
 				'post_types' => [
 					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
@@ -768,23 +787,6 @@ final class Newspack_Listings_Core {
 		}
 
 		return $hide_publish_dates;
-	}
-
-	/**
-	 * If using a Newspack theme, respect the "default template" option setting in the Customizer.
-	 *
-	 * @param string  $post_id Post ID.
-	 * @param object  $post Post object of the post being created or updated.
-	 * @param boolean $update Whether this is an existing post being updated.
-	 */
-	public static function set_default_template( $post_id, $post, $update ) {
-		if ( ! $update && self::is_listing() ) {
-			$post_template_default = get_theme_mod( 'post_template_default', 'default' );
-
-			if ( 'default' !== $post_template_default ) {
-				update_post_meta( $post_id, '_wp_page_template', $post_template_default );
-			}
-		}
 	}
 
 	/**
