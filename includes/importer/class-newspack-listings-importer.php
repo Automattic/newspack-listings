@@ -149,13 +149,13 @@ final class Newspack_Listings_Importer {
 		}
 
 		if ( self::$is_dry_run ) {
-			WP_CLI::line( "\n===================\n=     Dry Run     =\n===================\n" );
+			WP_CLI::log( "\n===================\n=     Dry Run     =\n===================\n" );
 		}
 
 		if ( 0 < $start_row ) {
-			WP_CLI::line( 'Starting CSV import at row ' . $start_row . '...' );
+			WP_CLI::log( 'Starting CSV import at row ' . $start_row . '...' );
 		} else {
-			WP_CLI::line( 'Starting CSV import...' );
+			WP_CLI::log( 'Starting CSV import...' );
 		}
 		self::import_data( $file_path, $start_row, $max_rows );
 		WP_CLI::success( 'Completed! Processed ' . ( self::$row_number - $start_row ) . ' records.' );
@@ -301,7 +301,7 @@ final class Newspack_Listings_Importer {
 			],
 		];
 
-		WP_CLI::line( 'Importing data for ' . $post['post_title'] . '...' );
+		WP_CLI::log( 'Importing data for ' . $post['post_title'] . '...' );
 
 		// If a post already exists, update it.
 		if ( $existing_post ) {

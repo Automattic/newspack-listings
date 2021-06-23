@@ -60,7 +60,7 @@ final class Newspack_Listings_Migration {
 		}
 
 		WP_CLI::add_command(
-			'newspack-listings taxonomies',
+			'newspack-listings taxonomies convert',
 			[ __CLASS__, 'run_cli_command' ],
 			[
 				'shortdesc' => 'Migrate legacy listing taxonomies to core post taxonomies.',
@@ -91,7 +91,7 @@ final class Newspack_Listings_Migration {
 			WP_CLI::log( "\n===================\n=     Dry Run     =\n===================\n" );
 		}
 
-		WP_CLI::log( 'Checking for legacy taxonomy terms...' );
+		WP_CLI::log( "Checking for legacy taxonomy terms...\n" );
 
 		$converted_taxonomies = self::convert_legacy_taxonomies();
 
@@ -100,9 +100,11 @@ final class Newspack_Listings_Migration {
 		} else {
 			WP_CLI::success(
 				sprintf(
-					'Completed! Converted %1$s categories and %2$s tags.',
+					'Completed! Converted %1$s %2$s and %3$s %4$s.',
 					count( $converted_taxonomies['category'] ),
-					count( $converted_taxonomies['post_tag'] )
+					1 > count( $converted_taxonomies['category'] ) ? 'categories' : 'category',
+					count( $converted_taxonomies['post_tag'] ),
+					1 > count( $converted_taxonomies['post_tag'] ) ? 'tags' : 'tag'
 				)
 			);
 		}
