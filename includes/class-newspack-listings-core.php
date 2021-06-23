@@ -848,102 +848,104 @@ final class Newspack_Listings_Core {
 	 * Helpful for sites that have been using v1 of the Listings plugin.
 	 */
 	public static function convert_legacy_taxonomies() {
-		$custom_category_slug = 'newspack_lst_cat';
-		$custom_tag_slug      = 'newspack_lst_tag';
+		if ( defined( 'NEWSPACK_LISTINGS_MIGRATE_TAXONOMIES' ) && true === NEWSPACK_LISTINGS_MIGRATE_TAXONOMIES ) {
+			$custom_category_slug = 'newspack_lst_cat';
+			$custom_tag_slug      = 'newspack_lst_tag';
 
-		$category_args = [
-			'hierarchical'  => true,
-			'public'        => false,
-			'rewrite'       => false,
-			'show_in_menu'  => false,
-			'show_in_rest'  => false,
-			'show_tagcloud' => false,
-			'show_ui'       => false,
-		];
-		$tag_args      = [
-			'hierarchical'  => false,
-			'public'        => false,
-			'rewrite'       => false,
-			'show_in_menu'  => false,
-			'show_in_rest'  => false,
-			'show_tagcloud' => false,
-			'show_ui'       => false,
-		];
+			$category_args = [
+				'hierarchical'  => true,
+				'public'        => false,
+				'rewrite'       => false,
+				'show_in_menu'  => false,
+				'show_in_rest'  => false,
+				'show_tagcloud' => false,
+				'show_ui'       => false,
+			];
+			$tag_args      = [
+				'hierarchical'  => false,
+				'public'        => false,
+				'rewrite'       => false,
+				'show_in_menu'  => false,
+				'show_in_rest'  => false,
+				'show_tagcloud' => false,
+				'show_ui'       => false,
+			];
 
-		// Temporarily register the taxonomies for all Listing CPTs.
-		$post_types = array_values( self::NEWSPACK_LISTINGS_POST_TYPES );
-		register_taxonomy( $custom_category_slug, $post_types, $category_args );
-		register_taxonomy( $custom_tag_slug, $post_types, $tag_args );
+			// Temporarily register the taxonomies for all Listing CPTs.
+			$post_types = array_values( self::NEWSPACK_LISTINGS_POST_TYPES );
+			register_taxonomy( $custom_category_slug, $post_types, $category_args );
+			register_taxonomy( $custom_tag_slug, $post_types, $tag_args );
 
-		// Get a list of the custom terms.
-		$custom_terms = get_terms(
-			[
-				'taxonomy'   => [ $custom_category_slug, $custom_tag_slug ],
-				'hide_empty' => false,
-			]
-		);
-
-		// If we don't have any terms from the legacy taxonomies, no need to proceed.
-		if ( is_wp_error( $custom_terms ) || 0 === count( $custom_terms ) ) {
-			unregister_taxonomy( $custom_category_slug );
-			unregister_taxonomy( $custom_tag_slug );
-			return;
-		}
-
-		foreach ( $custom_terms as $term ) {
-			// See if we have any corresponding terms already.
-			$corresponding_taxonomy = $custom_category_slug === $term->taxonomy ? 'category' : 'post_tag';
-			$corresponding_term     = get_term_by( 'name', $term->name, $corresponding_taxonomy, ARRAY_A );
-
-			// If not, create the term.
-			if ( ! $corresponding_term ) {
-				$corresponding_term = wp_insert_term(
-					$term->name,
-					$corresponding_taxonomy,
-					[
-						'description' => $term->description,
-						'slug'        => $term->slug,
-					]
-				);
-			}
-
-			// Get any posts with the legacy term.
-			$posts_with_custom_term = new \WP_Query(
+			// Get a list of the custom terms.
+			$custom_terms = get_terms(
 				[
-					'post_type' => $post_types,
-					'per_page'  => 1000,
-					'tax_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-						[
-							'taxonomy' => $term->taxonomy,
-							'field'    => 'term_id',
-							'terms'    => $term->term_id,
-						],
-					],
+					'taxonomy'   => [ $custom_category_slug, $custom_tag_slug ],
+					'hide_empty' => false,
 				]
 			);
 
-			// Apply the new term to the post.
-			if ( $posts_with_custom_term->have_posts() ) {
-				while ( $posts_with_custom_term->have_posts() ) {
-					$posts_with_custom_term->the_post();
-					wp_set_post_terms(
-						get_the_ID(), // Post ID to apply the new term.
-						[ $corresponding_term['term_id'] ], // Term ID of the new term.
-						$corresponding_taxonomy, // Category or tag.
-						true // Append the term without deleting existing terms.
+			// If we don't have any terms from the legacy taxonomies, no need to proceed.
+			if ( is_wp_error( $custom_terms ) || 0 === count( $custom_terms ) ) {
+				unregister_taxonomy( $custom_category_slug );
+				unregister_taxonomy( $custom_tag_slug );
+				return;
+			}
+
+			foreach ( $custom_terms as $term ) {
+				// See if we have any corresponding terms already.
+				$corresponding_taxonomy = $custom_category_slug === $term->taxonomy ? 'category' : 'post_tag';
+				$corresponding_term     = get_term_by( 'name', $term->name, $corresponding_taxonomy, ARRAY_A );
+
+				// If not, create the term.
+				if ( ! $corresponding_term ) {
+					$corresponding_term = wp_insert_term(
+						$term->name,
+						$corresponding_taxonomy,
+						[
+							'description' => $term->description,
+							'slug'        => $term->slug,
+						]
 					);
+				}
+
+				// Get any posts with the legacy term.
+				$posts_with_custom_term = new \WP_Query(
+					[
+						'post_type' => $post_types,
+						'per_page'  => 1000,
+						'tax_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+							[
+								'taxonomy' => $term->taxonomy,
+								'field'    => 'term_id',
+								'terms'    => $term->term_id,
+							],
+						],
+					]
+				);
+
+				// Apply the new term to the post.
+				if ( $posts_with_custom_term->have_posts() ) {
+					while ( $posts_with_custom_term->have_posts() ) {
+						$posts_with_custom_term->the_post();
+						wp_set_post_terms(
+							get_the_ID(), // Post ID to apply the new term.
+							[ $corresponding_term['term_id'] ], // Term ID of the new term.
+							$corresponding_taxonomy, // Category or tag.
+							true // Append the term without deleting existing terms.
+						);
+					}
+				}
+
+				// Finally, delete the legacy term.
+				if ( defined( 'NEWSPACK_LISTINGS_ENV' ) && 'production' === NEWSPACK_LISTINGS_ENV ) {
+					wp_delete_term( $term->term_id, $term->taxonomy );
 				}
 			}
 
-			// Finally, delete the legacy term.
-			if ( defined( 'NEWSPACK_LISTINGS_ENV' ) && 'production' === NEWSPACK_LISTINGS_ENV ) {
-				wp_delete_term( $term->term_id, $term->taxonomy );
-			}
+			// Unregister the legacy taxonomies.
+			unregister_taxonomy( $custom_category_slug );
+			unregister_taxonomy( $custom_tag_slug );
 		}
-
-		// Unregister the legacy taxonomies.
-		unregister_taxonomy( $custom_category_slug );
-		unregister_taxonomy( $custom_tag_slug );
 	}
 }
 
