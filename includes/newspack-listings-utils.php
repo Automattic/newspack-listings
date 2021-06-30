@@ -29,7 +29,6 @@ function sanitize_array( $array ) {
 	return $array;
 }
 
-
 /**
  * Loads a template with given data in scope.
  *
