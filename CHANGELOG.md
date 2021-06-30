@@ -1,3 +1,11 @@
+# [2.0.0-alpha.2](https://github.com/Automattic/newspack-listings/compare/v2.0.0-alpha.1...v2.0.0-alpha.2) (2021-06-30)
+
+
+### Bug Fixes
+
+* default listings to one-column-wide.php post template ([#77](https://github.com/Automattic/newspack-listings/issues/77)) ([e987e76](https://github.com/Automattic/newspack-listings/commit/e987e76db51b58516a585f6531427e5c27488d3b))
+* memory leaks from legacy term utilities ([#81](https://github.com/Automattic/newspack-listings/issues/81)) ([4576805](https://github.com/Automattic/newspack-listings/commit/4576805a5deac6b76ad477bbce76a120a4867385))
+
 # [2.0.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v1.2.1...v2.0.0-alpha.1) (2021-06-21)
 
 
