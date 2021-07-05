@@ -202,6 +202,7 @@ export const getCuratedListClasses = ( className, attributes ) => {
 	const {
 		backgroundColor,
 		hasDarkBackground,
+		queryMode,
 		showNumbers,
 		showMap,
 		showSortUi,
@@ -226,6 +227,9 @@ export const getCuratedListClasses = ( className, attributes ) => {
 			classes.push( 'has-dark-background' );
 		}
 		classes.push( 'has-background-color' );
+	}
+	if ( queryMode ) {
+		classes.push( 'query-mode' );
 	}
 
 	classes.push( `type-scale-${ typeScale }` );
