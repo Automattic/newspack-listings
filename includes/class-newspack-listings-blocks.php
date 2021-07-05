@@ -60,9 +60,10 @@ final class Newspack_Listings_Blocks {
 			true
 		);
 
-		$total_count = 0;
-		$post_type   = get_post_type();
-		$post_types  = [];
+		$total_count     = 0;
+		$post_type       = get_post_type();
+		$post_types      = [];
+		$post_type_label = ! empty( $post_type ) ? get_post_type_object( $post_type )->labels->singular_name : 'Post';
 
 		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
 			$post_count           = wp_count_posts( $name )->publish;
@@ -77,7 +78,7 @@ final class Newspack_Listings_Blocks {
 			'newspack-listings-editor',
 			'newspack_listings_data',
 			[
-				'post_type_label' => get_post_type_object( $post_type )->labels->singular_name,
+				'post_type_label' => $post_type_label,
 				'post_type'       => $post_type,
 				'post_types'      => $post_types,
 				'taxonomies'      => [

@@ -32,6 +32,10 @@
 				border-top-color: var( --newspack-listings--border-light );
 			}
 		}
+
+		.query-mode .newspack-listings__list-container {
+			display: none;
+		}
 	}
 
 	&__placeholder {
