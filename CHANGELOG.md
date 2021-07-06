@@ -1,3 +1,20 @@
+# [2.0.0-alpha.3](https://github.com/Automattic/newspack-listings/compare/v2.0.0-alpha.2...v2.0.0-alpha.3) (2021-07-06)
+
+
+* v2 release (#85) ([748810d](https://github.com/Automattic/newspack-listings/commit/748810d7c1d817e2a1c218b41b3ad10d74939260)), closes [#85](https://github.com/Automattic/newspack-listings/issues/85) [#40](https://github.com/Automattic/newspack-listings/issues/40) [#39](https://github.com/Automattic/newspack-listings/issues/39) [#32](https://github.com/Automattic/newspack-listings/issues/32) [#41](https://github.com/Automattic/newspack-listings/issues/41) [#49](https://github.com/Automattic/newspack-listings/issues/49) [#43](https://github.com/Automattic/newspack-listings/issues/43) [#56](https://github.com/Automattic/newspack-listings/issues/56) [#51](https://github.com/Automattic/newspack-listings/issues/51) [#57](https://github.com/Automattic/newspack-listings/issues/57) [#61](https://github.com/Automattic/newspack-listings/issues/61) [#67](https://github.com/Automattic/newspack-listings/issues/67) [#60](https://github.com/Automattic/newspack-listings/issues/60) [#70](https://github.com/Automattic/newspack-listings/issues/70) [#65](https://github.com/Automattic/newspack-listings/issues/65) [#71](https://github.com/Automattic/newspack-listings/issues/71) [#66](https://github.com/Automattic/newspack-listings/issues/66) [#58](https://github.com/Automattic/newspack-listings/issues/58) [#77](https://github.com/Automattic/newspack-listings/issues/77) [#81](https://github.com/Automattic/newspack-listings/issues/81)
+
+
+### Bug Fixes
+
+* errors and bugs related to WP 5.8 ([#83](https://github.com/Automattic/newspack-listings/issues/83)) ([90da6c5](https://github.com/Automattic/newspack-listings/commit/90da6c5449e7649bec90206537994c93d0e576a9))
+
+
+### BREAKING CHANGES
+
+* This feature will deprecate existing custom taxonomies, so any existing terms for those taxonomies will be lost.
+
+To fix, we can convert terms from the deprecated taxonomies to standard post categories/tags via a migration script.
+
 # [2.0.0-alpha.2](https://github.com/Automattic/newspack-listings/compare/v2.0.0-alpha.1...v2.0.0-alpha.2) (2021-06-30)
 
 
