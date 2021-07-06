@@ -1,3 +1,10 @@
+## [2.0.1-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.0.0...v2.0.1-alpha.1) (2021-07-06)
+
+
+### Bug Fixes
+
+* editor errors with reusable blocks ([#89](https://github.com/Automattic/newspack-listings/issues/89)) ([fdc46d3](https://github.com/Automattic/newspack-listings/commit/fdc46d3a628313d94f0bc52a18ccaed9af296eb9))
+
 # [2.0.0](https://github.com/Automattic/newspack-listings/compare/v1.2.2...v2.0.0) (2021-07-06)
 
 
