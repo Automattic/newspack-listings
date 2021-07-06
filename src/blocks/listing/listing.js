@@ -54,7 +54,7 @@ export const Listing = ( { attributes, error, post } ) => {
 							{ category.map( ( _category, index ) => (
 								<Fragment key="index">
 									{ decodeEntities( _category.name ) }
-									{ index + 1 < _category.length && ', ' }
+									{ index + 1 < category.length && ', ' }
 								</Fragment>
 							) ) }
 						</div>
