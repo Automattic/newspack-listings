@@ -32,6 +32,10 @@
 				border-top-color: var( --newspack-listings--border-light );
 			}
 		}
+
+		.query-mode .newspack-listings__list-container {
+			display: none;
+		}
 	}
 
 	&__placeholder {
@@ -45,12 +49,6 @@
 			flex-direction: column;
 			justify-content: flex-start;
 			margin-right: 0;
-		}
-	}
-
-	&__modal {
-		button + button {
-			margin-left: 0.5rem;
 		}
 	}
 }

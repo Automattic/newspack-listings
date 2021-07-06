@@ -8,7 +8,7 @@
 namespace Newspack_Listings\Utils;
 
 /**
- * Sanitize an array of text values.
+ * Sanitize an array of text or number values.
  *
  * @param array $array Array of text or float values to be sanitized.
  * @return array Sanitized array.
@@ -28,7 +28,6 @@ function sanitize_array( $array ) {
 
 	return $array;
 }
-
 
 /**
  * Loads a template with given data in scope.
@@ -51,6 +50,29 @@ function template_include( $template, $data = [], $path = NEWSPACK_LISTINGS_PLUG
 	$contents = ob_get_contents();
 	ob_end_clean();
 	return $contents;
+}
+
+/**
+ * Extension of \get_post_type that allows us to get the post type even on very early hooks,
+ * or when adding a new post (before it has a post ID).
+ *
+ * @return string|boolean Post type, or false if all checks fail.
+ */
+function get_post_type() {
+	$post_type = \get_post_type();
+
+	// If checking post type on an early hook or new post, \get_post_type() will fail because the global $post ID isn't available.
+	if ( false === $post_type ) {
+		$post_type = isset( $_REQUEST['post_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['post_type'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$post_id   = isset( $_REQUEST['post'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['post'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	}
+
+	// If editing an existing post on an early hook, we can still use \get_post_type if we pass an explicit post ID.
+	if ( null === $post_type && null !== $post_id ) {
+		$post_type = \get_post_type( $post_id );
+	}
+
+	return $post_type;
 }
 
 /**
@@ -322,4 +344,26 @@ function generate_amp_partial( $html ) {
 		$node->parentNode->removeChild( $node ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}
 	return \AMP_DOM_Utils::get_content_from_dom( $dom );
+}
+
+/**
+ * Get sponsors for the given listing.
+ *
+ * @param int    $post_id ID of the listing.
+ * @param string $scope 'Native' or 'underwritten'.
+ * @param string $type 'Post' or 'archive'.
+ *
+ * @return array|boolean Array of sponsors, or false if none.
+ */
+function get_sponsors( $post_id = null, $scope = null, $type = 'post' ) {
+	// Bail if we don't have the Sponsors plugin.
+	if ( ! function_exists( '\Newspack_Sponsors\get_all_sponsors' ) ) {
+		return false;
+	}
+
+	if ( null === $post_id ) {
+		$post_id = get_the_ID();
+	}
+
+	return \Newspack_Sponsors\get_all_sponsors( $post_id, $scope, $type );
 }

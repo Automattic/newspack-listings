@@ -27,13 +27,14 @@ import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { Fragment, useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
+import { Icon, loop, postList } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { Listing } from '../listing/listing';
 import { SidebarQueryControls } from '../../components';
-import { List, Query, Specific } from '../../svg';
+import { List } from '../../svg';
 import { getContrastRatio, getCuratedListClasses, useDidMount } from '../../editor/utils';
 
 /**
@@ -116,7 +117,7 @@ const CuratedListEditorComponent = ( {
 			const posts = await apiFetch( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					query: { ...query, maxItems: MAX_EDITOR_ITEMS }, // Get up to MAX_EDITOR_ITEMS listings in the editor so we can show all locations.
-					_fields: 'id,title,author,category,tags,excerpt,media,meta,type',
+					_fields: 'id,title,author,category,tags,excerpt,media,meta,type,sponsors',
 				} ),
 			} );
 			setAttributes( { listingIds: posts.map( post => post.id ) } );
@@ -417,12 +418,12 @@ const CuratedListEditorComponent = ( {
 						{
 							name: 'query',
 							title: __( 'Query', 'newspack-listings' ),
-							icon: <Query />,
+							icon: <Icon icon={ loop } />,
 						},
 						{
 							name: 'specific',
 							title: __( 'Specific Listings', 'newspack-listings' ),
-							icon: <Specific />,
+							icon: <Icon icon={ postList } />,
 						},
 					] }
 				/>
@@ -431,7 +432,7 @@ const CuratedListEditorComponent = ( {
 	}
 
 	return (
-		<div className="newspack-listings__curated-list-editor">
+		<>
 			<InspectorControls>
 				{ queryMode && (
 					<PanelBody title={ __( 'Query Settings', 'newspack-listings' ) }>
@@ -571,8 +572,6 @@ const CuratedListEditorComponent = ( {
 						onChange={ _typeScale => setAttributes( { typeScale: _typeScale } ) }
 						min={ 1 }
 						max={ 10 }
-						beforeIcon="editor-textcolor"
-						afterIcon="editor-textcolor"
 						required
 					/>
 				</PanelBody>
@@ -616,42 +615,44 @@ const CuratedListEditorComponent = ( {
 					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-			<div
-				className={ classes.join( ' ' ) }
-				style={ {
-					backgroundColor: backgroundColor || '#fff',
-					color: textColor || '#000',
-				} }
-			>
-				{ queryMode && error && (
-					<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
-						{ error }
-					</Notice>
-				) }
-				<InnerBlocks
-					allowedBlocks={ [ 'jetpack/map', 'newspack-listings/list-container' ] }
-					template={ [ [ 'newspack-listings/list-container' ] ] } // Start with an empty list only.
-					templateInsertUpdatesSelection={ false }
-					renderAppender={ () => null } // We want to discourage editors from adding blocks in this top-level wrapper, but we can't lock the template because we still need to be able to programmatically add or remove map blocks.
-				/>
-				{ // If in query mode and while fetching posts.
-				isFetching && queryMode && (
-					<Placeholder>
-						<Spinner />
-					</Placeholder>
-				) }
-				{ // If in query mode, show the queried listings.
-				! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
-				{ ! isFetching &&
-					queryMode &&
-					showLoadMore &&
-					queryOptions.maxItems < queriedListings.length && (
-						<Button className="newspack-listings__load-more" isPrimary>
-							{ loadMoreText }
-						</Button>
+			<div className="newspack-listings__curated-list-editor">
+				<div
+					className={ classes.join( ' ' ) }
+					style={ {
+						backgroundColor: backgroundColor || '#fff',
+						color: textColor || '#000',
+					} }
+				>
+					{ queryMode && error && (
+						<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
+							{ error }
+						</Notice>
 					) }
+					<InnerBlocks
+						allowedBlocks={ [ 'jetpack/map', 'newspack-listings/list-container' ] }
+						template={ [ [ 'newspack-listings/list-container' ] ] } // Start with an empty list only.
+						templateInsertUpdatesSelection={ false }
+						renderAppender={ () => null } // We want to discourage editors from adding blocks in this top-level wrapper, but we can't lock the template because we still need to be able to programmatically add or remove map blocks.
+					/>
+					{ // If in query mode and while fetching posts.
+					isFetching && queryMode && (
+						<Placeholder>
+							<Spinner />
+						</Placeholder>
+					) }
+					{ // If in query mode, show the queried listings.
+					! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
+					{ ! isFetching &&
+						queryMode &&
+						showLoadMore &&
+						queryOptions.maxItems < queriedListings.length && (
+							<Button className="newspack-listings__load-more" isPrimary>
+								{ loadMoreText }
+							</Button>
+						) }
+				</div>
 			</div>
-		</div>
+		</>
 	);
 };
 

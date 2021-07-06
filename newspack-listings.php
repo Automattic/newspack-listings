@@ -19,7 +19,7 @@ if ( ! defined( 'NEWSPACK_LISTINGS_PLUGIN_FILE' ) ) {
 	define( 'NEWSPACK_LISTINGS_FILE', __FILE__ );
 	define( 'NEWSPACK_LISTINGS_PLUGIN_FILE', plugin_dir_path( NEWSPACK_LISTINGS_FILE ) );
 	define( 'NEWSPACK_LISTINGS_URL', plugin_dir_url( NEWSPACK_LISTINGS_FILE ) );
-	define( 'NEWSPACK_LISTINGS_VERSION', '0.0.1' );
+	define( 'NEWSPACK_LISTINGS_VERSION', '1.2.0' );
 }
 
 // Include plugin resources.
@@ -29,4 +29,12 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-core.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-blocks.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-block-patterns.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-taxonomies.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-api.php';
+
+// CLI importer files.
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/newspack-listings-importer-utils.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-newspack-listings-importer.php';
+
+// Migration utilities.
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/migration/class-newspack-listings-migration.php';

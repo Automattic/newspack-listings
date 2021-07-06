@@ -11,6 +11,7 @@ namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
+use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,6 +21,12 @@ defined( 'ABSPATH' ) || exit;
  * Sets up API endpoints and handlers for listings.
  */
 final class Newspack_Listings_Api {
+	/**
+	 * REST route namespace.
+	 *
+	 * @var Newspack_Listings_Api
+	 */
+	protected static $namespace = 'newspack-listings/v1';
 
 	/**
 	 * The single instance of the class.
@@ -55,12 +62,42 @@ final class Newspack_Listings_Api {
 
 		// GET listings posts by ID, query args, or title search term.
 		register_rest_route(
-			'newspack-listings/v1',
+			self::$namespace,
 			'listings',
 			[
 				[
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => [ __CLASS__, 'get_items' ],
+					'args'                => [
+						'query'      => [
+							'sanitize_callback' => '\Newspack_Listings\Utils\sanitize_array',
+						],
+						'id'         => [
+							'sanitize_callback' => 'absint',
+						],
+						'type'       => [
+							'sanitize_callback' => '\Newspack_Listings\Utils\sanitize_array',
+						],
+						'attributes' => [
+							'sanitize_callback' => '\Newspack_Listings\Utils\sanitize_array',
+						],
+						'offset'     => [
+							'sanitize_callback' => 'absint',
+						],
+						'page'       => [
+							'sanitize_callback' => 'absint',
+						],
+						'per_page'   => [
+							'sanitize_callback' => 'absint',
+						],
+						'search'     => [
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+						'_fields'    => [
+							'sanitize_callback' => 'sanitize_text_field',
+						],
+
+					],
 					'permission_callback' => '__return_true',
 				],
 			]
@@ -68,7 +105,7 @@ final class Newspack_Listings_Api {
 
 		// GET listings taxonomy terms by name search term.
 		register_rest_route(
-			'newspack-listings/v1',
+			self::$namespace,
 			'terms',
 			[
 				[
@@ -78,6 +115,108 @@ final class Newspack_Listings_Api {
 				],
 			]
 		);
+
+		// GET listings parent terms.
+		register_rest_route(
+			'newspack-listings/v1',
+			'parents',
+			[
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ __CLASS__, 'get_parents' ],
+					'permission_callback' => '__return_true',
+				],
+			]
+		);
+
+		// GET listings child posts.
+		register_rest_route(
+			self::$namespace,
+			'children',
+			[
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ __CLASS__, 'get_children' ],
+					'permission_callback' => '__return_true',
+				],
+			]
+		);
+
+		// Set listings parent posts.
+		register_rest_route(
+			'newspack-listings/v1',
+			'parents',
+			[
+				[
+					'methods'             => \WP_REST_Server::EDITABLE,
+					'callback'            => [ __CLASS__, 'set_parents' ],
+					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
+					'args'                => [
+						'post_id' => [
+							'sanitize_callback' => 'absint',
+						],
+						'added'   => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+						'removed' => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+					],
+				],
+			]
+		);
+
+		// Set listings child posts.
+		register_rest_route(
+			self::$namespace,
+			'children',
+			[
+				[
+					'methods'             => \WP_REST_Server::EDITABLE,
+					'callback'            => [ __CLASS__, 'set_children' ],
+					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
+					'args'                => [
+						'post_id' => [
+							'sanitize_callback' => 'absint',
+						],
+						'added'   => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+						'removed' => [
+							'sanitize_callback' => [ __CLASS__, 'sanitize_array' ],
+						],
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Permission callback for authenticated requests.
+	 *
+	 * @return boolean if user can edit stuff.
+	 */
+	public static function api_permissions_check() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error(
+				'newspack_rest_forbidden',
+				esc_html__( 'You cannot use this resource.', 'newspack-listings' ),
+				[
+					'status' => 403,
+				]
+			);
+		}
+		return true;
+	}
+
+	/**
+	 * Sanitize an array of text or number values.
+	 *
+	 * @param array $array Array of text or float values to be sanitized.
+	 * @return array Sanitized array.
+	 */
+	public static function sanitize_array( $array ) {
+		return Utils\sanitize_array( $array );
 	}
 
 	/**
@@ -146,21 +285,21 @@ final class Newspack_Listings_Api {
 		}
 		if ( ! empty( $query['categories'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+				'taxonomy' => 'category',
 				'field'    => 'term_id',
 				'terms'    => $query['categories'],
 			];
 		}
 		if ( ! empty( $query['tags'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+				'taxonomy' => 'post_tag',
 				'field'    => 'term_id',
 				'terms'    => $query['tags'],
 			];
 		}
 		if ( ! empty( $query['categoryExclusions'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_CAT,
+				'taxonomy' => 'category',
 				'field'    => 'term_id',
 				'terms'    => $query['categoryExclusions'],
 				'operator' => 'NOT IN',
@@ -168,7 +307,7 @@ final class Newspack_Listings_Api {
 		}
 		if ( ! empty( $query['tagExclusions'] ) ) {
 			$args['tax_query'][] = [
-				'taxonomy' => Core::NEWSPACK_LISTINGS_TAG,
+				'taxonomy' => 'post_tag',
 				'field'    => 'term_id',
 				'terms'    => $query['tagExclusions'],
 				'operator' => 'NOT IN',
@@ -188,6 +327,7 @@ final class Newspack_Listings_Api {
 	 * @return WP_REST_Response.
 	 */
 	public static function get_items( $request ) {
+		$response   = [];
 		$params     = $request->get_params();
 		$fields     = explode( ',', $params['_fields'] );
 		$search     = ! empty( $params['search'] ) ? $params['search'] : null;
@@ -231,80 +371,87 @@ final class Newspack_Listings_Api {
 		$listings_query = new \WP_Query( $args );
 
 		if ( $listings_query->have_posts() ) {
-			$response = new \WP_REST_Response(
-				array_map(
-					function( $post ) use ( $attributes, $fields, $is_amp, $next_page, $query ) {
-						$item = [
-							'id'    => $post->ID,
-							'title' => $post->post_title,
+			$listings = array_map(
+				function( $post ) use ( $attributes, $fields, $is_amp, $next_page, $query ) {
+					$item = [
+						'id'    => $post->ID,
+						'title' => $post->post_title,
+					];
+
+					// if $fields includes html, get rendered HTML for the post.
+					if ( in_array( 'html', $fields ) && ! empty( $attributes ) ) {
+						$html = Utils\template_include(
+							'listing',
+							[
+								'attributes' => $attributes,
+								'post'       => $post,
+							]
+						);
+
+						// If an AMP page, convert to valid AMP HTML.
+						if ( $is_amp ) {
+							$html = Utils\generate_amp_partial( $html );
+						}
+
+						$item['html'] = $html;
+					}
+
+					// If $fields includes category, get the post categories.
+					if ( in_array( 'category', $fields ) ) {
+						$item['category'] = get_the_terms( $post->ID, 'category' );
+					}
+
+					// If $fields includes tags, get the post tags.
+					if ( in_array( 'tags', $fields ) ) {
+						$item['tags'] = get_the_terms( $post->ID, 'post_tag' );
+					}
+
+					// If $fields includes excerpt, get the post excerpt.
+					if ( in_array( 'excerpt', $fields ) ) {
+						$item['excerpt'] = Utils\get_listing_excerpt( $post );
+					}
+
+					// If $fields includes media, get the featured image + caption.
+					if ( in_array( 'media', $fields ) ) {
+						$item['media'] = [
+							'image'   => get_the_post_thumbnail_url( $post->ID, 'medium' ),
+							'caption' => get_the_post_thumbnail_caption( $post->ID ),
 						];
+					}
 
-						// if $fields includes html, get rendered HTML for the post.
-						if ( in_array( 'html', $fields ) && ! empty( $attributes ) ) {
-							$html = Utils\template_include(
-								'listing',
-								[
-									'attributes' => $attributes,
-									'post'       => $post,
-								]
-							);
+					// If $fields includes meta, get all Newspack Listings meta fields.
+					if ( in_array( 'meta', $fields ) || in_array( 'author', $fields ) ) {
+						$item['meta'] = [];
+						$post_meta    = Core::get_meta_values( $post->ID, $post->post_type );
 
-							// If an AMP page, convert to valid AMP HTML.
-							if ( $is_amp ) {
-								$html = Utils\generate_amp_partial( $html );
-							}
-
-							$item['html'] = $html;
+						if ( ! empty( $post_meta ) ) {
+							$item['meta'] = $post_meta;
 						}
+					}
 
-						// If $fields includes category, get the post categories.
-						if ( in_array( 'category', $fields ) ) {
-							$item['category'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_CAT );
-						}
+					// If $fields includes type, get the post type.
+					if ( in_array( 'type', $fields ) ) {
+						$item['type'] = $post->post_type;
+					}
 
-						// If $fields includes tags, get the post tags.
-						if ( in_array( 'tags', $fields ) ) {
-							$item['tags'] = get_the_terms( $post->ID, Core::NEWSPACK_LISTINGS_TAG );
-						}
+					// If $fields includes author and the post isn't set to hide author, get the post author.
+					if ( in_array( 'author', $fields ) && empty( get_post_meta( $post->ID, 'newspack_listings_hide_author', true ) ) ) {
+						$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
+					}
 
-						// If $fields includes author and the post isn't set to hide author, get the post author.
-						if ( in_array( 'author', $fields ) && empty( get_post_meta( $post->ID, 'newspack_listings_hide_author', true ) ) ) {
-							$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
-						}
+					$item['test'] = 'Brody';
 
-						// If $fields includes excerpt, get the post excerpt.
-						if ( in_array( 'excerpt', $fields ) ) {
-							$item['excerpt'] = Utils\get_listing_excerpt( $post );
-						}
+					// If $fields includes sponsors include sponsors info.
+					if ( in_array( 'sponsors', $fields ) ) {
+						$item['sponsors'] = Utils\get_sponsors( $post->ID, 'native' );
+					}
 
-						// If $fields includes media, get the featured image + caption.
-						if ( in_array( 'media', $fields ) ) {
-							$item['media'] = [
-								'image'   => get_the_post_thumbnail_url( $post->ID, 'medium' ),
-								'caption' => get_the_post_thumbnail_caption( $post->ID ),
-							];
-						}
-
-						// If $fields includes meta, get all Newspack Listings meta fields.
-						if ( in_array( 'meta', $fields ) ) {
-							$post_meta = Core::get_meta_values( $post->ID, $post->post_type );
-
-							if ( ! empty( $post_meta ) ) {
-								$item['meta'] = $post_meta;
-							}
-						}
-
-						// If $fields includes type, get the post type.
-						if ( in_array( 'type', $fields ) ) {
-							$item['type'] = $post->post_type;
-						}
-
-						return $item;
-					},
-					$listings_query->posts
-				),
-				200
+					return $item;
+				},
+				$listings_query->posts
 			);
+
+			$response = new \WP_REST_Response( $listings );
 
 			// Provide next URL if there are more pages.
 			if ( $next_page <= $listings_query->max_num_pages ) {
@@ -316,22 +463,20 @@ final class Newspack_Listings_Api {
 						'amp'        => $is_amp,
 						'_fields'    => 'html',
 					],
-					rest_url( '/newspack-listings/v1/listings' )
+					rest_url( '/' . self::$namespace . '/listings' )
 				);
 			}
 
 			if ( ! empty( $next_url ) ) {
 				$response->header( 'next-url', $next_url );
 			}
-
-			return $response;
 		}
 
-		return new \WP_REST_Response( [] );
+		return rest_ensure_response( $response );
 	}
 
 	/**
-	 * Look up Listing taxonomy terms by name.
+	 * Get all terms for a specific taxonomy.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response.
@@ -340,7 +485,7 @@ final class Newspack_Listings_Api {
 		$params = $request->get_params();
 
 		if ( empty( $params['taxonomy'] ) ) {
-			$params['taxonomy'] = Core::NEWSPACK_LISTINGS_CAT;
+			$params['taxonomy'] = 'category';
 		}
 
 		$terms = get_terms( $params );
@@ -361,6 +506,94 @@ final class Newspack_Listings_Api {
 		}
 
 		return new \WP_REST_Response( [] );
+	}
+
+	/**
+	 * Look up parent terms by post ID.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function get_parents( $request ) {
+		$params  = $request->get_params();
+		$parents = Taxonomies::get_parent_terms( $params );
+
+		if ( is_array( $parents ) ) {
+			return rest_ensure_response(
+				array_values(
+					array_map(
+						function( $term ) {
+							return [
+								'value'     => $term->term_id,
+								'label'     => $term->name,
+								'post_type' => $term->taxonomy,
+							];
+						},
+						$parents
+					)
+				),
+				200
+			);
+		}
+
+		return rest_ensure_response( [] );
+	}
+
+	/**
+	 * Look up child posts by post ID.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function get_children( $request ) {
+		$params   = $request->get_params();
+		$children = Taxonomies::get_child_posts( $params );
+
+		if ( is_array( $children ) ) {
+			return rest_ensure_response(
+				array_values(
+					array_map(
+						function( $post ) {
+							return [
+								'value'     => $post->ID,
+								'label'     => $post->post_title,
+								'post_type' => $post->post_type,
+							];
+						},
+						$children
+					)
+				),
+				200
+			);
+		}
+
+		return rest_ensure_response( [] );
+	}
+
+	/**
+	 * Apply shadow term for the parent post to the given post_id,
+	 * and/or remove the shadow term from the given children to remove.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function set_parents( $request ) {
+		$params   = $request->get_params();
+		$response = Taxonomies::set_parent_posts( $params );
+		return new \WP_REST_Response( $response );
+	}
+
+	/**
+	 * Apply shadow term for the parent post to the given children,
+	 * and/or remove the shadow term from the given children to remove.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function set_children( $request ) {
+		$params   = $request->get_params();
+		$response = Taxonomies::set_child_posts( $params );
+		return new \WP_REST_Response( $response );
 	}
 }
 

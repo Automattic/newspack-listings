@@ -2,6 +2,15 @@
 
 .newspack-listings {
 	&__listing-post {
+		display: block;
+
+		@media only screen and ( min-width: $tablet_width ) {
+			.media-position-left &,
+			.media-position-right & {
+				display: flex;
+			}
+		}
+
 		+ .is-link {
 			padding-left: 0;
 			padding-right: 0;
@@ -50,18 +59,6 @@
 		}
 	}
 
-	&__listing-post,
-	&__listing-link {
-		display: block;
-
-		@media only screen and ( min-width: $tablet_width ) {
-			.media-position-left &,
-			.media-position-right & {
-				display: flex;
-			}
-		}
-	}
-
 	&__listing-title {
 		margin-top: 0.5rem;
 
@@ -83,6 +80,7 @@
 		img {
 			display: inline-block;
 			vertical-align: top;
+			max-width: 100%;
 		}
 
 		.media-position-left & {
@@ -119,6 +117,20 @@
 			font-size: 0.75em;
 			font-weight: 700;
 			margin: 0 0 0.75rem;
+		}
+	}
+
+	&__column-reverse {
+		flex-direction: row-reverse;
+	}
+
+	&__sponsors {
+		align-items: center;
+		display: flex;
+
+		.sponsor-logos {
+			border-right: 1px solid var( --newspack-listings--grey-light );
+			margin-right: 0.75rem;
 		}
 	}
 }
