@@ -333,11 +333,11 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 
 const mapStateToProps = select => {
 	const { getCurrentPostId, getEditedPostAttribute } = select( 'core/editor' );
-	const meta = getEditedPostAttribute( 'meta' );
+	const meta = getEditedPostAttribute( 'meta' ) || {};
 
 	return {
 		getEditedPostAttribute,
-		hideParents: meta.newspack_listings_hide_parents,
+		hideParents: meta?.newspack_listings_hide_parents,
 		postId: getCurrentPostId(),
 	};
 };
