@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -64,13 +65,25 @@ final class Newspack_Listings_Blocks {
 		$post_type       = get_post_type();
 		$post_types      = [];
 		$post_type_label = ! empty( $post_type ) ? get_post_type_object( $post_type )->labels->singular_name : 'Post';
+		$taxonomies      = [];
 
-		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $label => $name ) {
-			$post_count           = wp_count_posts( $name )->publish;
-			$total_count          = $total_count + $post_count;
-			$post_types[ $label ] = [
+		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $slug => $name ) {
+			$post_count          = wp_count_posts( $name )->publish;
+			$total_count         = $total_count + $post_count;
+			$post_types[ $slug ] = [
 				'name'             => $name,
+				'label'            => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ] )->labels->singular_name,
 				'show_in_inserter' => 0 < $post_count,
+			];
+		}
+
+		$shadow_taxonomy_config = Taxonomies::get_shadow_taxonomy_config();
+
+		foreach ( Taxonomies::NEWSPACK_LISTINGS_TAXONOMIES as $slug => $name ) {
+			$taxonomies[ $slug ] = [
+				'name'       => $name,
+				'label'      => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ] )->labels->singular_name,
+				'post_types' => $shadow_taxonomy_config[ $slug ]['post_types'],
 			];
 		}
 
@@ -80,11 +93,11 @@ final class Newspack_Listings_Blocks {
 			[
 				'post_type_label' => $post_type_label,
 				'post_type'       => $post_type,
+				'post_type_slug'  => array_search( $post_type, Core::NEWSPACK_LISTINGS_POST_TYPES ),
 				'post_types'      => $post_types,
-				'taxonomies'      => [
-					'category' => Core::NEWSPACK_LISTINGS_CAT,
-					'tag'      => Core::NEWSPACK_LISTINGS_TAG,
-				],
+				'taxonomies'      => $taxonomies,
+				'currency'        => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
+				'currencies'      => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
 
 				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
 				'no_listings'     => 0 === $total_count,
@@ -122,24 +135,35 @@ final class Newspack_Listings_Blocks {
 			}
 			$type = $block_directory->getFilename();
 
-			/* If view.php is found, include it and use for block rendering. */
+			// If view.php is found, include it and use for block rendering.
 			$view_php_path = $src_directory . $type . '/view.php';
 			if ( file_exists( $view_php_path ) ) {
 				include_once $view_php_path;
 				continue;
 			}
 
-			/* If view.php is missing but view Javascript file is found, do generic view asset loading. */
+			// If block.json exists, use it to register the block with default attributes.
+			$block_config_file        = $src_directory . $type . '/block.json';
+			$block_name               = "newspack-listings/{$type}";
+			$block_default_attributes = null;
+			if ( file_exists( $block_config_file ) ) {
+				$block_config             = json_decode( file_get_contents( $block_config_file ), true ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
+				$block_name               = $block_config['name'];
+				$block_default_attributes = $block_config['attributes'];
+			}
+
+			// If view.php is missing but view Javascript file is found, do generic view asset loading.
 			$view_js_path = $dist_directory . $type . '/view.js';
 			if ( file_exists( $view_js_path ) ) {
 				register_block_type(
-					"newspack-listings/{$type}",
-					array(
+					$block_name,
+					[
 						'render_callback' => function( $attributes, $content ) use ( $type ) {
 							Newspack_Blocks::enqueue_view_assets( $type );
 							return $content;
 						},
-					)
+						'attributes'      => $block_default_attributes,
+					]
 				);
 			}
 		}

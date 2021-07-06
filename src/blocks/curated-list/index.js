@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { InnerBlocks } from '@wordpress/block-editor';
@@ -17,7 +17,10 @@ const { attributes, category, name } = metadata;
 export const registerCuratedListBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Curated List', 'newspack-listing' ),
-		icon: <List />,
+		icon: {
+			src: <List />,
+			foreground: '#36f',
+		},
 		category,
 		keywords: [
 			__( 'curated', 'newspack-listings' ),

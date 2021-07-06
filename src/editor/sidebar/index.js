@@ -1,8 +1,8 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { PanelRow, ToggleControl } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import { ExternalLink, PanelRow, ToggleControl } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
@@ -14,10 +14,10 @@ import { isListing } from '../utils';
 import './style.scss';
 
 const SidebarComponent = ( { meta, updateMetaValue } ) => {
-	const { post_type_label, post_types } = window.newspack_listings_data;
-	const { newspack_listings_hide_author } = meta;
+	const { post_type_label: postTypeLabel, post_types: postTypes } = window.newspack_listings_data;
+	const { newspack_listings_hide_author, newspack_listings_hide_publish_date } = meta;
 
-	if ( ! post_types || ! isListing() ) {
+	if ( ! postTypes ) {
 		return null;
 	}
 
@@ -25,14 +25,45 @@ const SidebarComponent = ( { meta, updateMetaValue } ) => {
 		<PluginDocumentSettingPanel
 			className="newspack-listings__editor-sidebar"
 			name="newspack-listings"
-			title={ post_type_label + ' ' + __( 'Settings', 'newspack-listings' ) }
+			title={ sprintf(
+				__( '%s Settings', 'newspack-listings' ),
+				isListing() ? postTypeLabel : __( 'Newspack Listings', 'newspack-listings' )
+			) }
 		>
+			<p>
+				<em>
+					{ __( 'Overrides ', 'newspack-listings' ) }
+					<ExternalLink href="/wp-admin/admin.php?page=newspack-listings-settings-admin">
+						{ __( 'global settings', 'newspack-listings' ) }
+					</ExternalLink>
+				</em>
+			</p>
 			<PanelRow>
 				<ToggleControl
-					className={ 'newspack-listings__hide-author-control' }
+					className={ 'newspack-listings__toggle-control' }
 					label={ __( 'Hide listing author', 'newspack-listings' ) }
+					help={ sprintf(
+						__( '%s the author byline for this listing.', 'newspack-listings' ),
+						newspack_listings_hide_author
+							? __( 'Hide', 'newspack-listings' )
+							: __( 'Show', 'newspack-listings' )
+					) }
 					checked={ newspack_listings_hide_author }
 					onChange={ value => updateMetaValue( 'newspack_listings_hide_author', value ) }
+				/>
+			</PanelRow>
+			<PanelRow>
+				<ToggleControl
+					className={ 'newspack-listings__toggle-control' }
+					label={ __( 'Hide publish date', 'newspack-listings' ) }
+					help={ sprintf(
+						__( '%s the publish and updated dates for this listing.', 'newspack-listings' ),
+						newspack_listings_hide_publish_date
+							? __( 'Hide', 'newspack-listings' )
+							: __( 'Show', 'newspack-listings' )
+					) }
+					checked={ newspack_listings_hide_publish_date }
+					onChange={ value => updateMetaValue( 'newspack_listings_hide_publish_date', value ) }
 				/>
 			</PanelRow>
 		</PluginDocumentSettingPanel>

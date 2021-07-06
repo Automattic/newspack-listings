@@ -3,21 +3,20 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-import { Icon, calendar } from '@wordpress/icons';
+import { Icon, currencyDollar } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import './editor.scss';
-import { EventDatesEditor } from './edit';
+import { PriceEditor } from './edit';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
 
-export const registerEventDatesBlock = () => {
+export const registerPriceBlock = () => {
 	registerBlockType( name, {
-		title: __( 'Event Dates', 'newspack-listing' ),
+		title: __( 'Price', 'newspack-listing' ),
 		icon: {
-			src: <Icon icon={ calendar } />,
+			src: <Icon icon={ currencyDollar } />,
 			foreground: '#36f',
 		},
 		category,
@@ -27,13 +26,12 @@ export const registerEventDatesBlock = () => {
 			__( 'lists', 'newspack-listings' ),
 			__( 'listings', 'newspack-listings' ),
 			__( 'latest', 'newspack-listings' ),
-			__( 'event', 'newspack-listings' ),
-			__( 'events', 'newspack-listings' ),
+			__( 'price', 'newspack-listings' ),
 		],
 
 		attributes,
 
-		edit: EventDatesEditor,
+		edit: PriceEditor,
 		save: () => null, // uses view.php
 	} );
 };
