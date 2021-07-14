@@ -19,18 +19,23 @@ import { ShadowTaxonomies } from './shadow-taxonomies';
 import { isListing } from './utils';
 import './style.scss';
 
+const { post_type: postType } = window?.newspack_listings_data;
+
 /**
  * Register Curated List blocks. Don't register if we're in a listing already
  * (to avoid possibly infinitely nesting lists within list items).
  */
 if ( isListing() ) {
-	const { post_types: postTypes } = window.newspack_listings_data || {};
+	const { post_types: postTypes } = window?.newspack_listings_data || {};
 
-	// Register plugin editor settings.
-	registerPlugin( 'newspack-listings-editor', {
-		render: Sidebar,
-		icon: null,
-	} );
+	// If we don't have a post type, we're probably not in a post editor, so we don't need to register the post editor sidebars.
+	if ( postType ) {
+		// Register plugin editor settings.
+		registerPlugin( 'newspack-listings-editor', {
+			render: Sidebar,
+			icon: null,
+		} );
+	}
 
 	// Register Event Dates block if we're editing an Event.
 	if ( isListing( postTypes.event.name ) ) {
@@ -48,8 +53,11 @@ if ( isListing() ) {
 	registerListingBlock();
 }
 
-// Register plugin editor settings.
-registerPlugin( 'newspack-listings-shadow-taxonomies', {
-	render: ShadowTaxonomies,
-	icon: null,
-} );
+// If we don't have a post type, we're probably not in a post editor, so we don't need to register the post taxonomy sidebars.
+if ( postType ) {
+	// Register plugin editor settings.
+	registerPlugin( 'newspack-listings-shadow-taxonomies', {
+		render: ShadowTaxonomies,
+		icon: null,
+	} );
+}
