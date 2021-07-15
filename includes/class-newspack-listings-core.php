@@ -371,32 +371,7 @@ final class Newspack_Listings_Core {
 					'show_in_rest'      => [
 						'schema' => [
 							'type'  => 'array',
-							'items' => [
-								'type'       => 'object',
-								'properties' => [
-									'address'      => [
-										'type' => 'string',
-									],
-									'addressLine2' => [
-										'type' => 'string',
-									],
-									'addressLine3' => [
-										'type' => 'string',
-									],
-									'city'         => [
-										'type' => 'string',
-									],
-									'region'       => [
-										'type' => 'string',
-									],
-									'postal'       => [
-										'type' => 'string',
-									],
-									'country'      => [
-										'type' => 'string',
-									],
-								],
-							],
+							'items' => [ 'type' => 'object' ],
 						],
 					],
 				],
@@ -422,28 +397,7 @@ final class Newspack_Listings_Core {
 					'show_in_rest'      => [
 						'schema' => [
 							'type'  => 'array',
-							'items' => [
-								'type'       => 'object',
-								'properties' => [
-									'name'  => [
-										'type' => 'string',
-									],
-									'hours' => [
-										'type'  => 'array',
-										'items' => [
-											'type'       => 'object',
-											'properties' => [
-												'opening' => [
-													'type' => 'string',
-												],
-												'closing' => [
-													'type' => 'string',
-												],
-											],
-										],
-									],
-								],
-							],
+							'items' => [ 'type' => 'object' ],
 						],
 					],
 				],
@@ -470,34 +424,7 @@ final class Newspack_Listings_Core {
 					'show_in_rest'      => [
 						'schema' => [
 							'type'  => 'array',
-							'items' => [
-								'type'       => 'object',
-								'properties' => [
-									'placeTitle'  => [
-										'type' => 'string',
-									],
-									'title'       => [
-										'type' => 'string',
-									],
-									'caption'     => [
-										'type' => 'string',
-									],
-									'id'          => [
-										'type' => 'string',
-									],
-									'coordinates' => [
-										'type'       => 'object',
-										'properties' => [
-											'latitude'  => [
-												'type' => 'number',
-											],
-											'longitude' => [
-												'type' => 'number',
-											],
-										],
-									],
-								],
-							],
+							'items' => [ 'type' => 'object' ],
 						],
 					],
 					'auth_callback'     => function() {
