@@ -307,14 +307,7 @@ final class Newspack_Listings_Core {
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
-					'show_in_rest'      => [
-						'schema' => [
-							'type'  => 'array',
-							'items' => [
-								'type' => 'string',
-							],
-						],
-					],
+					'show_in_rest'      => false,
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
@@ -368,12 +361,7 @@ final class Newspack_Listings_Core {
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
-					'show_in_rest'      => [
-						'schema' => [
-							'type'  => 'array',
-							'items' => [ 'type' => 'object' ],
-						],
-					],
+					'show_in_rest'      => false,
 				],
 			],
 			'newspack_listings_business_hours'    => [
@@ -394,12 +382,7 @@ final class Newspack_Listings_Core {
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
-					'show_in_rest'      => [
-						'schema' => [
-							'type'  => 'array',
-							'items' => [ 'type' => 'object' ],
-						],
-					],
+					'show_in_rest'      => false,
 				],
 			],
 			'newspack_listings_locations'         => [
@@ -421,12 +404,7 @@ final class Newspack_Listings_Core {
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
-					'show_in_rest'      => [
-						'schema' => [
-							'type'  => 'array',
-							'items' => [ 'type' => 'object' ],
-						],
-					],
+					'show_in_rest'      => false,
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
@@ -449,7 +427,7 @@ final class Newspack_Listings_Core {
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
-					'show_in_rest'      => true,
+					'show_in_rest'      => false,
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
@@ -472,7 +450,7 @@ final class Newspack_Listings_Core {
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
-					'show_in_rest'      => true,
+					'show_in_rest'      => false,
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
@@ -514,14 +492,7 @@ final class Newspack_Listings_Core {
 					'type'              => 'array',
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
-					'show_in_rest'      => [
-						'schema' => [
-							'type'  => 'array',
-							'items' => [
-								'type' => 'integer',
-							],
-						],
-					],
+					'show_in_rest'      => false,
 					'auth_callback'     => function() {
 						return current_user_can( 'edit_posts' );
 					},
