@@ -1,3 +1,17 @@
+# [2.1.0](https://github.com/Automattic/newspack-listings/compare/v2.0.1...v2.1.0) (2021-07-19)
+
+
+### Bug Fixes
+
+* avoid meta sync update error ([#95](https://github.com/Automattic/newspack-listings/issues/95)) ([cab16aa](https://github.com/Automattic/newspack-listings/commit/cab16aa7c0a09519003372d838df7165223a5926))
+* do not register post-specific sidebars in widgets page ([#93](https://github.com/Automattic/newspack-listings/issues/93)) ([7716775](https://github.com/Automattic/newspack-listings/commit/771677534562734c368794f9fb42b13794371d1c))
+
+
+### Features
+
+* bump max number of items per list from 20 to 50 ([#97](https://github.com/Automattic/newspack-listings/issues/97)) ([009deab](https://github.com/Automattic/newspack-listings/commit/009deab753ea8dcb86e2745483e9792c5c44ae27))
+* more block patterns (real estate, classified ads) ([#84](https://github.com/Automattic/newspack-listings/issues/84)) ([a51f5af](https://github.com/Automattic/newspack-listings/commit/a51f5afb6d6d929290df5013f1398546f455ad10))
+
 ## [2.0.1](https://github.com/Automattic/newspack-listings/compare/v2.0.0...v2.0.1) (2021-07-06)
 
 
