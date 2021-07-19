@@ -307,27 +307,20 @@ const CuratedListEditorComponent = ( {
 	 * @param {Object} listing Post object for listing to show.
 	 * @param {number} index Index of the item in the array.
 	 */
-	const renderQueriedListings = ( listing, index ) => {
-		// Only display up to the maxItems setting.
-		if ( index >= queryOptions.maxItems ) {
-			return null;
-		}
-
-		return (
-			<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
-				<Listing attributes={ attributes } error={ error } post={ listing } />
-				{
-					<Button
-						isLink
-						href={ `/wp-admin/post.php?post=${ listing.id }&action=edit` }
-						target="_blank"
-					>
-						{ __( 'Edit this listing', 'newspack-listing' ) }
-					</Button>
-				}
-			</div>
-		);
-	};
+	const renderQueriedListings = ( listing, index ) => (
+		<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
+			<Listing attributes={ attributes } error={ error } post={ listing } />
+			{
+				<Button
+					isLink
+					href={ `/wp-admin/post.php?post=${ listing.id }&action=edit` }
+					target="_blank"
+				>
+					{ __( 'Edit this listing', 'newspack-listing' ) }
+				</Button>
+			}
+		</div>
+	);
 
 	/**
 	 * Validate location data.
