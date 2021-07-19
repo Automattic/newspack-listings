@@ -243,7 +243,7 @@ class QueryControls extends Component {
 					setAttributes( { queryOptions: { ...queryOptions, maxItems: value } } )
 				}
 				min={ 1 }
-				max={ 20 }
+				max={ 50 }
 				required
 			/>,
 			<ToggleControl
