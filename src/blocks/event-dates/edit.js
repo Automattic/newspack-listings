@@ -62,6 +62,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 						<DatePickerComponent
 							currentDate={ startDate ? new Date( startDate ) : null }
 							is12Hour={ true }
+							onMonthPreviewed={ () => {} }
 							onChange={ value => {
 								if (
 									! value || // If clearing the value.
