@@ -1,3 +1,15 @@
+# [2.2.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.1.0...v2.2.0-alpha.1) (2021-08-03)
+
+
+### Bug Fixes
+
+* satisfy DatePicker prop dependency ([#105](https://github.com/Automattic/newspack-listings/issues/105)) ([fec19d8](https://github.com/Automattic/newspack-listings/commit/fec19d87403c79dceef93df9d8927d97d5963155))
+
+
+### Features
+
+* show classes for each category and tag on every listing ([#103](https://github.com/Automattic/newspack-listings/issues/103)) ([309c046](https://github.com/Automattic/newspack-listings/commit/309c046521397b2a06af7f0a108326579417167b))
+
 # [2.1.0](https://github.com/Automattic/newspack-listings/compare/v2.0.1...v2.1.0) (2021-07-19)
 
 
