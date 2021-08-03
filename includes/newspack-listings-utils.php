@@ -367,3 +367,49 @@ function get_sponsors( $post_id = null, $scope = null, $type = 'post' ) {
 
 	return \Newspack_Sponsors\get_all_sponsors( $post_id, $scope, $type );
 }
+
+/**
+ * Get an array of term-based class names for the given or current listing.
+ *
+ * @param int $post_id ID of the listing.
+ * @return array Array of term-based class names.
+ */
+function get_term_classes( $post_id = null ) {
+	if ( null === $post_id ) {
+		$post_id = get_the_ID();
+	}
+
+	// Base classes.
+	$base_classes = [];
+	$post_type    = get_post_type( $post_id );
+	if ( false !== $post_type ) {
+		$base_classes[] = 'type-' . $post_type;
+	}
+
+	// Build an array of class names for each category.
+	$category_classes = array_reduce(
+		get_the_category( $post_id ),
+		function( $acc, $category ) {
+			$acc[] = 'category-' . $category->slug;
+			return $acc;
+		},
+		[]
+	);
+
+	// Build an array of class names for each tag.
+	$tags        = get_the_terms( $post_id, 'post_tag' );
+	$tag_classes = array_reduce(
+		! empty( $tags ) ? $tags : [],
+		function( $acc, $tag ) {
+			$acc[] = 'tag-' . $tag->slug;
+			return $acc;
+		},
+		[]
+	);
+
+	return array_merge(
+		$base_classes,
+		$category_classes,
+		$tag_classes
+	);
+}
