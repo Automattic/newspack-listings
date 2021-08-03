@@ -281,3 +281,26 @@ export const getIcon = listingTypeSlug => {
 			return <Icon icon={ postList } />;
 	}
 };
+
+/**
+ * Get an array of term-based class names for the given or current listing.
+ *
+ * @param {object} post Post object for the post.
+ * @return {array} Array of term-based class names.
+ */
+export const getTermClasses = post => {
+	const classes = [];
+
+	if ( ! post.id || ! post.type ) {
+		return classes;
+	}
+
+	// Post type class.
+	classes.push( `type-${ post.type }` );
+
+	// Category and tag classes.
+	( post.category || [] ).forEach( category => classes.push( `category-${ category.slug }` ) );
+	( post.tags || [] ).forEach( tag => classes.push( `tag-${ tag.slug }` ) );
+
+	return classes;
+};

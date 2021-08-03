@@ -18,11 +18,17 @@ call_user_func(
 			return;
 		}
 
+		// Class names for the listing.
+		$classes = array_merge(
+			[ 'newspack-listings__listing-post' ],
+			Utils\get_term_classes()
+		);
+
 		// Get native sponsors.
 		$sponsors = Utils\get_sponsors( $post->ID, 'native' );
 		?>
 	<li class="newspack-listings__listing">
-	<article class="newspack-listings__listing-post">
+	<article class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
 		<?php if ( $attributes['showImage'] ) : ?>
 			<?php
 			$featured_image = get_the_post_thumbnail( $post->ID, 'large' );

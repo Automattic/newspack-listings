@@ -8,6 +8,11 @@ import { Notice } from '@wordpress/components';
 import { Fragment, RawHTML } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 
+/**
+ * Internal dependencies.
+ */
+import { getTermClasses } from '../../editor/utils';
+
 export const Listing = ( { attributes, error, post } ) => {
 	// Parent Curated List block attributes.
 	const { showAuthor, showCategory, showTags, showExcerpt, showImage, showCaption } = attributes;
@@ -21,8 +26,11 @@ export const Listing = ( { attributes, error, post } ) => {
 		title = '',
 	} = post;
 
+	const classes = [ 'newspack-listings__listing-post', 'entry-wrapper' ];
+	const termClasses = getTermClasses( post );
+
 	return (
-		<div className="newspack-listings__listing-post entry-wrapper">
+		<div className={ classes.concat( termClasses ).join( ' ' ) }>
 			{ error && (
 				<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
 					{ error }

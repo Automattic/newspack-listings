@@ -687,6 +687,8 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
+	 * Adds additional utility classes to the body element for single listing pages.
+	 *
 	 * If using the single-featured or wide templates, apply a body class to listing posts
 	 * so that they inherit theme styles for that template.
 	 *
@@ -695,6 +697,10 @@ final class Newspack_Listings_Core {
 	 */
 	public static function set_template_class( $classes ) {
 		if ( self::is_listing() ) {
+			$classes[]    = 'newspack-listings';
+			$term_classes = Utils\get_term_classes();
+			$classes      = array_merge( $classes, $term_classes );
+
 			$template = get_page_template_slug();
 			if ( 'single-feature.php' === $template ) {
 				$classes[] = 'post-template-single-feature';
