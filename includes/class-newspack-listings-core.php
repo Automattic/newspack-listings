@@ -701,6 +701,14 @@ final class Newspack_Listings_Core {
 			$term_classes = Utils\get_term_classes();
 			$classes      = array_merge( $classes, $term_classes );
 
+			if ( self::hide_publish_date() ) {
+				$classes[] = 'hide-date';
+			}
+
+			if ( self::hide_author() ) {
+				$classes[] = 'hide-author';
+			}
+
 			$template = get_page_template_slug();
 			if ( 'single-feature.php' === $template ) {
 				$classes[] = 'post-template-single-feature';
