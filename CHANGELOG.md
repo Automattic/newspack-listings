@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/Automattic/newspack-listings/compare/v2.2.0...v2.3.0) (2021-08-10)
+
+
+### Features
+
+* add CSS classes for hidden date, author ([#108](https://github.com/Automattic/newspack-listings/issues/108)) ([3091c12](https://github.com/Automattic/newspack-listings/commit/3091c1292fe76c3a57f034b9465a397ce53fcac6))
+
 # [2.2.0](https://github.com/Automattic/newspack-listings/compare/v2.1.0...v2.2.0) (2021-08-03)
 
 
