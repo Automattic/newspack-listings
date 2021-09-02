@@ -30,13 +30,6 @@ final class Newspack_Listings_Settings {
 	public static function get_default_settings() {
 		return [
 			[
-				'description' => __( 'The URL prefix for all listings. This prefix will appear before the listing slug in all listing URLs.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_permalink_prefix',
-				'label'       => __( 'Listings permalink prefix', 'newspack-listings' ),
-				'type'        => 'input',
-				'value'       => __( 'listings', 'newspack-listings' ),
-			],
-			[
 				'description' => __( 'The URL slug for event listings.', 'newspack-listings' ),
 				'key'         => 'newspack_listings_event_slug',
 				'label'       => __( 'Event listings slug', 'newspack-listings' ),

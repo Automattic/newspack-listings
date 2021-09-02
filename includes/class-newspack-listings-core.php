@@ -143,7 +143,6 @@ final class Newspack_Listings_Core {
 	 */
 	public static function register_post_types() {
 		$settings          = Settings::get_settings();
-		$prefix            = $settings['newspack_listings_permalink_prefix'];
 		$default_config    = [
 			'has_archive'  => false,
 			'public'       => true,
@@ -171,7 +170,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No events found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite'  => [ 'slug' => $prefix . '/' . $settings['newspack_listings_event_slug'] ],
+				'rewrite'  => [ 'slug' => $settings['newspack_listings_event_slug'] ],
 				'template' => [ [ 'newspack-listings/event-dates' ] ],
 			],
 			'generic'     => [
@@ -191,7 +190,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No generic listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No generic listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_generic_slug'] ],
+				'rewrite' => [ 'slug' => $settings['newspack_listings_generic_slug'] ],
 			],
 			'marketplace' => [
 				'labels'  => [
@@ -210,7 +209,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No Marketplace listings found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No Marketplace listings found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_marketplace_slug'] ],
+				'rewrite' => [ 'slug' => $settings['newspack_listings_marketplace_slug'] ],
 			],
 			'place'       => [
 				'labels'  => [
@@ -229,7 +228,7 @@ final class Newspack_Listings_Core {
 					'not_found'          => __( 'No places found.', 'newspack-listings' ),
 					'not_found_in_trash' => __( 'No places found in Trash.', 'newspack-listings' ),
 				],
-				'rewrite' => [ 'slug' => $prefix . '/' . $settings['newspack_listings_place_slug'] ],
+				'rewrite' => [ 'slug' => $settings['newspack_listings_place_slug'] ],
 			],
 		];
 
