@@ -42,6 +42,13 @@ final class Newspack_Listings_Importer {
 	public static $is_dry_run = false;
 
 	/**
+	 * Skip content update or post update for items already imported.
+	 *
+	 * @var $skip
+	 */
+	public static $skip = false;
+
+	/**
 	 * Term ID for the "Directory" parent category.
 	 *
 	 * @var $directory_category
@@ -65,7 +72,7 @@ final class Newspack_Listings_Importer {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Listings_Importer
+	 * @var $instance
 	 */
 	protected static $instance = null;
 
@@ -162,6 +169,13 @@ final class Newspack_Listings_Importer {
 						'optional'    => true,
 						'repeating'   => false,
 					],
+					[
+						'type'        => 'assoc',
+						'name'        => 'skip',
+						'description' => 'Skip updating post content for content that was already imported, or skip them entirely.',
+						'optional'    => true,
+						'repeating'   => false,
+					],
 				],
 			]
 		);
@@ -181,6 +195,7 @@ final class Newspack_Listings_Importer {
 
 		// If a dry run, we won't persist any data.
 		self::$is_dry_run = isset( $assoc_args['dry-run'] ) ? true : false;
+		self::$skip       = isset( $assoc_args['skip'] ) ? $assoc_args['skip'] : false;
 
 		// Look for config file at the given path.
 		$config_path = self::load_config( $config_arg );
@@ -464,6 +479,13 @@ final class Newspack_Listings_Importer {
 			wpcom_vip_get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ) :
 			get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_page_by_title_get_page_by_title
 
+		if ( 'update' === self::$skip && $existing_post ) {
+			WP_CLI::log(
+				sprintf( '%s already imported; skipping.', $existing_post->post_title )
+			);
+			return;
+		}
+
 		// Post data to be inserted in WP.
 		$post = [
 			'post_author'  => 1, // Default user in case author isn't defined.
@@ -511,6 +533,16 @@ final class Newspack_Listings_Importer {
 			}
 		}
 
+		// GDG only: handle featured meta.
+		if ( ! empty( $data['entity_featured__value'] ) ) {
+			$post['meta_input']['newspack_listings_featured']          = true;
+			$post['meta_input']['newspack_listings_featured_priority'] = ! empty( $data['entity_featured__value'] ) ? $data['entity_featured__value'] : 5;
+
+			if ( ! empty( $data['entity_featured__expires_at'] ) ) {
+				$post['meta_input']['newspack_listings_featured_expires'] = wp_date( 'Y-m-d\TH:i:s', $data['entity_featured__expires_at'] );
+			}
+		}
+
 		// Handle post content.
 		$post['post_content'] = self::process_content( $data );
 
@@ -526,7 +558,7 @@ final class Newspack_Listings_Importer {
 
 		if ( ! empty( $data['field_business_label'] ) ) {
 			$labels_to_combine   = [
-				'LGTBQ-Owned BUSINESS'                     => 'LGTBQ-Owned/Operated',
+				'LGTBQ-Owned BUSINESS'                     => 'LGBTQ-Owned/Operated',
 				'DBA MEMBER OUR LGBTQ Chamber of Commerce' => 'DBA Member-Our LGBTQ Chamber of Commerce',
 				'Recommended'                              => 'As Heard on KGAY',
 			];
@@ -573,7 +605,9 @@ final class Newspack_Listings_Importer {
 		} else {
 			if ( $existing_post ) {
 				// If the post has already been imported, don't update the content as it may have already been worked on.
-				unset( $post['post_content'] );
+				if ( 'content' === self::$skip ) {
+					unset( $post['post_content'] );
+				}
 				$post_id = wp_update_post( $post );
 			} else {
 				$post_id = wp_insert_post( $post );
@@ -766,7 +800,7 @@ final class Newspack_Listings_Importer {
 					'taxonomy'   => $taxonomy,
 				]
 			);
-			$term  = 0 < count( $terms ) ? (array) reset( $terms ) : false;
+			$term  = is_array( $terms ) && 0 < count( $terms ) ? (array) reset( $terms ) : false;
 			$args  = wp_parse_args(
 				$options,
 				[
