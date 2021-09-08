@@ -30,4 +30,4 @@ node_modules
 /bin
 /src/**/*.js
 *.scss
-/import
+/release

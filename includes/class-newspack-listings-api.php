@@ -398,7 +398,7 @@ final class Newspack_Listings_Api {
 
 					// If $fields includes category, get the post categories.
 					if ( in_array( 'category', $fields ) ) {
-						$item['category'] = get_the_terms( $post->ID, 'category' );
+						$item['category'] = get_the_category( $post->ID );
 					}
 
 					// If $fields includes tags, get the post tags.

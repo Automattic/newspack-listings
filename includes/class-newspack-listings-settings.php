@@ -35,6 +35,7 @@ final class Newspack_Listings_Settings {
 				'label'       => __( 'Listings permalink prefix', 'newspack-listings' ),
 				'type'        => 'input',
 				'value'       => __( 'listings', 'newspack-listings' ),
+				'allow_empty' => true,
 			],
 			[
 				'description' => __( 'The URL slug for event listings.', 'newspack-listings' ),
@@ -110,10 +111,10 @@ final class Newspack_Listings_Settings {
 			$defaults,
 			function( $acc, $setting ) use ( $get_default ) {
 				$key   = $setting['key'];
-				$value = $get_default ? $setting['value'] : get_option( $key, $setting['value'] );
+				$value = $get_default ? $setting['value'] : get_option( $key, '' );
 
 				// Guard against empty strings, which can happen if an option is set and then unset.
-				if ( '' === $value && 'checkbox' !== $setting['type'] ) {
+				if ( empty( $setting['allow_empty'] ) && '' === $value && 'checkbox' !== $setting['type'] ) {
 					$value = $setting['value'];
 				}
 
@@ -202,7 +203,7 @@ final class Newspack_Listings_Settings {
 				esc_html( $setting['description'] )
 			);
 		} else {
-			if ( empty( $value ) ) {
+			if ( empty( $value ) && empty( $setting['allow_empty'] ) ) {
 				$value = $setting['value'];
 			}
 			printf(
@@ -226,8 +227,21 @@ final class Newspack_Listings_Settings {
 	public static function flush_permalinks( $old_value, $new_value, $option ) {
 		// Prevent empty slug value.
 		if ( empty( $new_value ) ) {
-			$default = self::get_settings( $option, true );
-			return update_option( $option, $default ); // Return early to prevent flushing rewrite rules twice.
+			$defaults = self::get_default_settings();
+			$matching = array_reduce(
+				$defaults,
+				function( $acc, $default_option_config ) use ( $option ) {
+					if ( $option === $default_option_config['key'] ) {
+						$acc = $default_option_config;
+					}
+					return $acc;
+				},
+				false
+			);
+
+			if ( $matching && empty( $matching['allow_empty'] ) ) {
+				return update_option( $option, $matching['value'] ); // Return early to prevent flushing rewrite rules twice.
+			}
 		}
 
 		Core::activation_hook();

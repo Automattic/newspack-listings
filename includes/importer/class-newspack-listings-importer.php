@@ -23,28 +23,56 @@ final class Newspack_Listings_Importer {
 	/**
 	 * The current row number of the CSV being processed.
 	 *
-	 * @var Newspack_Listings_Importer
+	 * @var $row_number
 	 */
 	public static $row_number;
 
 	/**
 	 * The directory containing the CSV file to be imported.
 	 *
-	 * @var Newspack_Listings_Importer
+	 * @var $import_dir
 	 */
 	public static $import_dir;
 
 	/**
 	 * Whether the script is running as a dry-run.
 	 *
-	 * @var Newspack_Listings_Importer
+	 * @var $is_dry_run
 	 */
 	public static $is_dry_run = false;
 
 	/**
+	 * Skip content update or post update for items already imported.
+	 *
+	 * @var $skip
+	 */
+	public static $skip = false;
+
+	/**
+	 * Term ID for the "Directory" parent category.
+	 *
+	 * @var $directory_category
+	 */
+	public static $directory_category = false;
+
+	/**
+	 * Term ID for the "Featured" category.
+	 *
+	 * @var $featured_category
+	 */
+	public static $featured_category = false;
+
+	/**
+	 * Taxonomy slug for the listing Label custom taxonomy.
+	 *
+	 * @var $listing_label_tax
+	 */
+	public static $listing_label_tax = 'newspack_lst_label_tax';
+
+	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Listings_Importer
+	 * @var $instance
 	 */
 	protected static $instance = null;
 
@@ -75,6 +103,30 @@ final class Newspack_Listings_Importer {
 		if ( ! class_exists( 'WP_CLI' ) ) {
 			return;
 		}
+
+		WP_CLI::add_command(
+			'newspack-listings import-categories',
+			[ __CLASS__, 'import_categories' ],
+			[
+				'shortdesc' => 'Import directory categories from a CSV file.',
+				'synopsis'  => [
+					[
+						'type'        => 'assoc',
+						'name'        => 'file',
+						'description' => 'Path of the CSV file to import, relative to the plugin’s root directory.',
+						'optional'    => false,
+						'repeating'   => false,
+					],
+					[
+						'type'        => 'flag',
+						'name'        => 'dry-run',
+						'description' => 'Whether to do a dry run.',
+						'optional'    => true,
+						'repeating'   => false,
+					],
+				],
+			]
+		);
 
 		WP_CLI::add_command(
 			'newspack-listings import',
@@ -117,6 +169,13 @@ final class Newspack_Listings_Importer {
 						'optional'    => true,
 						'repeating'   => false,
 					],
+					[
+						'type'        => 'assoc',
+						'name'        => 'skip',
+						'description' => 'Skip updating post content for content that was already imported, or skip them entirely.',
+						'optional'    => true,
+						'repeating'   => false,
+					],
 				],
 			]
 		);
@@ -136,6 +195,7 @@ final class Newspack_Listings_Importer {
 
 		// If a dry run, we won't persist any data.
 		self::$is_dry_run = isset( $assoc_args['dry-run'] ) ? true : false;
+		self::$skip       = isset( $assoc_args['skip'] ) ? $assoc_args['skip'] : false;
 
 		// Look for config file at the given path.
 		$config_path = self::load_config( $config_arg );
@@ -157,8 +217,140 @@ final class Newspack_Listings_Importer {
 		} else {
 			WP_CLI::log( 'Starting CSV import...' );
 		}
+
+		// Get the parent "Featured" category.
+		self::$directory_category = self::handle_terms( 'Directory' );
+
 		self::import_data( $file_path, $start_row, $max_rows );
 		WP_CLI::success( 'Completed! Processed ' . ( self::$row_number - $start_row ) . ' records.' );
+	}
+
+	/**
+	 * Run the 'newspack-listings import-categories' WP CLI command.
+	 *
+	 * @param array $args Positional args.
+	 * @param array $assoc_args Associative args.
+	 */
+	public static function import_categories( $args, $assoc_args ) {
+		$file_arg = isset( $assoc_args['file'] ) ? $assoc_args['file'] : false;
+
+		// If a dry run, we won't persist any data.
+		self::$is_dry_run = isset( $assoc_args['dry-run'] ) ? true : false;
+
+		$file_path = self::load_file( $file_arg );
+		if ( ! $file_path ) {
+			WP_CLI::error( 'Could not find file at ' . $file_arg );
+		}
+
+		if ( self::$is_dry_run ) {
+			WP_CLI::log( "\n===================\n=     Dry Run     =\n===================\n" );
+		}
+
+		// Get the parent "Featured" category.
+		self::$directory_category = self::handle_terms( 'Directory' );
+
+		// Start at 0.
+		self::$row_number = 0;
+
+		WP_CLI::log( 'Starting CSV import...' );
+
+		self::get_categories_from_csv( $file_path );
+		WP_CLI::success( 'Completed! Processed ' . self::$row_number . ' records.' );
+	}
+
+	/**
+	 * Load the category CSV file contents and start the import.
+	 *
+	 * @param string $file_path Full absolute file path for the CSV to process.
+	 *
+	 * @return void
+	 */
+	public static function get_categories_from_csv( $file_path ) {
+
+		// Check if the function mb_detect_encoding exists. The mbstring extension must be installed on the server.
+		$file_encoding = function_exists( 'mb_detect_encoding' ) ? mb_detect_encoding( $file_path, 'UTF-8, ISO-8859-1', true ) : false;
+
+		if ( $file_encoding ) {
+			setlocale( LC_ALL, 'en_US.' . $file_encoding );
+		}
+
+		@ini_set( 'auto_detect_line_endings', true ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+		if ( $file_path && ( $file_handle = fopen( $file_path, 'r' ) ) !== false ) { // phpcs:ignore Squiz.PHP.DisallowMultipleAssignments.FoundInControlStructure, WordPress.WP.AlternativeFunctions.file_system_read_fopen
+			$data           = [];
+			$all_terms      = [];
+			$column_headers = fgetcsv( $file_handle, 0 );
+
+			while ( ( $csv_row = fgetcsv( $file_handle, 0 ) ) !== false ) { // phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
+
+				foreach ( $column_headers as $key => $header ) {
+					if ( ! $header ) {
+						continue;
+					}
+					$data[ $header ] = ( isset( $csv_row[ $key ] ) ) ? trim( Importer_Utils\format_data( $csv_row[ $key ], $file_encoding ) ) : '';
+				}
+
+
+				self::$row_number++;
+				$all_terms[] = $data;
+			}
+			fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+
+			$split_terms = array_reduce(
+				$all_terms,
+				function( $acc, $term ) {
+					if ( empty( $term['term_parent'] ) ) {
+						$acc['parent'][] = $term;
+					} else {
+						$acc['child'][] = $term;
+					}
+					return $acc;
+				},
+				[
+					'child'  => [],
+					'parent' => [],
+				]
+			);
+
+			foreach ( $split_terms['parent'] as $parent_term ) {
+				$options = [
+					'parent' => self::$directory_category,
+					'slug'   => $parent_term['term_slug'], // All parent categories should be nested under 'Directory' category.
+				];
+
+				if ( ! empty( $parent_term['term_content'] ) ) {
+					$options['description'] = $parent_term['term_content'];
+				}
+				$term = self::handle_terms( $parent_term['term_title'], 'category', $options );
+				WP_CLI::success(
+					sprintf(
+						'Category %s imported successfully as term ID %s.',
+						$parent_term['term_title'],
+						$term
+					)
+				);
+			}
+
+			foreach ( $split_terms['child'] as $child_term ) {
+				$parent  = get_term_by( 'slug', $child_term['term_parent'], 'category' );
+				$options = [
+					'parent' => $parent && isset( $parent->term_id ) ? $parent->term_id : self::$directory_category,
+					'slug'   => $child_term['term_slug'],
+				];
+
+				if ( ! empty( $child_term['term_content'] ) ) {
+					$options['description'] = $child_term['term_content'];
+				}
+				$term = self::handle_terms( $child_term['term_title'], 'category', $options );
+				WP_CLI::success(
+					sprintf(
+						'Category “%s” imported successfully as term ID %s.',
+						$child_term['term_title'],
+						$term
+					)
+				);
+			}
+		}
 	}
 
 	/**
@@ -287,6 +479,13 @@ final class Newspack_Listings_Importer {
 			wpcom_vip_get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ) :
 			get_page_by_title( $data['post_title'], OBJECT, $post_type_to_create ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_page_by_title_get_page_by_title
 
+		if ( 'update' === self::$skip && $existing_post ) {
+			WP_CLI::log(
+				sprintf( '%s already imported; skipping.', $existing_post->post_title )
+			);
+			return;
+		}
+
 		// Post data to be inserted in WP.
 		$post = [
 			'post_author'  => 1, // Default user in case author isn't defined.
@@ -334,41 +533,64 @@ final class Newspack_Listings_Importer {
 			}
 		}
 
+		// GDG only: handle featured meta.
+		if ( ! empty( $data['entity_featured__value'] ) ) {
+			$post['meta_input']['newspack_listings_featured']          = true;
+			$post['meta_input']['newspack_listings_featured_priority'] = ! empty( $data['entity_featured__value'] ) ? $data['entity_featured__value'] : 5;
+
+			if ( ! empty( $data['entity_featured__expires_at'] ) ) {
+				$post['meta_input']['newspack_listings_featured_expires'] = wp_date( 'Y-m-d\TH:i:s', $data['entity_featured__expires_at'] );
+			}
+		}
+
 		// Handle post content.
 		$post['post_content'] = self::process_content( $data );
 
 		// Handle categories.
-		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['post_category'] ] ) ) {
+		if ( ! empty( $data[ $field_map['post_category'] ] ) ) {
 			$category_names        = explode( $separator, $data[ $field_map['post_category'] ] );
 			$category_ids          = self::handle_terms( $category_names, 'category' );
 			$post['post_category'] = $category_ids;
 		}
 
-		// Handle tags.
-		if ( ! self::$is_dry_run && ! empty( $data[ $field_map['tags_input'] ] ) ) {
-			$tag_names = explode( $separator, $data[ $field_map['tags_input'] ] );
-			$tag_ids   = self::handle_terms( $tag_names, 'category' ); // For GDG, they want tags and categories to all be tags.
+		// GDG only: If the item has a `field_business_label` value, apply those as listing Label terms.
+		$listing_label_ids = [];
 
-			// For GDG, they want tags and categories to all be tags.
-			$post['post_category'] = array_merge( $post['post_category'], $tag_ids );
+		if ( ! empty( $data['field_business_label'] ) ) {
+			$labels_to_combine   = [
+				'LGTBQ-Owned BUSINESS'                     => 'LGBTQ-Owned/Operated',
+				'DBA MEMBER OUR LGBTQ Chamber of Commerce' => 'DBA Member-Our LGBTQ Chamber of Commerce',
+				'Recommended'                              => 'As Heard on KGAY',
+			];
+			$listing_label_names = explode( $separator, $data['field_business_label'] );
+			$listing_label_names = array_map(
+				function( $label_name ) use ( $labels_to_combine ) {
+					if ( in_array( $label_name, array_keys( $labels_to_combine ) ) ) {
+						return $labels_to_combine[ $label_name ];
+					}
+
+					return $label_name;
+				},
+				$listing_label_names
+			);
+
+			$listing_label_ids = self::handle_terms( $listing_label_names, self::$listing_label_tax );
+			$post['tax_input'] = [];
 		}
 
+		// Handle tags.
+		if ( ! empty( $data[ $field_map['tags_input'] ] ) ) {
+			$tag_names = explode( $separator, $data[ $field_map['tags_input'] ] );
+			$tag_ids   = self::handle_terms( $tag_names, 'post_tag' );
 
-		// GDG only: handle primary category. ALL-CAPS categories are primary.
-		$category_names   = ! empty( $category_names ) ? $category_names : [];
-		$tag_names        = ! empty( $tag_names ) ? $tag_names : [];
-		$primary_category = array_filter(
-			array_merge( $category_names, $tag_names ),
-			function( $cat_name ) {
-				return strtoupper( $cat_name ) === $cat_name;
-			}
-		);
-		if ( 0 < count( $primary_category ) ) {
-			$primary_category    = reset( $primary_category );
-			$primary_category_id = get_term_by( 'name', $primary_category, 'category' );
+			$post['tags_input'] = $tag_ids;
+		}
 
-			if ( $primary_category_id ) {
-				$post['meta_input']['_yoast_wpseo_primary_category'] = $primary_category_id;
+		// Handle meta fields.
+		$meta_keys = ! empty( $field_map['meta_input'] ) ? $field_map['meta_input'] : [];
+		foreach ( $meta_keys as $meta_key ) {
+			if ( ! empty( $data[ $meta_key ] ) ) {
+				$post['meta_input'] = array_merge( $post['meta_input'], [ $meta_key => $data[ $meta_key ] ] );
 			}
 		}
 
@@ -381,7 +603,24 @@ final class Newspack_Listings_Importer {
 		if ( self::$is_dry_run ) {
 			WP_CLI::success( $post['post_title'] . ' imported successfully.' );
 		} else {
-			$post_id = wp_insert_post( $post );
+			if ( $existing_post ) {
+				// If the post has already been imported, don't update the content as it may have already been worked on.
+				if ( 'content' === self::$skip ) {
+					unset( $post['post_content'] );
+				}
+				$post_id = wp_update_post( $post );
+			} else {
+				$post_id = wp_insert_post( $post );
+			}
+
+			// GDG only: we don't want Yoast primary categories.
+			delete_post_meta( $post_id, '_yoast_wpseo_primary_category' );
+
+			// GDG only: now that we have a post, assign any listing label terms as needed.
+			if ( 0 < count( $listing_label_ids ) ) {
+				wp_set_object_terms( $post_id, $listing_label_ids, self::$listing_label_tax );
+			}
+
 			WP_CLI::success( $post['post_title'] . ' imported successfully as post ID ' . $post_id . '.' );
 		}
 	}
@@ -476,7 +715,7 @@ final class Newspack_Listings_Importer {
 					! empty( $instagram_handle ) ? '"url": "' . esc_url( 'https://instagram.com/' . $instagram_handle ) . '",' : ''
 				)
 			),
-			! empty( $featured_image ) ? wp_kses_post( sprintf( '<!-- wp:image {"id":%1$s,"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="%2$s" alt="" class="wp-image-%1$s"/></figure><!-- /wp:image -->', $featured_image, esc_url( wp_get_attachment_image_url( $featured_image, 'large' ) ) ) ) : '',
+			! empty( $featured_image ) ? wp_kses_post( sprintf( '<!-- wp:image {"id":%1$s,"sizeSlug":"large","linkDestination":"none"} --><figure class="wp-block-image size-large"><img src="%2$s" alt="" class="wp-image-%1$s"/></figure><!-- /wp:image -->', $featured_image, esc_url( str_replace( 'https://https://', 'https://', wp_get_attachment_image_url( $featured_image, 'large' ) ) ) ) ) : '',
 			Importer_Utils\clean_content( $raw_content ),
 			! empty( $contact_email ) ? wp_kses_post( sprintf( '<!-- wp:jetpack/email {"email":"%1$s"} --><div class="wp-block-jetpack-email"><a href="mailto:%1$s">%1$s</a></div><!-- /wp:jetpack/email -->', $contact_email ) ) : '',
 			! empty( $contact_phone ) ? wp_kses_post( sprintf( '<!-- wp:jetpack/phone {"phone":"%1$s"} --><div class="wp-block-jetpack-phone"><a href="tel:%2$s">%1$s</a></div><!-- /wp:jetpack/phone -->', $contact_phone, preg_replace( '/[^0-9]/', '', $contact_phone ) ) ) : '',
@@ -523,26 +762,72 @@ final class Newspack_Listings_Importer {
 	 *
 	 * @param array  $term_names Array of term names to look up.
 	 * @param string $taxonomy Name of the taxonomy to look up or create.
+	 * @param array  $options If given, use for creating or updating the term.
 	 *
 	 * @return array Array of term IDs.
 	 */
-	public static function handle_terms( $term_names, $taxonomy ) {
+	public static function handle_terms( $term_names, $taxonomy = 'category', $options = [] ) {
 		$term_ids = [];
+		$single   = false;
+
+		if ( is_string( $term_names ) ) {
+			$single     = true;
+			$term_names = [ $term_names ];
+		}
 
 		foreach ( $term_names as $term_name ) {
-			$term = get_term_by( 'name', $term_name, $taxonomy, ARRAY_A );
+			$term_name = (string) $term_name;
 
-			if ( ! $term ) {
-				$term = wp_insert_term( $term_name, $taxonomy );
+			if ( empty( $term_name ) ) {
+				continue;
 			}
 
-			// GDG only: remove existing tags, since they're being imported as categories.
-			$tag = get_term_by( 'name', $term_name, 'post_tag', ARRAY_A );
-			if ( $tag ) {
-				wp_delete_term( $tag['term_id'], 'post_tag' );
+			// For GDG, they originally wanted tags and categories to all be categories, but I disagree. Delete any categories that come from tags.
+			if ( 'post_tag' === $taxonomy ) {
+				$tag_as_category = get_term_by( 'name', $term_name, 'category' );
+				$tag_as_category = is_array( $tag_as_category ) && 0 < count( $tag_as_category ) ? reset( $tag_as_category ) : false;
+
+				if ( $tag_as_category ) {
+					wp_delete_term( $tag_as_category->term_id, 'category', [ 'default' => self::$directory_category ] );
+				}
 			}
 
-			$term_id    = $term['term_id'];
+			$terms = get_terms(
+				[
+					'hide_empty' => false,
+					'number'     => 1,
+					'name'       => $term_name,
+					'taxonomy'   => $taxonomy,
+				]
+			);
+			$term  = is_array( $terms ) && 0 < count( $terms ) ? (array) reset( $terms ) : false;
+			$args  = wp_parse_args(
+				$options,
+				[
+					'slug' => sanitize_title( $term_name ),
+				]
+			);
+
+			if ( ! self::$is_dry_run ) {
+				if ( $term && isset( $term['term_id'] ) ) {
+					wp_update_term( $term['term_id'], $taxonomy, $args );
+				} else {
+					$term = wp_insert_term( $term_name, $taxonomy, $args );
+				}
+			}
+
+			if ( is_wp_error( $term ) ) {
+				$err = sprintf( '❗ ERROR while importing %s: %s ', $term_name, $term->get_error_messages()[0] ?? '?' );
+				WP_CLI::log( $err );
+				continue;
+			}
+
+			$term_id = $term['term_id'] ?? 1;
+
+			if ( $single ) {
+				return $term_id;
+			}
+
 			$term_ids[] = $term_id;
 		}
 
