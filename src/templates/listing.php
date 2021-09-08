@@ -58,7 +58,7 @@ call_user_func(
 				</span>
 				<?php
 			elseif ( $attributes['showCategory'] ) :
-				$categories = get_the_terms( $post->ID, 'category' );
+				$categories = get_the_category( $post->ID );
 
 				if ( is_array( $categories ) && 0 < count( $categories ) ) :
 					?>
