@@ -1,3 +1,10 @@
+# [2.4.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.3.0...v2.4.0-alpha.1) (2021-09-08)
+
+
+### Features
+
+* allow empty prefix slug; tweaks for GDG import ([#112](https://github.com/Automattic/newspack-listings/issues/112)) ([a5a6be6](https://github.com/Automattic/newspack-listings/commit/a5a6be6ef20b349e4ddae88385af2901ff820a44))
+
 # [2.3.0](https://github.com/Automattic/newspack-listings/compare/v2.2.0...v2.3.0) (2021-08-10)
 
 
