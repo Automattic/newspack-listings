@@ -83,7 +83,7 @@ final class Newspack_Listings_Products {
 		$product_id = get_option( self::NEWSPACK_LISTINGS_PRODUCT_OPTION, false );
 		if ( ! $product_id ) {
 			$settings     = Settings::get_settings();
-			$product_name = __( 'Self-Service Listings', 'newspack-listings' );
+			$product_name = __( 'Self-Serve Listings', 'newspack-listings' );
 
 			// Parent product.
 			$parent_product = new \WC_Product_Grouped();
@@ -96,7 +96,7 @@ final class Newspack_Listings_Products {
 			// Single listing product.
 			$single_product = new \WC_Product_Simple();
 			/* translators: %s: Product name */
-			$single_product->set_name( sprintf( __( '%s: Single Marketplace Listing', 'newspack-listings' ), $product_name ) );
+			$single_product->set_name( sprintf( __( '%s: Single Listing', 'newspack-listings' ), $product_name ) );
 			$single_product->set_regular_price( $settings['newspack_listings_single_price'] );
 			$single_product->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_single_price' );
 			$single_product->set_virtual( true );
@@ -120,7 +120,7 @@ final class Newspack_Listings_Products {
 			// Monthly subscription product.
 			$monthly_product = new \WC_Product_Subscription();
 			/* translators: %s: Product name */
-			$monthly_product->set_name( sprintf( __( '%s: Monthly Business Subscription', 'newspack-listings' ), $product_name ) );
+			$monthly_product->set_name( sprintf( __( '%s: Monthly Subscription', 'newspack-listings' ), $product_name ) );
 			$monthly_product->set_regular_price( $settings['newspack_listings_subscription_price'] );
 			$monthly_product->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_subscription_price' );
 			$monthly_product->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_subscription_price'] ) );

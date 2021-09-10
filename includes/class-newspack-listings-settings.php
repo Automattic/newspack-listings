@@ -141,13 +141,13 @@ final class Newspack_Listings_Settings {
 				[
 					'description' => __( 'If turned off, any user-generated listings that were previously published will no longer be publicly visible.', 'newspack-listings' ),
 					'key'         => 'newspack_listings_self_service_enabled',
-					'label'       => __( 'Enable self-service listings', 'newpack-listings' ),
+					'label'       => __( 'Enable self-serve listings', 'newpack-listings' ),
 					'type'        => 'checkbox',
 					'value'       => false,
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The base price for a single Marketplace or Event listing (no subscription).', 'newspack-listings' ),
+					'description' => __( 'The base price for a single listing (no subscription). Single listings expire after 30 days.', 'newspack-listings' ),
 					'key'         => 'newspack_listings_single_price',
 					'label'       => __( 'Single listing price', 'newpack-listings' ),
 					'type'        => 'number',
@@ -155,7 +155,7 @@ final class Newspack_Listings_Settings {
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The base monthly subscription price for a Place listing.', 'newspack-listings' ),
+					'description' => __( 'The base monthly subscription price. This fee is charged monthly.', 'newspack-listings' ),
 					'key'         => 'newspack_listings_subscription_price',
 					'label'       => __( 'Monthly subscription listing price', 'newpack-listings' ),
 					'type'        => 'number',
@@ -171,7 +171,7 @@ final class Newspack_Listings_Settings {
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The add-on price for a premium subscription, which allows subscribers to create up to 5 featured Marketplace or Event listings per month. This fee is charged monthly.', 'newspack-listings' ),
+					'description' => __( 'The add-on price for a premium subscription, which allows subscribers to create up to 5 featured listings linked to the primary listing per month. This fee is charged monthly.', 'newspack-listings' ),
 					'key'         => 'newspack_listings_premium_subscription_add_on',
 					'label'       => __( 'Add-on: Premium subscription price', 'newpack-listings' ),
 					'type'        => 'number',
