@@ -45,7 +45,7 @@ final class Newspack_Listings_Settings {
 		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_DEV_MODE' ) && NEWSPACK_LISTINGS_DEV_MODE ) {
 			$sections['product'] = [
 				'slug'  => 'newspack_listings_product_settings',
-				'title' => __( 'Self Service Settings', 'newspack-listings' ),
+				'title' => __( 'Self-Serve Settings', 'newspack-listings' ),
 			];
 		}
 
