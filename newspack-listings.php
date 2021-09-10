@@ -32,6 +32,11 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-taxonomies.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-api.php';
 
+// Enable experimental/in-progress self-serve listings functionality.
+if ( defined( 'NEWSPACK_LISTINGS_DEV_MODE' ) && NEWSPACK_LISTINGS_DEV_MODE ) {
+	require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-products.php';
+}
+
 // CLI importer files.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/newspack-listings-importer-utils.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-newspack-listings-importer.php';
