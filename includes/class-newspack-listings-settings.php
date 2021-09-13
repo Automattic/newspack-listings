@@ -42,7 +42,7 @@ final class Newspack_Listings_Settings {
 		];
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_DEV_MODE' ) && NEWSPACK_LISTINGS_DEV_MODE ) {
+		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
 			$sections['product'] = [
 				'slug'  => 'newspack_listings_product_settings',
 				'title' => __( 'Self-Serve Settings', 'newspack-listings' ),
@@ -136,7 +136,7 @@ final class Newspack_Listings_Settings {
 		];
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_DEV_MODE' ) && NEWSPACK_LISTINGS_DEV_MODE ) {
+		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
 			$product_settings = [
 				[
 					'description' => __( 'If turned off, any user-generated listings that were previously published will no longer be publicly visible.', 'newspack-listings' ),
@@ -163,17 +163,17 @@ final class Newspack_Listings_Settings {
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The add-on price to make the primary listing "featured." For subscription listings, this fee is charged monthly.', 'newspack-listings' ),
+					'description' => __( 'The upgrade price to make the primary listing "featured." For subscription listings, this fee is charged monthly.', 'newspack-listings' ),
 					'key'         => 'newspack_listings_featured_add_on',
-					'label'       => __( 'Add-on: Featured listing price', 'newpack-listings' ),
+					'label'       => __( 'Upgrade: Featured listing price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 75,
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The add-on price for a premium subscription, which allows subscribers to create up to 5 featured listings linked to the primary listing per month. This fee is charged monthly.', 'newspack-listings' ),
+					'description' => __( 'The upgrade price for a premium subscription, which allows subscribers to create up to 5 featured listings linked to the primary listing per month. This fee is charged monthly.', 'newspack-listings' ),
 					'key'         => 'newspack_listings_premium_subscription_add_on',
-					'label'       => __( 'Add-on: Premium subscription price', 'newpack-listings' ),
+					'label'       => __( 'Upgrade: Premium subscription price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 100,
 					'section'     => $sections['product']['slug'],

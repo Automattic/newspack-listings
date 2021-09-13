@@ -105,17 +105,17 @@ final class Newspack_Listings_Products {
 			$single_product->set_sold_individually( true );
 			$single_product->save();
 
-			// Single "featured" listing add-on.
-			$featured_addon_single = new \WC_Product_Simple();
+			// Single "featured" listing upgrade.
+			$featured_upgrade_single = new \WC_Product_Simple();
 			/* translators: %s: Product name */
-			$featured_addon_single->set_name( sprintf( __( '%s: “Featured” Listing Add-On', 'newspack-listings' ), $product_name ) );
-			$featured_addon_single->set_regular_price( $settings['newspack_listings_featured_add_on'] );
-			$featured_addon_single->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_featured_add_on' );
-			$featured_addon_single->set_virtual( true );
-			$featured_addon_single->set_downloadable( true );
-			$featured_addon_single->set_catalog_visibility( 'hidden' );
-			$featured_addon_single->set_sold_individually( true );
-			$featured_addon_single->save();
+			$featured_upgrade_single->set_name( sprintf( __( '%s: “Featured” Listing Upgrade', 'newspack-listings' ), $product_name ) );
+			$featured_upgrade_single->set_regular_price( $settings['newspack_listings_featured_add_on'] );
+			$featured_upgrade_single->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_featured_add_on' );
+			$featured_upgrade_single->set_virtual( true );
+			$featured_upgrade_single->set_downloadable( true );
+			$featured_upgrade_single->set_catalog_visibility( 'hidden' );
+			$featured_upgrade_single->set_sold_individually( true );
+			$featured_upgrade_single->save();
 
 			// Monthly subscription product.
 			$monthly_product = new \WC_Product_Subscription();
@@ -132,43 +132,43 @@ final class Newspack_Listings_Products {
 			$monthly_product->set_sold_individually( true );
 			$monthly_product->save();
 
-			// Monthly "featured" listing add-on.
-			$featured_addon_monthly = new \WC_Product_Subscription();
+			// Monthly "featured" listing upgrade.
+			$featured_upgrade_monthly = new \WC_Product_Subscription();
 			/* translators: %s: Product name */
-			$featured_addon_monthly->set_name( sprintf( __( '%s: “Featured” Listing Add-On (subscription)', 'newspack-listings' ), $product_name ) );
-			$featured_addon_monthly->set_regular_price( $settings['newspack_listings_featured_add_on'] );
-			$featured_addon_monthly->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_featured_add_on' );
-			$featured_addon_monthly->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_featured_add_on'] ) );
-			$featured_addon_monthly->update_meta_data( '_subscription_period', 'month' );
-			$featured_addon_monthly->update_meta_data( '_subscription_period_interval', 1 );
-			$featured_addon_monthly->set_virtual( true );
-			$featured_addon_monthly->set_downloadable( true );
-			$featured_addon_monthly->set_catalog_visibility( 'hidden' );
-			$featured_addon_monthly->set_sold_individually( true );
-			$featured_addon_monthly->save();
+			$featured_upgrade_monthly->set_name( sprintf( __( '%s: “Featured” Listing Upgrade (subscription)', 'newspack-listings' ), $product_name ) );
+			$featured_upgrade_monthly->set_regular_price( $settings['newspack_listings_featured_add_on'] );
+			$featured_upgrade_monthly->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_featured_add_on' );
+			$featured_upgrade_monthly->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_featured_add_on'] ) );
+			$featured_upgrade_monthly->update_meta_data( '_subscription_period', 'month' );
+			$featured_upgrade_monthly->update_meta_data( '_subscription_period_interval', 1 );
+			$featured_upgrade_monthly->set_virtual( true );
+			$featured_upgrade_monthly->set_downloadable( true );
+			$featured_upgrade_monthly->set_catalog_visibility( 'hidden' );
+			$featured_upgrade_monthly->set_sold_individually( true );
+			$featured_upgrade_monthly->save();
 
-			// Monthly "premium subscription" add-on.
-			$premium_addon_monthly = new \WC_Product_Subscription();
+			// Monthly "premium subscription" upgrade.
+			$premium_upgrade_monthly = new \WC_Product_Subscription();
 			/* translators: %s: Product name */
-			$premium_addon_monthly->set_name( sprintf( __( '%s: Premium Subscription Add-On', 'newspack-listings' ), $product_name ) );
-			$premium_addon_monthly->set_regular_price( $settings['newspack_listings_premium_subscription_add_on'] );
-			$premium_addon_monthly->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_premium_subscription_add_on' );
-			$premium_addon_monthly->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_premium_subscription_add_on'] ) );
-			$premium_addon_monthly->update_meta_data( '_subscription_period', 'month' );
-			$premium_addon_monthly->update_meta_data( '_subscription_period_interval', 1 );
-			$premium_addon_monthly->set_virtual( true );
-			$premium_addon_monthly->set_downloadable( true );
-			$premium_addon_monthly->set_catalog_visibility( 'hidden' );
-			$premium_addon_monthly->set_sold_individually( true );
-			$premium_addon_monthly->save();
+			$premium_upgrade_monthly->set_name( sprintf( __( '%s: Premium Subscription Upgrade', 'newspack-listings' ), $product_name ) );
+			$premium_upgrade_monthly->set_regular_price( $settings['newspack_listings_premium_subscription_add_on'] );
+			$premium_upgrade_monthly->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_premium_subscription_add_on' );
+			$premium_upgrade_monthly->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_premium_subscription_add_on'] ) );
+			$premium_upgrade_monthly->update_meta_data( '_subscription_period', 'month' );
+			$premium_upgrade_monthly->update_meta_data( '_subscription_period_interval', 1 );
+			$premium_upgrade_monthly->set_virtual( true );
+			$premium_upgrade_monthly->set_downloadable( true );
+			$premium_upgrade_monthly->set_catalog_visibility( 'hidden' );
+			$premium_upgrade_monthly->set_sold_individually( true );
+			$premium_upgrade_monthly->save();
 
 			$parent_product->set_children(
 				[
 					$single_product->get_id(),
-					$featured_addon_single->get_id(),
+					$featured_upgrade_single->get_id(),
 					$monthly_product->get_id(),
-					$featured_addon_monthly->get_id(),
-					$premium_addon_monthly->get_id(),
+					$featured_upgrade_monthly->get_id(),
+					$premium_upgrade_monthly->get_id(),
 				]
 			);
 			$parent_product->save();
