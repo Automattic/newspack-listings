@@ -136,7 +136,7 @@ final class Newspack_Listings_Settings {
 		];
 
 		// If Related Posts is on, show the setting to hide it.
-		if ( true || class_exists( 'Jetpack_RelatedPosts' ) ) {
+		if ( class_exists( 'Jetpack_RelatedPosts' ) ) {
 			$settings[] = [
 				'description' => __( 'Hide <a href="/wp-admin/admin.php?page=jetpack#/traffic">Jetpack’s Related Posts module</a> on individual listing pages.', 'newspack-listings' ),
 				'key'         => 'newspack_listings_hide_jetpack_related_posts',
