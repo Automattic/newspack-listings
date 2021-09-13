@@ -74,6 +74,7 @@ final class Newspack_Listings_Core {
 		add_filter( 'newspack_listings_hide_publish_date', [ __CLASS__, 'hide_publish_date' ] );
 		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
 		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_newspack_sponsors' ] );
+		add_filter( 'jetpack_relatedposts_filter_options', [ __CLASS__, 'disable_jetpack_related_posts' ] );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -732,6 +733,22 @@ final class Newspack_Listings_Core {
 			$post_types,
 			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
 		);
+	}
+
+	/**
+	 * Disable Jetpack Related Posts on singular listng posts.
+	 *
+	 * @param array $options Options array for Jetpack Related Posts.
+	 * @return array Filtered options array.
+	 */
+	public static function disable_jetpack_related_posts( $options ) {
+		$disable_jetpack_related_posts = Settings::get_settings( 'newspack_listings_hide_jetpack_related_posts' );
+
+		if ( is_singular( array_values( self::NEWSPACK_LISTINGS_POST_TYPES ) ) && ! empty( $disable_jetpack_related_posts ) ) {
+			$options['enabled'] = false;
+		}
+
+		return $options;
 	}
 
 	/**
