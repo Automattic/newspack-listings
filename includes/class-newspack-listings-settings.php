@@ -118,6 +118,14 @@ final class Newspack_Listings_Settings {
 				'section'     => $sections['meta']['slug'],
 			],
 			[
+				'description' => __( 'Disables Yoast primary category functionality for all listings.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_disable_yoast_primary_categories',
+				'label'       => __( 'Disable Yoast primary categories', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
+				'section'     => $sections['meta']['slug'],
+			],
+			[
 				'description' => __( 'This setting can be overridden per listing, post, or page.', 'newspack-listings' ),
 				'key'         => 'newspack_listings_hide_parents',
 				'label'       => __( 'Hide parent listings by default', 'newpack-listings' ),

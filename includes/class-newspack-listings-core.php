@@ -74,6 +74,7 @@ final class Newspack_Listings_Core {
 		add_filter( 'newspack_listings_hide_publish_date', [ __CLASS__, 'hide_publish_date' ] );
 		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
 		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_newspack_sponsors' ] );
+		add_filter( 'wpseo_primary_term_taxonomies', [ $this, 'disable_yoast_primary_categories' ], 10, 2 );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -732,6 +733,23 @@ final class Newspack_Listings_Core {
 			$post_types,
 			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
 		);
+	}
+
+	/**
+	 * Disable the Yoast primary category picker for Listing CPTs.
+	 *
+	 * @param array  $taxonomies Array of taxonomies.
+	 * @param string $post_type Post type of the current post.
+	 */
+	public function disable_yoast_primary_categories( $taxonomies, $post_type ) {
+		$disable_yoast = Settings::get_settings( 'newspack_listings_disable_yoast_primary_categories' );
+
+		// Disable for all taxonomies on Listing CPTs.
+		if ( ! is_wp_error( $disable_yoast ) && ! empty( $disable_yoast ) && self::is_listing() ) {
+			return [];
+		}
+
+		return $taxonomies;
 	}
 
 	/**
