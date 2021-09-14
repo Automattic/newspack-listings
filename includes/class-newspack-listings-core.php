@@ -74,7 +74,8 @@ final class Newspack_Listings_Core {
 		add_filter( 'newspack_listings_hide_publish_date', [ __CLASS__, 'hide_publish_date' ] );
 		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
 		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_newspack_sponsors' ] );
-		add_filter( 'wpseo_primary_term_taxonomies', [ $this, 'disable_yoast_primary_categories' ], 10, 2 );
+		add_filter( 'wpseo_primary_term_taxonomies', [ __CLASS__, 'disable_yoast_primary_categories' ], 10, 2 );
+		add_action( 'pre_get_posts', [ __CLASS__, 'enable_listing_category_archives' ], 11 );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -146,8 +147,9 @@ final class Newspack_Listings_Core {
 		$settings          = Settings::get_settings();
 		$prefix            = $settings['newspack_listings_permalink_prefix'];
 		$prefix            = ! empty( $prefix ) ? $prefix . '/' : '';
+		$show_in_archives  = ! empty( $settings['newspack_listings_enable_archives'] ) ? true : false;
 		$default_config    = [
-			'has_archive'  => false,
+			'has_archive'  => $show_in_archives,
 			'public'       => true,
 			'show_in_menu' => 'newspack-listings',
 			'show_in_rest' => true,
@@ -689,7 +691,7 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * Adds additional utility classes to the body element for single listing pages.
+	 * Adds additional utility classes to the body element for single listing or listing archive pages.
 	 *
 	 * If using the single-featured or wide templates, apply a body class to listing posts
 	 * so that they inherit theme styles for that template.
@@ -698,7 +700,34 @@ final class Newspack_Listings_Core {
 	 * @return array Filtered array of body classes.
 	 */
 	public static function set_template_class( $classes ) {
-		if ( self::is_listing() ) {
+		$listing_post_types = array_values( self::NEWSPACK_LISTINGS_POST_TYPES );
+
+		// If an archive.
+		if ( is_post_type_archive( $listing_post_types ) || is_category() || is_tag() ) {
+			global $wp_query;
+
+			// If all of the items in the first set of results are listings, assume it's a listings-only archive.
+			$is_all_listings = true;
+
+			foreach ( $wp_query->posts as $post ) {
+				if ( ! in_array( $post->post_type, $listing_post_types ) ) {
+					$is_all_listings = false;
+				}
+			}
+
+			if ( $is_all_listings ) {
+				$classes[] = 'newspack-listings';
+
+				// If the "show as grid" option is enabled, let's check if the results are mostly listings.
+				$show_as_grid = Settings::get_settings( 'newspack_listings_archive_grid' );
+				if ( $show_as_grid ) {
+					$classes[] = 'newspack-listings-grid';
+				}
+			}
+		}
+
+		// If a singular listing.
+		if ( is_singular( $listing_post_types ) ) {
 			$classes[]    = 'newspack-listings';
 			$term_classes = Utils\get_term_classes();
 			$classes      = array_merge( $classes, $term_classes );
@@ -741,7 +770,7 @@ final class Newspack_Listings_Core {
 	 * @param array  $taxonomies Array of taxonomies.
 	 * @param string $post_type Post type of the current post.
 	 */
-	public function disable_yoast_primary_categories( $taxonomies, $post_type ) {
+	public static function disable_yoast_primary_categories( $taxonomies, $post_type ) {
 		$disable_yoast = Settings::get_settings( 'newspack_listings_disable_yoast_primary_categories' );
 
 		// Disable for all taxonomies on Listing CPTs.
@@ -750,6 +779,42 @@ final class Newspack_Listings_Core {
 		}
 
 		return $taxonomies;
+	}
+
+	/**
+	 * Allows listing post types to be displayed in taxonomy term archive pages.
+	 * TODO: Enable re-sorting of query to show featured listings first (requires optimization).
+	 *
+	 * @param WP_Query $query Query.
+	 */
+	public static function enable_listing_category_archives( $query ) {
+		$show_in_archives = Settings::get_settings( 'newspack_listings_enable_archives' );
+
+		// Only if archives are enabled in Settings.
+		if ( empty( $show_in_archives ) ) {
+			return;
+		}
+
+		if ( ! is_admin() && $query->is_main_query() ) {
+			if ( is_category() || is_tag() ) {
+				$existing_post_types = $query->get( 'post_type' );
+
+				// Don't alter the query for templates.
+				if ( 'wp_template' === $existing_post_types ) {
+					return;
+				}
+
+				// If the query has no post type, assume "post" only.
+				if ( empty( $existing_post_types ) ) {
+					$existing_post_types = [ 'post' ];
+				}
+
+				// Add listings to category/tag archives.
+				$listing_post_types = array_values( self::NEWSPACK_LISTINGS_POST_TYPES );
+				$post_types         = array_values( array_merge( $existing_post_types, $listing_post_types ) );
+				$query->set( 'post_type', $post_types );
+			}
+		}
 	}
 
 	/**
