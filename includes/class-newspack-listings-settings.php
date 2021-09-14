@@ -294,7 +294,7 @@ final class Newspack_Listings_Settings {
 			);
 
 			// Flush permalinks when permalink option is updated.
-			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug)/', $setting['key'] );
+			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug)/', $setting['key'] ) || 'newspack_listings_enable_archives' === $setting['key'];
 			if ( $is_permalink_option ) {
 				add_action( 'update_option_' . $setting['key'], [ __CLASS__, 'flush_permalinks' ], 10, 3 );
 			}
