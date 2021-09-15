@@ -704,17 +704,7 @@ final class Newspack_Listings_Core {
 
 		// If an archive.
 		if ( is_post_type_archive( $listing_post_types ) || is_category() || is_tag() ) {
-			global $wp_query;
-
-			// If all of the items in the first set of results are listings, assume it's a listings-only archive.
-			$is_all_listings = true;
-
-			foreach ( $wp_query->posts as $post ) {
-				if ( ! in_array( $post->post_type, $listing_post_types ) ) {
-					$is_all_listings = false;
-				}
-			}
-
+			$is_all_listings = Utils\all_posts_are_type( $listing_post_types );
 			if ( $is_all_listings ) {
 				$classes[] = 'newspack-listings';
 
