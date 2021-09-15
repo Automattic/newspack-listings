@@ -16,7 +16,7 @@ const { attributes, category, name } = metadata;
 
 export const registerCuratedListBlock = () => {
 	registerBlockType( name, {
-		title: __( 'Curated List', 'newspack-listing' ),
+		title: __( 'Curated List', 'newspack-listings' ),
 		icon: {
 			src: <List />,
 			foreground: '#36f',
