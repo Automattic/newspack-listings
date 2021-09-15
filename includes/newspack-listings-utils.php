@@ -424,6 +424,10 @@ function get_term_classes( $post_id = null ) {
 function all_posts_are_type( $post_type = 'post' ) {
 	global $wp_query;
 
+	if ( ! is_array( $post_type ) ) {
+		$post_type = [ $post_type ];
+	}
+
 	// If all of the items in the first set of results match the given type.
 	$matches_type = true;
 
