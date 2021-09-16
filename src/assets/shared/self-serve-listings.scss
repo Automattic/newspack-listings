@@ -1,0 +1,47 @@
+@import './variables.scss';
+
+.newspack-listings__self-serve-form {
+	.frequency {
+		@media only screen and ( min-width: $tablet_width ) {
+			.freq-label {
+				width: 50%;
+
+				&.listing-subscription {
+					border-right: none;
+					left: 50%;
+				}
+			}
+		}
+	}
+
+	.input-container {
+		margin: 0.76rem;
+		display: none;
+
+		@media only screen and ( min-width: $tablet_width ) {
+			margin: 1.5rem 1.5rem 0.76rem;
+		}
+	}
+
+	input[type='radio']:checked ~ .input-container {
+		display: block;
+	}
+
+	button {
+		background: var( --newspack-listings--secondary );
+		border: none;
+		border-radius: 5px;
+		box-sizing: border-box;
+		color: var( --newspack-listings--background );
+		font-size: 1rem;
+		font-weight: bold;
+		outline: none;
+		line-height: 3em;
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	&.single-only .frequencies {
+		display: none;
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"name": "newspack-listings/self-serve-listings",
+	"category": "newspack",
+	"attributes": {
+		"allowSubscription": {
+			"type": "boolean",
+			"default": true
+		},
+		"buttonText": {
+			"type": "string",
+			"default": "Purchase"
+		}
+	}
+}
