@@ -7,6 +7,8 @@
 
 namespace Newspack_Listings\Utils;
 
+use \Newspack_Listings\Newspack_Listings_Featured as Featured;
+
 /**
  * Sanitize an array of text or number values.
  *
@@ -407,9 +409,19 @@ function get_term_classes( $post_id = null ) {
 		[]
 	);
 
+	// If the item is featured, get class names for its feature priority level.
+	$feature_classes = [];
+	$is_featured     = get_post_meta( $post_id, Featured::META_KEYS['featured'], true );
+	if ( $is_featured ) {
+		$feature_priority  = get_post_meta( $post_id, Featured::META_KEYS['priority'], true );
+		$feature_classes[] = 'featured-listing';
+		$feature_classes[] = 'featured-listing-priority-' . strval( $feature_priority );
+	}
+
 	return array_merge(
 		$base_classes,
 		$category_classes,
-		$tag_classes
+		$tag_classes,
+		$feature_classes
 	);
 }

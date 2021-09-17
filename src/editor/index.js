@@ -16,6 +16,7 @@ import {
 	setCustomCategory,
 } from '../blocks';
 import { ShadowTaxonomies } from './shadow-taxonomies';
+import { FeaturedListings } from './featured-listings';
 import { isListing } from './utils';
 import './style.scss';
 
@@ -33,6 +34,11 @@ if ( isListing() ) {
 		// Register plugin editor settings.
 		registerPlugin( 'newspack-listings-editor', {
 			render: Sidebar,
+			icon: null,
+		} );
+		// Register plugin editor settings.
+		registerPlugin( 'newspack-listings-featured', {
+			render: FeaturedListings,
 			icon: null,
 		} );
 	}
