@@ -310,7 +310,14 @@ final class Newspack_Listings_Featured {
 
 		foreach ( $featured_listings_with_expiration as $featured_listing ) {
 			$expiration_date = get_post_meta( $featured_listing->ID, 'newspack_listings_featured_expires', true );
-			$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( get_option( 'timezone_string', 'UTC' ) ) );
+			$timezone        = get_option( 'timezone_string', 'UTC' );
+
+			// Guard against 'Unknown or bad timezone' PHP error.
+			if ( empty( trim( $timezone ) ) ) {
+				$timezone = 'UTC';
+			}
+
+			$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( $timzeone ) );
 			$date_has_passed = 0 > $parsed_date->getTimestamp() - time();
 
 			// If the expiration date has already passed, remove the featured status and query priority.
@@ -325,7 +332,14 @@ final class Newspack_Listings_Featured {
 	 * Get the UNIX timestamp for the next occurrence of midnight in the site's local timezone.
 	 */
 	public static function get_start_time() {
-		$next_midnight = new \DateTime( 'tomorrow', new \DateTimeZone( get_option( 'timezone_string', 'UTC' ) ) );
+		$timezone = get_option( 'timezone_string', 'UTC' );
+
+		// Guard against 'Unknown or bad timezone' PHP error.
+		if ( empty( trim( $timezone ) ) ) {
+			$timezone = 'UTC';
+		}
+
+		$next_midnight = new \DateTime( 'tomorrow', new \DateTimeZone( $timezone ) );
 		return $next_midnight->getTimestamp();
 	}
 }
