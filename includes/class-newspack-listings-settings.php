@@ -31,6 +31,10 @@ final class Newspack_Listings_Settings {
 				'slug'  => 'newspack_listings_url_settings',
 				'title' => __( 'Permalink Settings', 'newspack-listings' ),
 			],
+			'directory' => [
+				'slug'  => 'newspack_listings_directory_settings',
+				'title' => __( 'Automated Directory Settings', 'newspack-listings' ),
+			],
 			'meta'      => [
 				'slug'  => 'newspack_listings_meta_settings',
 				'title' => __( 'Post Meta Settings', 'newspack-listings' ),
@@ -38,10 +42,6 @@ final class Newspack_Listings_Settings {
 			'related'   => [
 				'slug'  => 'newspack_listings_related_settings',
 				'title' => __( 'Related Content Settings', 'newspack-listings' ),
-			],
-			'directory' => [
-				'slug'  => 'newspack_listings_directory_settings',
-				'title' => __( 'Automated Directory Settings', 'newspack-listings' ),
 			],
 		];
 
@@ -106,6 +106,22 @@ final class Newspack_Listings_Settings {
 				'section'     => $sections['url']['slug'],
 			],
 			[
+				'description' => __( 'Allows listings to appear in automated category, tag, and post type archives.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_enable_archives',
+				'label'       => __( 'Enable listing archives', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
+				'section'     => $sections['directory']['slug'],
+			],
+			[
+				'description' => __( 'If listing archives are enabled, shows listings-only archives in a grid-like layout.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_archive_grid',
+				'label'       => __( 'Show listing archives as grid', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
+				'section'     => $sections['directory']['slug'],
+			],
+			[
 				'description' => __( 'This setting can be overridden per listing.', 'newspack-listings' ),
 				'key'         => 'newspack_listings_hide_author',
 				'label'       => __( 'Hide authors for listings by default', 'newpack-listings' ),
@@ -144,22 +160,6 @@ final class Newspack_Listings_Settings {
 				'type'        => 'checkbox',
 				'value'       => false,
 				'section'     => $sections['related']['slug'],
-			],
-			[
-				'description' => __( 'Allows listings to appear in automated category, tag, and post type archives.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_enable_archives',
-				'label'       => __( 'Enable listing archives', 'newpack-listings' ),
-				'type'        => 'checkbox',
-				'value'       => false,
-				'section'     => $sections['directory']['slug'],
-			],
-			[
-				'description' => __( 'If listing archives are enabled, shows listings-only archives in a grid-like layout.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_archive_grid',
-				'label'       => __( 'Show listing archives as grid', 'newpack-listings' ),
-				'type'        => 'checkbox',
-				'value'       => false,
-				'section'     => $sections['directory']['slug'],
 			],
 		];
 
