@@ -75,6 +75,7 @@ final class Newspack_Listings_Core {
 		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
 		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_newspack_sponsors' ] );
 		add_filter( 'jetpack_relatedposts_filter_options', [ __CLASS__, 'disable_jetpack_related_posts' ] );
+		add_filter( 'jetpack_related_posts_customize_options', [ __CLASS__, 'disable_jetpack_related_posts_customizer' ] );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
 	}
 
@@ -746,6 +747,24 @@ final class Newspack_Listings_Core {
 
 		if ( is_singular( array_values( self::NEWSPACK_LISTINGS_POST_TYPES ) ) && ! empty( $disable_jetpack_related_posts ) ) {
 			$options['enabled'] = false;
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Disable Jetpack Related Posts Customizer UI on listing posts.
+	 *
+	 * @param array $options Array of options used to display Related Posts in the Customizer.
+	 *
+	 * @return array Filtered array of options.
+	 */
+	public static function disable_jetpack_related_posts_customizer( $options ) {
+		$disable_jetpack_related_posts = Settings::get_settings( 'newspack_listings_hide_jetpack_related_posts' );
+
+		// If previewing a singular listing and Related Posts is disabled via Listing settings, don't show the Related Posts UI in Customizer.
+		if ( is_singular( array_values( self::NEWSPACK_LISTINGS_POST_TYPES ) ) && ! empty( $disable_jetpack_related_posts ) ) {
+			$options['msg_go_to_single']['active_callback'] = '__return_true';
 		}
 
 		return $options;
