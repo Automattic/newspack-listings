@@ -106,9 +106,17 @@ final class Newspack_Listings_Settings {
 				'section'     => $sections['url']['slug'],
 			],
 			[
-				'description' => __( 'Allows listings to appear in automated category, tag, and post type archives.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_enable_archives',
-				'label'       => __( 'Enable listing archives', 'newpack-listings' ),
+				'description' => __( 'Enables automated archives for each listing type. Archives will use the permalink slugs set above.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_enable_post_type_archives',
+				'label'       => __( 'Enable listing type archives', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
+				'section'     => $sections['directory']['slug'],
+			],
+			[
+				'description' => __( 'Allows listings to appear in automated category and tag archives.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_enable_term_archives',
+				'label'       => __( 'Enable listing category/tag archives', 'newpack-listings' ),
 				'type'        => 'checkbox',
 				'value'       => false,
 				'section'     => $sections['directory']['slug'],
@@ -294,7 +302,7 @@ final class Newspack_Listings_Settings {
 			);
 
 			// Flush permalinks when permalink option is updated.
-			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug)/', $setting['key'] ) || 'newspack_listings_enable_archives' === $setting['key'];
+			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug|_archives)/', $setting['key'] );
 			if ( $is_permalink_option ) {
 				add_action( 'update_option_' . $setting['key'], [ __CLASS__, 'flush_permalinks' ], 10, 3 );
 			}

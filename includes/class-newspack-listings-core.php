@@ -147,7 +147,7 @@ final class Newspack_Listings_Core {
 		$settings          = Settings::get_settings();
 		$prefix            = $settings['newspack_listings_permalink_prefix'];
 		$prefix            = ! empty( $prefix ) ? $prefix . '/' : '';
-		$show_in_archives  = ! empty( $settings['newspack_listings_enable_archives'] ) ? true : false;
+		$show_in_archives  = ! empty( $settings['newspack_listings_enable_post_type_archives'] ) ? true : false;
 		$default_config    = [
 			'has_archive'  => $show_in_archives,
 			'public'       => true,
@@ -778,7 +778,7 @@ final class Newspack_Listings_Core {
 	 * @param WP_Query $query Query.
 	 */
 	public static function enable_listing_category_archives( $query ) {
-		$show_in_archives = Settings::get_settings( 'newspack_listings_enable_archives' );
+		$show_in_archives = Settings::get_settings( 'newspack_listings_enable_term_archives' );
 
 		// Only if archives are enabled in Settings.
 		if ( empty( $show_in_archives ) ) {
