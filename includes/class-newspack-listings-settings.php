@@ -27,15 +27,19 @@ final class Newspack_Listings_Settings {
 	 */
 	public static function get_sections() {
 		$sections = [
-			'url'     => [
+			'url'       => [
 				'slug'  => 'newspack_listings_url_settings',
 				'title' => __( 'Permalink Settings', 'newspack-listings' ),
 			],
-			'meta'    => [
+			'directory' => [
+				'slug'  => 'newspack_listings_directory_settings',
+				'title' => __( 'Automated Directory Settings', 'newspack-listings' ),
+			],
+			'meta'      => [
 				'slug'  => 'newspack_listings_meta_settings',
 				'title' => __( 'Post Meta Settings', 'newspack-listings' ),
 			],
-			'related' => [
+			'related'   => [
 				'slug'  => 'newspack_listings_related_settings',
 				'title' => __( 'Related Content Settings', 'newspack-listings' ),
 			],
@@ -102,6 +106,30 @@ final class Newspack_Listings_Settings {
 				'section'     => $sections['url']['slug'],
 			],
 			[
+				'description' => __( 'Enables automated archives for each listing type. Archives will use the permalink slugs set above.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_enable_post_type_archives',
+				'label'       => __( 'Enable listing type archives', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
+				'section'     => $sections['directory']['slug'],
+			],
+			[
+				'description' => __( 'Allows listings to appear in automated category and tag archives.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_enable_term_archives',
+				'label'       => __( 'Enable listing category/tag archives', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
+				'section'     => $sections['directory']['slug'],
+			],
+			[
+				'description' => __( 'If listing archives are enabled, shows listings-only archives in a grid-like layout.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_archive_grid',
+				'label'       => __( 'Show listing archives as grid', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
+				'section'     => $sections['directory']['slug'],
+			],
+			[
 				'description' => __( 'This setting can be overridden per listing.', 'newspack-listings' ),
 				'key'         => 'newspack_listings_hide_author',
 				'label'       => __( 'Hide authors for listings by default', 'newpack-listings' ),
@@ -115,6 +143,14 @@ final class Newspack_Listings_Settings {
 				'label'       => __( 'Hide publish and updated dates for listings by default', 'newpack-listings' ),
 				'type'        => 'checkbox',
 				'value'       => true,
+				'section'     => $sections['meta']['slug'],
+			],
+			[
+				'description' => __( 'Disables Yoast primary category functionality for all listings.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_disable_yoast_primary_categories',
+				'label'       => __( 'Disable Yoast primary categories', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => false,
 				'section'     => $sections['meta']['slug'],
 			],
 			[
@@ -266,7 +302,7 @@ final class Newspack_Listings_Settings {
 			);
 
 			// Flush permalinks when permalink option is updated.
-			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug)/', $setting['key'] );
+			$is_permalink_option = preg_match( '/newspack_listings_(.*)(_prefix|_slug|_archives)/', $setting['key'] );
 			if ( $is_permalink_option ) {
 				add_action( 'update_option_' . $setting['key'], [ __CLASS__, 'flush_permalinks' ], 10, 3 );
 			}

@@ -6,7 +6,6 @@ import { InspectorControls } from '@wordpress/block-editor';
 import {
 	BaseControl,
 	Button,
-	DatePicker,
 	DateTimePicker,
 	PanelBody,
 	PanelRow,
@@ -18,7 +17,11 @@ import { Fragment } from '@wordpress/element';
 export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 	const { endDate, showEnd, showTime, startDate } = attributes;
 	const { createNotice } = useDispatch( 'core/notices' );
-	const DatePickerComponent = showTime ? DateTimePicker : DatePicker;
+	const classes = [ 'newspack-listings__event-dates' ];
+
+	if ( ! showTime ) {
+		classes.push( 'hide-time' );
+	}
 
 	return (
 		<Fragment>
@@ -49,7 +52,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 				</PanelBody>
 			</InspectorControls>
 
-			<div className="newspack-listings__event-dates">
+			<div className={ classes.join( ' ' ) }>
 				<div className="newspack-listings__event-dates-controls">
 					<BaseControl
 						id={ `event-start-date-${ clientId }` }
@@ -59,10 +62,9 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 							showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 						) }
 					>
-						<DatePickerComponent
+						<DateTimePicker
 							currentDate={ startDate ? new Date( startDate ) : null }
 							is12Hour={ true }
-							onMonthPreviewed={ () => {} }
 							onChange={ value => {
 								if (
 									! value || // If clearing the value.
@@ -97,7 +99,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 								showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 							) }
 						>
-							<DatePickerComponent
+							<DateTimePicker
 								currentDate={ endDate ? new Date( endDate ) : null }
 								is12Hour={ true }
 								onChange={ value => {
