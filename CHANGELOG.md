@@ -1,3 +1,17 @@
+# [2.5.0](https://github.com/Automattic/newspack-listings/compare/v2.4.0...v2.5.0) (2021-09-21)
+
+
+### Bug Fixes
+
+* editor crash when switching months in event dates block ([#123](https://github.com/Automattic/newspack-listings/issues/123)) ([cee0d53](https://github.com/Automattic/newspack-listings/commit/cee0d5368cd52a2b91792c3c746394945f128adc))
+* fatal error when WooCommerce Subscriptions is not active ([#122](https://github.com/Automattic/newspack-listings/issues/122)) ([16ac166](https://github.com/Automattic/newspack-listings/commit/16ac166dd794ec6ab237fdd7bf0df70aee12b673))
+
+
+### Features
+
+* feature extensions from gdg ([#120](https://github.com/Automattic/newspack-listings/issues/120)) ([b2c3cc8](https://github.com/Automattic/newspack-listings/commit/b2c3cc8855acf80bdaa930714b3ffb44935c4426))
+* **ugc:** automated WC products for self-serve listings ([#117](https://github.com/Automattic/newspack-listings/issues/117)) ([6a44d86](https://github.com/Automattic/newspack-listings/commit/6a44d867f57fc94b957cd40396d6ec22c3a975fb))
+
 # [2.4.0](https://github.com/Automattic/newspack-listings/compare/v2.3.0...v2.4.0) (2021-09-08)
 
 
