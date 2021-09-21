@@ -425,3 +425,29 @@ function get_term_classes( $post_id = null ) {
 		$feature_classes
 	);
 }
+
+/**
+ * Check if all posts in the current loop query are the given post type(s).
+ *
+ * @param string|array $post_type Post type or array of post types to match against.
+ *
+ * @return boolean True if all posts are of the given type(s).
+ */
+function all_posts_are_type( $post_type = 'post' ) {
+	global $wp_query;
+
+	if ( ! is_array( $post_type ) ) {
+		$post_type = [ $post_type ];
+	}
+
+	// If all of the items in the first set of results match the given type.
+	$matches_type = true;
+
+	foreach ( $wp_query->posts as $post ) {
+		if ( ! in_array( $post->post_type, $post_type ) ) {
+			$matches_type = false;
+		}
+	}
+
+	return $matches_type;
+}
