@@ -192,7 +192,7 @@ final class Newspack_Listings_Featured {
 			$post_id = get_the_ID();
 		}
 
-		return get_post_meta( $featured_listing->ID, self::META_KEYS['expires'], true );
+		return get_post_meta( $post_id, self::META_KEYS['expires'], true );
 	}
 
 	/**
@@ -224,21 +224,41 @@ final class Newspack_Listings_Featured {
 	 * @param WP_Query $query Query object.
 	 */
 	public static function show_featured_listings_first( $query ) {
+
 		// Only front-end queries (also affects block queries in the post editor, though, which we want).
-		if ( ! is_admin() ) {
+		if (
+			! is_admin() &&
+			! is_comment_feed() &&
+			! is_embed() &&
+			! is_feed() &&
+			! is_privacy_policy() &&
+			! is_robots() &&
+			! is_trackback()
+		) {
 			// Let's only modify the query if it's going to include listings.
 			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
 			$query_post_type = $query->get( 'post_type' );
 			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
 			$query_tax_query = $query->get( 'tax_query' );
+			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
+			$query_is_search = $query->is_search();
+			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
+			$query_is_meta = ! empty( $query->get( 'meta_query' ) );
+
+			// If the query is already a meta query, we don't want to mess with it.
+			if ( $query_is_meta ) {
+				return;
+			}
 
 			// If post_type and tax_query aren't specified in the query, WP_Query defaults to "post", so let's bail.
-			if ( empty( $query_post_type ) && empty( $query_tax_query ) ) {
+			// If the query is a search, an empty post_type means 'any'.
+			if ( empty( $query_post_type ) && empty( $query_tax_query ) && ! $query_is_search ) {
 				return;
 			}
 
 			// However, if tax_query is specified but post_type isn't, post_type defaults to 'any'. Let's make that explicit.
-			if ( empty( $query_post_type ) && ! empty( $query_tax_query ) ) {
+			// If the query is a search, an empty post_type means 'any'.
+			if ( empty( $query_post_type ) && ! empty( $query_tax_query ) || $query_is_search ) {
 				$query_post_type = [ 'any' ];
 			}
 
@@ -350,47 +370,87 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
+	 * Unset featured status for the given post. Also delete the query priority meta key.
+	 *
+	 * @param int $post_id Post ID to update.
+	 *
+	 * @return boolean True if the post was featured and updated to unfeatured; false if the post wasn't updated or doesn't exist.
+	 */
+	public static function unset_featured_status( $post_id = null ) {
+		if ( null === $post_id ) {
+			return false;
+		}
+
+		$expiration_date = self::get_featured_expiration( $post_id );
+		$timezone        = get_option( 'timezone_string', 'UTC' );
+
+		// Guard against 'Unknown or bad timezone' PHP error.
+		if ( empty( trim( $timezone ) ) ) {
+			$timezone = 'UTC';
+		}
+
+		$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
+		$date_has_passed = 0 > $parsed_date->getTimestamp() - time();
+
+		// If the expiration date has already passed, remove the featured status and query priority.
+		if ( $date_has_passed ) {
+			update_post_meta( $post_id, 'newspack_listings_featured', false );
+			delete_post_meta( $post_id, 'newspack_listings_featured_query_priority' );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Check for featured items whose expiration date has passed, and remove their featured status.
+	 * Realistically, most sites shouldn't have this many featured items at a time, but just in case,
+	 * fetch results in batches of 100 and iterate through the batches so all results are processed.
 	 */
 	public static function check_expired_featured_items() {
-		// Get featured listings with an expiration date.
-		$featured_listings_with_expiration = get_posts(
-			[
-				'post_type'      => 'any',
-				'post_status'    => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
-				// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
-				'posts_per_page' => 1000, // There probably won't be more than 1000 featured listings at a time...right?
-				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				'meta_query'     => [
-					'relation' => 'AND',
-					[
-						'key'   => 'newspack_listings_featured',
-						'value' => 1,
-					],
-					[
-						'key'     => self::META_KEYS['expires'],
-						'compare' => 'EXISTS',
-					],
+		// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
+		$current_page = 1;
+		$args         = [
+			'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
+			'post_status'    => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
+			'posts_per_page' => 100,
+			'paged'          => $current_page,
+			'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'relation' => 'AND',
+				[
+					'key'   => self::META_KEYS['featured'],
+					'value' => 1,
 				],
-			]
-		);
+				[
+					'key'     => self::META_KEYS['expires'],
+					'compare' => 'EXISTS',
+				],
+				[
+					'key'     => self::META_KEYS['expires'],
+					'compare' => '!=',
+					'value'   => '',
+				],
+			],
+		];
 
-		foreach ( $featured_listings_with_expiration as $featured_listing ) {
-			$expiration_date = self::get_featured_expiration( $featured_listing->ID );
-			$timezone        = get_option( 'timezone_string', 'UTC' );
+		// Get featured listings with an expiration date.
+		$results         = new \WP_Query( $args );
+		$number_of_pages = $results->max_num_pages;
 
-			// Guard against 'Unknown or bad timezone' PHP error.
-			if ( empty( trim( $timezone ) ) ) {
-				$timezone = 'UTC';
-			}
+		foreach ( $results->posts as $featured_listing ) {
+			self::unset_featured_status( $featured_listing->ID );
+		}
 
-			$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
-			$date_has_passed = 0 > $parsed_date->getTimestamp() - time();
+		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
+		if ( 1 < $number_of_pages ) {
+			while ( $current_page < $number_of_pages ) {
+				$current_page  ++;
+				$args['paged'] = $current_page;
+				$results       = new \WP_Query( $args );
 
-			// If the expiration date has already passed, remove the featured status and query priority.
-			if ( $date_has_passed ) {
-				update_post_meta( $featured_listing->ID, 'newspack_listings_featured', false );
-				delete_post_meta( $featured_listing->ID, 'newspack_listings_featured_query_priority' );
+				foreach ( $results->posts as $featured_listing ) {
+					self::unset_featured_status( $featured_listing->ID );
+				}
 			}
 		}
 	}
