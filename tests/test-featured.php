@@ -13,8 +13,7 @@ use \Newspack_Listings\Utils as Utils;
  * Featured listing test case.
  */
 class FeaturedTest extends WP_UnitTestCase {
-	private static $listings           = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
-	private static $default_attributes = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
+	private static $listings = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		// Remove any listings (from previous tests).
