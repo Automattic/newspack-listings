@@ -2,6 +2,12 @@
 @import '../../assets/shared/event';
 
 .newspack-listings {
+	&__event-dates {
+		&.hide-time .components-datetime__time {
+			display: none;
+		}
+	}
+
 	&__event-dates-controls {
 		display: flex;
 		flex-wrap: wrap;

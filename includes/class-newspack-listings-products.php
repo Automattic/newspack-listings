@@ -66,7 +66,7 @@ final class Newspack_Listings_Products {
 	 */
 	public static function init() {
 		// Check whether WooCommerce is active and available.
-		if ( class_exists( 'WooCommerce' ) ) {
+		if ( class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions_Product' ) ) {
 			self::$wc_is_active = true;
 			self::create_products();
 		}
