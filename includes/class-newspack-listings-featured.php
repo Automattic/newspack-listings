@@ -129,6 +129,72 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
+	 * Is the given/current post a featured post?
+	 *
+	 * @param int $post_id Post ID. If none given, use the current post ID.
+	 *
+	 * @return boolean True if the listing is currently featured.
+	 */
+	public static function is_featured( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		return get_post_meta( $post_id, self::META_KEYS['featured'], true );
+	}
+
+	/**
+	 * Get the feature priority for the given/current post.
+	 *
+	 * @param int $post_id Post ID. If none given, use the current post ID.
+	 *
+	 * @return int Feature priority level (default = 5).
+	 *             Will be returned whether or not the listing is featured.
+	 */
+	public static function get_featured_priority( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		return get_post_meta( $post_id, self::META_KEYS['priority'], true );
+	}
+
+	/**
+	 * Get the query priority for the given/current post.
+	 *
+	 * @param int $post_id Post ID. If none given, use the current post ID.
+	 *
+	 * @return int Feature priority level for query purposes (default = 5).
+	 *             Will return 0 if the listing isn't currently featured.
+	 */
+	public static function get_query_priority( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		if ( ! self::is_featured( $post_id ) ) {
+			return 0;
+		}
+
+		return get_post_meta( $post_id, self::META_KEYS['query'], true );
+	}
+
+	/**
+	 * Get the expiration date string for the given/current post.
+	 *
+	 * @param int $post_id Post ID. If none given, use the current post ID.
+	 *
+	 * @return string Featured status expiration date, or an empty string if none.
+	 */
+	public static function get_featured_expiration( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		return get_post_meta( $featured_listing->ID, self::META_KEYS['expires'], true );
+	}
+
+	/**
 	 * On save, duplicate the feature priority meta value to a query meta key if the the item is featured.
 	 * If the item is not featured, delete the query meta value.
 	 * This lets us query based only on this meta value instead of checking both feature status and priority.
@@ -137,8 +203,8 @@ final class Newspack_Listings_Featured {
 	 */
 	public static function set_feature_priority( $post_id ) {
 		if ( Core::is_listing() ) {
-			$is_featured      = get_post_meta( $post_id, self::META_KEYS['featured'], true );
-			$feature_priority = get_post_meta( $post_id, self::META_KEYS['priority'], true );
+			$is_featured      = self::is_featured( $post_id );
+			$feature_priority = self::get_featured_priority( $post_id );
 
 			// If the post is featured, ensure it has a query priority. Otherwise, ensure it has no value.
 			if ( $is_featured ) {
@@ -242,24 +308,23 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
-	 * Append featured classes to Newspack Blocks.
+	 * Append featured classes to the given array of class names.
 	 *
-	 * @param array $classes Array of term class names.
+	 * @param array $classes Array of class names.
 	 *
-	 * @return array Filtered array of term class names.
+	 * @return array Filtered array of class names.
 	 */
 	public static function add_featured_classes( $classes ) {
 		if ( Core::is_listing() ) {
 			$post_id         = get_the_ID();
 			$feature_classes = [];
-			$is_featured     = get_post_meta( $post_id, self::META_KEYS['featured'], true );
+			$is_featured     = self::is_featured( $post_id );
 			if ( $is_featured ) {
-				$feature_priority  = get_post_meta( $post_id, self::META_KEYS['priority'], true );
+				$feature_priority  = self::get_featured_priority( $post_id );
 				$feature_classes[] = 'featured-listing';
 				$feature_classes[] = 'featured-listing-priority-' . strval( $feature_priority );
+				$classes           = array_merge( $classes, $feature_classes );
 			}
-
-			$classes = array_merge( $classes, $feature_classes );
 		}
 
 		return $classes;
@@ -302,7 +367,7 @@ final class Newspack_Listings_Featured {
 						'value' => 1,
 					],
 					[
-						'key'     => 'newspack_listings_featured_expires',
+						'key'     => self::META_KEYS['expires'],
 						'compare' => 'EXISTS',
 					],
 				],
@@ -310,7 +375,7 @@ final class Newspack_Listings_Featured {
 		);
 
 		foreach ( $featured_listings_with_expiration as $featured_listing ) {
-			$expiration_date = get_post_meta( $featured_listing->ID, 'newspack_listings_featured_expires', true );
+			$expiration_date = self::get_featured_expiration( $featured_listing->ID );
 			$timezone        = get_option( 'timezone_string', 'UTC' );
 
 			// Guard against 'Unknown or bad timezone' PHP error.

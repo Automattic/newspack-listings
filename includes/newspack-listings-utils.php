@@ -409,20 +409,13 @@ function get_term_classes( $post_id = null ) {
 		[]
 	);
 
-	// If the item is featured, get class names for its feature priority level.
-	$feature_classes = [];
-	$is_featured     = get_post_meta( $post_id, Featured::META_KEYS['featured'], true );
-	if ( $is_featured ) {
-		$feature_priority  = get_post_meta( $post_id, Featured::META_KEYS['priority'], true );
-		$feature_classes[] = 'featured-listing';
-		$feature_classes[] = 'featured-listing-priority-' . strval( $feature_priority );
-	}
+	// If the item is featured, append class names for its featured status and priority level.
+	$base_classes = Featured::add_featured_classes( $base_classes );
 
 	return array_merge(
 		$base_classes,
 		$category_classes,
-		$tag_classes,
-		$feature_classes
+		$tag_classes
 	);
 }
 
