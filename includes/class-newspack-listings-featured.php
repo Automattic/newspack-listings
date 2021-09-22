@@ -331,7 +331,7 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
-	 * Set up the cron job.
+	 * Set up the cron job. Will run once daily and remove featured status for all listings whose expiration date has passed.
 	 */
 	public static function cron_init() {
 		register_deactivation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'cron_deactivate' ] );
