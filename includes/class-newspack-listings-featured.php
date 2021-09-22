@@ -62,6 +62,7 @@ final class Newspack_Listings_Featured {
 		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
 		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ] );
 		add_action( 'pre_get_posts', [ __CLASS__, 'show_featured_listings_first' ], 11 );
+		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
 	}
 
