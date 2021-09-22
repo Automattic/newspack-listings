@@ -59,6 +59,7 @@ final class Newspack_Listings_Featured {
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
+		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
 		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ] );
 		add_action( 'pre_get_posts', [ __CLASS__, 'show_featured_listings_first' ], 11 );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
@@ -317,7 +318,7 @@ final class Newspack_Listings_Featured {
 				$timezone = 'UTC';
 			}
 
-			$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( $timzeone ) );
+			$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
 			$date_has_passed = 0 > $parsed_date->getTimestamp() - time();
 
 			// If the expiration date has already passed, remove the featured status and query priority.
