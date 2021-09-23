@@ -7,9 +7,7 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Settings as Settings;
 use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
