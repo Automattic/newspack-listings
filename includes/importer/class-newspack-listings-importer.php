@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \WP_CLI as WP_CLI;
+use SimpleXMLElement;
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Importer_Utils as Importer_Utils;
 
@@ -109,6 +110,30 @@ final class Newspack_Listings_Importer {
 			[ __CLASS__, 'import_categories' ],
 			[
 				'shortdesc' => 'Import directory categories from a CSV file.',
+				'synopsis'  => [
+					[
+						'type'        => 'assoc',
+						'name'        => 'file',
+						'description' => 'Path of the CSV file to import, relative to the plugin’s root directory.',
+						'optional'    => false,
+						'repeating'   => false,
+					],
+					[
+						'type'        => 'flag',
+						'name'        => 'dry-run',
+						'description' => 'Whether to do a dry run.',
+						'optional'    => true,
+						'repeating'   => false,
+					],
+				],
+			]
+		);
+
+		WP_CLI::add_command(
+			'newspack-listings import-seo-meta',
+			[ __CLASS__, 'import_seo_meta' ],
+			[
+				'shortdesc' => 'Import SEO titels and meta descriptions from a WXR file.',
 				'synopsis'  => [
 					[
 						'type'        => 'assoc',
@@ -258,6 +283,30 @@ final class Newspack_Listings_Importer {
 		WP_CLI::success( 'Completed! Processed ' . self::$row_number . ' records.' );
 	}
 
+	public static function import_seo_meta( $args, $assoc_args ) {
+		$file_arg = isset( $assoc_args['file'] ) ? $assoc_args['file'] : false;
+
+		// If a dry run, we won't persist any data.
+		self::$is_dry_run = isset( $assoc_args['dry-run'] ) ? true : false;
+
+		$file_path = self::load_file( $file_arg );
+		if ( ! $file_path ) {
+			WP_CLI::error( 'Could not find file at ' . $file_arg );
+		}
+
+		if ( self::$is_dry_run ) {
+			WP_CLI::log( "\n===================\n=     Dry Run     =\n===================\n" );
+		}
+
+		// Start at 0.
+		self::$row_number = 0;
+
+		WP_CLI::log( 'Starting WXR import...' );
+
+		self::get_seo_meta_from_wxr( $file_path );
+		WP_CLI::success( 'Completed! Processed ' . self::$row_number . ' records.' );
+	}
+
 	/**
 	 * Load the category CSV file contents and start the import.
 	 *
@@ -351,6 +400,78 @@ final class Newspack_Listings_Importer {
 				);
 			}
 		}
+	}
+
+	public static function get_seo_meta_from_wxr( $file_path ) {
+		$items = self::get_items( $file_path );
+
+		foreach ( $items as $item ) {
+			$matching_post = get_page_by_title( $item['title'], OBJECT, Core::NEWSPACK_LISTINGS_POST_TYPES['place'] );
+
+			if ( $matching_post ) {
+				foreach ( $item['postmeta'] as $key => $value ) {
+					if ( ! self::$is_dry_run ) {
+						update_post_meta( $matching_post->ID, $key, $value );
+					}
+				}
+
+				WP_CLI::log(
+					sprintf( 'SEO meta for %s updated.', $matching_post->post_title )
+				);
+				self::$row_number++;
+			}
+		}
+	}
+
+	/**
+	 * Extract XML content items as associative array.
+	 *
+	 * @param string $xml_path Full path to the XML file.
+	 *
+	 * @return array Array of items as associative arrays.
+	 */
+	public static function get_items( $xml_path ) {
+		$data         = file_get_contents( $xml_path );
+		$xml          = simplexml_load_string( $data );
+		$namespaces   = array_merge( [ null ], array_keys( $xml->getDocNamespaces( true ) ) ); // Get all namespaces in this file.
+		$items        = $xml->channel->item;
+		$parsed_items = [];
+		$desired_meta = [
+			'_yoast_wpseo_focuskw',
+			'_yoast_wpseo_title',
+			'_yoast_wpseo_metadesc',
+		];
+
+		foreach ( $items as $item ) {
+			$parsed_item = [];
+
+			// Get fields in all namespaces.
+			foreach ( $namespaces as $namespace ) {
+				if ( empty( $namespace ) ) {
+					$parsed_item['title'] = (string) $item->title;
+				}
+
+				if ( 'wp' === $namespace ) {
+					$children  = $item->children( $namespace, true );
+					$post_meta = $children->postmeta;
+
+					foreach ( $post_meta as $field ) {
+						$key   = (string) $field->meta_key;
+						$value = (string) $field->meta_value;
+
+						if ( in_array( $key, $desired_meta ) ) {
+							$parsed_item['postmeta'][ $key ] = $value;
+						}
+					}
+				}
+			}
+
+			if ( isset( $parsed_item['postmeta'] ) ) {
+				$parsed_items[] = $parsed_item;
+			}
+		}
+
+		return $parsed_items;
 	}
 
 	/**
