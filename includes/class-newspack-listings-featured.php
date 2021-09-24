@@ -299,7 +299,7 @@ final class Newspack_Listings_Featured {
 			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
 			$query_order = $query->get( 'order' );
 			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_by = $query->get( 'orderby' );
+			$query_order_by = $query->get( 'orderby' );
 
 			// Sort by feature priority first.
 			$order = [
@@ -307,11 +307,11 @@ final class Newspack_Listings_Featured {
 			];
 
 			// Then sort by whatever the query's ordering criteria were.
-			if ( $query_by && $query_order ) {
-				if ( is_array( $query_by ) ) {
-					$order = array_merge( $order, $query_by );
+			if ( $query_order_by && $query_order ) {
+				if ( is_array( $query_order_by ) ) {
+					$order = array_merge( $order, $query_order_by );
 				} else {
-					$order[ $query_by ] = $query_order;
+					$order[ $query_order_by ] = $query_order;
 				}
 			} else {
 				// If the query didn't specify any order, let's just use WP_Query's default ordering as a secondary criterion.
