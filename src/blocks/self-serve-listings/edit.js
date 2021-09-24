@@ -5,19 +5,60 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { InspectorControls, RichText } from '@wordpress/block-editor';
-import { PanelBody, PanelRow, ToggleControl } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import {
+	BaseControl,
+	CheckboxControl,
+	Notice,
+	PanelBody,
+	PanelRow,
+	ToggleControl,
+} from '@wordpress/components';
+import { useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
 
+const SINGLE_LISTING_TYPES = [
+	{
+		slug: 'blank',
+		name: 'Blank listing (start from scratch)',
+	},
+	{
+		slug: 'event',
+		name: 'Event',
+	},
+	{
+		slug: 'classified',
+		name: 'Classified Ad',
+	},
+	{
+		slug: 'job',
+		name: 'Job Listing',
+	},
+	{
+		slug: 'real-estate',
+		name: 'Real Estate Listing',
+	},
+];
+
 export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes } ) => {
 	const [ selectedType, setSelectedType ] = useState( 'single' );
-	const { allowSubscription, buttonText } = attributes;
+	const [ error, setError ] = useState( null );
+	const {
+		allowedSingleListingTypes,
+		allowSubscription,
+		buttonText,
+		singleDescription,
+		subscriptionDescription,
+	} = attributes;
 
-	const classNames = [ 'newspack-listings__self-serve-form', 'wpbnbd' ];
+	useEffect(() => {
+		setAttributes( { clientId } );
+	}, [ clientId ]);
+
+	const classNames = [ 'newspack-listings__self-serve-form', 'wpbnbd', 'tiered' ];
 
 	if ( ! allowSubscription ) {
 		classNames.push( 'single-only' );
@@ -37,6 +78,66 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							onChange={ () => setAttributes( { allowSubscription: ! allowSubscription } ) }
 						/>
 					</PanelRow>
+					<BaseControl
+						id="newspack-listings-allowed-single-listing-types"
+						help={ __(
+							'Choose which listing types users are allowed to purchase.',
+							'newspack-listings'
+						) }
+						label={ __( 'Allowed Single Listing Types', 'newspack-listings' ) }
+					>
+						{ SINGLE_LISTING_TYPES.map( listingType => {
+							const isAllowed = allowedSingleListingTypes.reduce( ( acc, type ) => {
+								if ( type.slug === listingType.slug ) {
+									return true;
+								}
+								return acc;
+							}, false );
+							return (
+								<PanelRow key={ listingType.slug }>
+									<CheckboxControl
+										label={ listingType.name }
+										checked={ isAllowed }
+										onChange={ value => {
+											setError( null );
+											if ( ( value && isAllowed ) || ( ! value && ! isAllowed ) ) {
+												return false;
+											}
+
+											let newAllowedListingTypes = [ ...allowedSingleListingTypes ];
+
+											if ( value ) {
+												newAllowedListingTypes.push( listingType );
+											} else {
+												newAllowedListingTypes = allowedSingleListingTypes.filter(
+													type => type.slug !== listingType.slug
+												);
+											}
+
+											if ( 0 === newAllowedListingTypes.length ) {
+												setError(
+													__(
+														'You must allow at least one listing type for purchase.',
+														'newspack-listings'
+													)
+												);
+												return false;
+											}
+
+											setAttributes( {
+												allowedSingleListingTypes: newAllowedListingTypes,
+											} );
+										} }
+									/>
+								</PanelRow>
+							);
+						} ) }
+					</BaseControl>
+					{ error && (
+						<Notice className="newspack-listings__error" status="error" isDismissible={ false }>
+							{ error }
+						</Notice>
+					) }
 				</PanelBody>
 			</InspectorControls>
 			<div className={ classNames.join( ' ' ) }>
@@ -59,7 +160,42 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							>
 								{ __( 'Single Listing' ) }
 							</label>
-							<div className="input-container">Single listing form fields</div>
+							<div className="input-container listing-details">
+								<RichText
+									onChange={ value => setAttributes( { singleDescription: value } ) }
+									placeholder={ __(
+										'Description text for your single listing product…',
+										'newspack-listings'
+									) }
+									value={ singleDescription }
+									tagName="p"
+								/>
+								<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
+								<label htmlFor={ `listing-type-${ clientId }` }>
+									{ __( 'What type of listing would you like to purchase?', 'newspack-listings' ) }
+								</label>
+								<select id={ `${ clientId }` } name="listing-single-type">
+									{ allowedSingleListingTypes.map( listingType => (
+										<option key={ listingType.slug } value={ `listing-type-${ listingType.slug }` }>
+											{ listingType.name }
+										</option>
+									) ) }
+								</select>
+								<label htmlFor={ `listing-single-upgrade-${ clientId }` }>
+									{ __( 'Upgrade to a featured listing:', 'newspack-listings' ) }
+								</label>
+								<input
+									type="checkbox"
+									id={ `listing-single-upgrade-${ clientId }` }
+									name="listing-featured-upgrade"
+								/>
+								<p class="newspack-listings__help">
+									{ __(
+										'Featured listings appear first in lists, directory pages and search results.',
+										'newspack-listings'
+									) }
+								</p>
+							</div>
 						</div>
 						{ allowSubscription && (
 							<div className="newspack-listings__form-tabs frequency">
@@ -79,14 +215,52 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								>
 									{ __( 'Listing Subscription' ) }
 								</label>
-								<div className="input-container">Subscription listing form fields</div>
+								<div className="input-container listing-details">
+									<RichText
+										onChange={ value => setAttributes( { subscriptionDescription: value } ) }
+										placeholder={ __(
+											'Description text for your subscription product…',
+											'newspack-listings'
+										) }
+										value={ subscriptionDescription }
+										tagName="p"
+									/>
+									<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
+									<label htmlFor={ `listing-subscription-upgrade-${ clientId }` }>
+										{ __( 'Upgrade to a premium subscription:', 'newspack-listings' ) }
+									</label>
+									<input
+										type="checkbox"
+										id={ `listing-subscription-upgrade-${ clientId }` }
+										name="listing-premium-upgrade"
+									/>
+									<p class="newspack-listings__help">
+										{ __(
+											'A premium subscription lets you publish up to five listings related to your organization per month.',
+											'newspack-listings'
+										) }
+									</p>
+								</div>
 							</div>
 						) }
+						<div className="shared-inputs listing-details">
+							<label htmlFor={ `listing-title-${ clientId }` }>
+								{ __( 'Enter a name for your listing:', 'newspack-listings' ) }
+							</label>
+							<input
+								className="listing-subscription"
+								type="text"
+								id={ `listing-title-${ clientId }` }
+								name="listing-title"
+								value=""
+								placeholder={ __( 'Listing Title' ) }
+							/>
+						</div>
 					</div>
 					<button type="submit" onClick={ e => e.preventDefault() }>
 						<RichText
 							onChange={ value => setAttributes( { buttonText: value } ) }
-							placeholder={ __( 'Button text…', 'newspack-blocks' ) }
+							placeholder={ __( 'Button text…', 'newspack-listings' ) }
 							value={ buttonText }
 							tagName="span"
 						/>
