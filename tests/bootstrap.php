@@ -31,6 +31,7 @@ function _manually_load_plugin() {
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 define( 'IS_TEST_ENV', 1 );
+define( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED', true );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';

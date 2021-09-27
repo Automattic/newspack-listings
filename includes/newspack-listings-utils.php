@@ -410,7 +410,9 @@ function get_term_classes( $post_id = null ) {
 	);
 
 	// If the item is featured, append class names for its featured status and priority level.
-	$base_classes = Featured::add_featured_classes( $base_classes );
+	if ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		$base_classes = Featured::add_featured_classes( $base_classes );
+	}
 
 	return array_merge(
 		$base_classes,

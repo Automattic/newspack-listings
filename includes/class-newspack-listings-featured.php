@@ -229,7 +229,6 @@ final class Newspack_Listings_Featured {
 			! is_comment_feed() &&
 			! is_embed() &&
 			! is_feed() &&
-			! is_privacy_policy() &&
 			! is_robots() &&
 			! is_trackback()
 		) {
