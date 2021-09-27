@@ -170,9 +170,20 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									value={ singleDescription }
 									tagName="p"
 								/>
+								<hr />
 								<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
+								<label htmlFor={ `listing-title-${ clientId }` }>
+									{ __( 'Listing Title', 'newspack-listings' ) }
+								</label>
+								<input
+									type="text"
+									id={ `listing-title-single-${ clientId }` }
+									name="listing-title-single"
+									value=""
+									placeholder={ __( 'My Listing Title' ) }
+								/>
 								<label htmlFor={ `listing-type-${ clientId }` }>
-									{ __( 'What type of listing would you like to purchase?', 'newspack-listings' ) }
+									{ __( 'Listing Type', 'newspack-listings' ) }
 								</label>
 								<select id={ `${ clientId }` } name="listing-single-type">
 									{ allowedSingleListingTypes.map( listingType => (
@@ -181,14 +192,14 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 										</option>
 									) ) }
 								</select>
-								<label htmlFor={ `listing-single-upgrade-${ clientId }` }>
-									{ __( 'Upgrade to a featured listing:', 'newspack-listings' ) }
-								</label>
 								<input
 									type="checkbox"
 									id={ `listing-single-upgrade-${ clientId }` }
 									name="listing-featured-upgrade"
 								/>
+								<label htmlFor={ `listing-single-upgrade-${ clientId }` }>
+									{ __( 'Upgrade to a featured listing', 'newspack-listings' ) }
+								</label>
 								<p class="newspack-listings__help">
 									{ __(
 										'Featured listings appear first in lists, directory pages and search results.',
@@ -225,15 +236,26 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 										value={ subscriptionDescription }
 										tagName="p"
 									/>
+									<hr />
 									<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
-									<label htmlFor={ `listing-subscription-upgrade-${ clientId }` }>
-										{ __( 'Upgrade to a premium subscription:', 'newspack-listings' ) }
+									<label htmlFor={ `listing-title-${ clientId }` }>
+										{ __( 'Listing Title', 'newspack-listings' ) }
 									</label>
+									<input
+										type="text"
+										id={ `listing-title-subscription${ clientId }` }
+										name="listing-title-subscription"
+										value=""
+										placeholder={ __( 'My Listing Title' ) }
+									/>
 									<input
 										type="checkbox"
 										id={ `listing-subscription-upgrade-${ clientId }` }
 										name="listing-premium-upgrade"
 									/>
+									<label htmlFor={ `listing-subscription-upgrade-${ clientId }` }>
+										{ __( 'Upgrade to a premium subscription', 'newspack-listings' ) }
+									</label>
 									<p class="newspack-listings__help">
 										{ __(
 											'A premium subscription lets you publish up to five listings related to your organization per month.',
@@ -243,19 +265,6 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								</div>
 							</div>
 						) }
-						<div className="shared-inputs listing-details">
-							<label htmlFor={ `listing-title-${ clientId }` }>
-								{ __( 'Enter a name for your listing:', 'newspack-listings' ) }
-							</label>
-							<input
-								className="listing-subscription"
-								type="text"
-								id={ `listing-title-${ clientId }` }
-								name="listing-title"
-								value=""
-								placeholder={ __( 'Listing Title' ) }
-							/>
-						</div>
 					</div>
 					<button type="submit" onClick={ e => e.preventDefault() }>
 						<RichText

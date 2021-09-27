@@ -49,9 +49,20 @@ call_user_func(
 				</label>
 				<div class="input-container listing-details">
 					<p><?php echo wp_kses_post( $single_description ); ?></p>
+					<hr />
 					<h3><?php echo esc_html( __( 'Listing Details', 'newspack-listings' ) ); ?></h3>
+					<label for="listing-title-single-<?php echo esc_attr( $client_id ); ?>">
+						<?php echo esc_html( __( 'Listing Title', 'newspack-listings' ) ); ?>
+					</label>
+					<input
+						type="text"
+						id="listing-title-single-<?php echo esc_attr( $client_id ); ?>"
+						name="listing-title-single"
+						value=""
+						placeholder="<?php echo esc_attr( __( 'My Listing Title' ) ); ?>"
+					/>
 					<label for="listing-type-<?php echo esc_attr( $client_id ); ?>">
-						<?php echo esc_html( __( 'What type of listing would you like to purchase?', 'newspack-listings' ) ); ?>
+						<?php echo esc_html( __( 'Listing Type', 'newspack-listings' ) ); ?>
 					</label>
 					<select
 						id="listing-type-<?php echo esc_attr( $client_id ); ?>"
@@ -70,14 +81,14 @@ call_user_func(
 						);
 		?>
 					</select>
-					<label for="listing-single-upgrade-<?php echo esc_attr( $client_id ); ?>">
-						<?php echo esc_html( __( 'Upgrade to a featured listing:', 'newspack-listings' ) ); ?>
-					</label>
 					<input
 						type="checkbox"
 						id="listing-single-upgrade-<?php echo esc_attr( $client_id ); ?>"
 						name="listing-featured-upgrade"
 					/>
+					<label for="listing-single-upgrade-<?php echo esc_attr( $client_id ); ?>">
+						<?php echo esc_html( __( 'Upgrade to a featured listing', 'newspack-listings' ) ); ?>
+					</label>
 					<p class="newspack-listings__help">
 						<?php
 						echo esc_html(
@@ -107,15 +118,26 @@ call_user_func(
 					</label>
 					<div class="input-container listing-details">
 						<p><?php echo wp_kses_post( $subscription_description ); ?></p>
+						<hr />
 						<h3><?php echo esc_html( __( 'Listing Details', 'newspack-listings' ) ); ?></h3>
-						<label for="listing-subscription-upgrade-<?php echo esc_attr( $client_id ); ?>">
-							<?php echo esc_html( __( 'Upgrade to a premium subscription:', 'newspack-listings' ) ); ?>
+						<label for="listing-title-subscription-<?php echo esc_attr( $client_id ); ?>">
+							<?php echo esc_html( __( 'Listing Title', 'newspack-listings' ) ); ?>
 						</label>
+						<input
+							type="text"
+							id="listing-title-subscription-<?php echo esc_attr( $client_id ); ?>"
+							name="listing-title-subscription"
+							value=""
+							placeholder="<?php echo esc_attr( __( 'My Listing Title' ) ); ?>"
+						/>
 						<input
 							type="checkbox"
 							id="listing-subscription-upgrade-<?php echo esc_attr( $client_id ); ?>"
 							name="listing-premium-upgrade"
 						/>
+						<label for="listing-subscription-upgrade-<?php echo esc_attr( $client_id ); ?>">
+							<?php echo esc_html( __( 'Upgrade to a premium subscription', 'newspack-listings' ) ); ?>
+						</label>
 						<p class="newspack-listings__help">
 							<?php
 							echo esc_html(
@@ -129,20 +151,6 @@ call_user_func(
 					</div>
 				</div>
 			<?php endif; ?>
-			<div class="shared-inputs listing-details">
-				<label for="listing-title-<?php echo esc_attr( $client_id ); ?>">
-					<?php echo esc_html( __( 'Enter a name for your listing:', 'newspack-listings' ) ); ?>
-				</label>
-				<input
-					class="listing-subscription"
-					type="text"
-					id="listing-title-<?php echo esc_attr( $client_id ); ?>"
-					name="listing-title"
-					value=""
-					placeholder="<?php echo esc_attr( __( 'Listing Title' ) ); ?>"
-					required
-				/>
-			</div>
 		</div>
 		<button type="submit">
 			<?php echo esc_html( $button_text ); ?>
