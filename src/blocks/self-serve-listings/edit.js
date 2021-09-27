@@ -172,7 +172,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								/>
 								<hr />
 								<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
-								<label htmlFor={ `listing-title-${ clientId }` }>
+								<label htmlFor={ `listing-title-single-${ clientId }` }>
 									{ __( 'Listing Title', 'newspack-listings' ) }
 								</label>
 								<input
@@ -238,7 +238,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									/>
 									<hr />
 									<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
-									<label htmlFor={ `listing-title-${ clientId }` }>
+									<label htmlFor={ `listing-title-subscription${ clientId }` }>
 										{ __( 'Listing Title', 'newspack-listings' ) }
 									</label>
 									<input
