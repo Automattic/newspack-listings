@@ -227,12 +227,12 @@ final class Newspack_Listings_Featured {
 	public static function featured_listings_clauses( $clauses, $query ) {
 		// Only front-end queries (also affects block queries in the post editor, though, which we want).
 		if (
-			$query->is_admin() ||
-			$query->is_comment_feed() ||
-			$query->is_embed() ||
-			$query->is_feed() ||
-			$query->is_robots() ||
-			$query->is_trackback()
+			is_admin() ||
+			is_comment_feed() ||
+			is_embed() ||
+			is_feed() ||
+			is_robots() ||
+			is_trackback()
 		) {
 			return $clauses;
 		}
