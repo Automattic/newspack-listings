@@ -22,7 +22,6 @@ final class Newspack_Listings_Featured {
 	const META_KEYS = [
 		'featured' => 'newspack_listings_featured',
 		'priority' => 'newspack_listings_featured_priority',
-		'query'    => 'newspack_listings_featured_query_priority',
 		'expires'  => 'newspack_listings_featured_expires',
 	];
 
@@ -82,8 +81,7 @@ final class Newspack_Listings_Featured {
 		global $wpdb;
 		$table_name = self::get_table_name();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) != $table_name ) {
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) != $table_name ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$charset_collate = $wpdb->get_charset_collate();
 			$sql             = "CREATE TABLE IF NOT EXISTS $table_name (
 				-- Post ID.
@@ -117,7 +115,7 @@ final class Newspack_Listings_Featured {
 		$table_name = self::get_table_name();
 
 		if ( 0 < $priority ) {
-			$result = $wpdb->replace(
+			$result = $wpdb->replace( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table_name,
 				[
 					'post_id'          => $post_id,
@@ -130,13 +128,13 @@ final class Newspack_Listings_Featured {
 			);
 		} else {
 			// If passing 0, delete any found rows.
-			$result = $wpdb->query(
+			$result = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					'DELETE FROM %s WHERE post_id = %d',
 					$table_name,
 					$post_id
 				)
-			); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			);
 		}
 
 		return $result;
@@ -157,7 +155,7 @@ final class Newspack_Listings_Featured {
 		}
 
 		$table_name = self::get_table_name();
-		$priority   = $wpdb->get_var(
+		$priority   = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				'SELECT feature_priority FROM %s WHERE post_id = %d',
 				$table_name,
@@ -191,17 +189,6 @@ final class Newspack_Listings_Featured {
 				},
 				'default'           => 5,
 				'description'       => __( 'What priority should this featured listing have (1–10)?', 'newspack-gdg' ),
-				'sanitize_callback' => 'absint',
-				'single'            => true,
-				'show_in_rest'      => true,
-				'type'              => 'integer',
-			],
-			'query'    => [
-				'auth_callback'     => function() {
-					return current_user_can( 'edit_posts' );
-				},
-				'default'           => 5,
-				'description'       => __( 'Indexed feature priority used for query purposes.', 'newspack-gdg' ),
 				'sanitize_callback' => 'absint',
 				'single'            => true,
 				'show_in_rest'      => true,
@@ -261,26 +248,6 @@ final class Newspack_Listings_Featured {
 		}
 
 		return get_post_meta( $post_id, self::META_KEYS['priority'], true );
-	}
-
-	/**
-	 * Get the query priority for the given/current post.
-	 *
-	 * @param int $post_id Post ID. If none given, use the current post ID.
-	 *
-	 * @return int Feature priority level for query purposes (default = 5).
-	 *             Will return 0 if the listing isn't currently featured.
-	 */
-	public static function get_query_priority( $post_id = null ) {
-		if ( null === $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! self::is_featured( $post_id ) ) {
-			return 0;
-		}
-
-		return get_post_meta( $post_id, self::META_KEYS['query'], true );
 	}
 
 	/**
@@ -422,8 +389,8 @@ final class Newspack_Listings_Featured {
 
 		// If the expiration date has already passed, remove the featured status and query priority.
 		if ( $date_has_passed ) {
-			update_post_meta( $post_id, 'newspack_listings_featured', false );
-			delete_post_meta( $post_id, 'newspack_listings_featured_query_priority' );
+			update_post_meta( $post_id, self::META_KEYS['featured'], false );
+			self::update_priority( $post_id, 0 );
 			return true;
 		}
 
