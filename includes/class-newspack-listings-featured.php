@@ -59,7 +59,7 @@ final class Newspack_Listings_Featured {
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
 		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
 		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ] );
-		add_action( 'pre_get_posts', [ __CLASS__, 'show_featured_listings_first' ], 11 );
+		add_filter( 'posts_clauses', [ __CLASS__, 'featured_listings_clauses' ], 11, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
 	}
@@ -219,110 +219,37 @@ final class Newspack_Listings_Featured {
 	 * Then order by the query's original ordering criteria, if any were specified.
 	 * Limit query modifications to only queries that will include listing posts.
 	 *
-	 * @param WP_Query $query Query object.
+	 * @param string[] $clauses Associative array of the clauses for the query.
+	 * @param WP_Query $query   The WP_Query instance (passed by reference).
+	 * 
+	 * @return string[] Transformed clauses for the query.
 	 */
-	public static function show_featured_listings_first( $query ) {
-
+	public static function featured_listings_clauses( $clauses, $query ) {
 		// Only front-end queries (also affects block queries in the post editor, though, which we want).
 		if (
-			! is_admin() &&
-			! is_comment_feed() &&
-			! is_embed() &&
-			! is_feed() &&
-			! is_robots() &&
-			! is_trackback()
+			$query->is_admin() ||
+			$query->is_comment_feed() ||
+			$query->is_embed() ||
+			$query->is_feed() ||
+			$query->is_robots() ||
+			$query->is_trackback()
 		) {
-			// Let's only modify the query if it's going to include listings.
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_post_type = $query->get( 'post_type' );
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_tax_query = $query->get( 'tax_query' );
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_is_search = $query->is_search();
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_is_meta = ! empty( $query->get( 'meta_query' ) );
-
-			// If the query is already a meta query, we don't want to mess with it.
-			if ( $query_is_meta ) {
-				return;
-			}
-
-			// If post_type and tax_query aren't specified in the query, WP_Query defaults to "post", so let's bail.
-			// If the query is a search, an empty post_type means 'any'.
-			if ( empty( $query_post_type ) && empty( $query_tax_query ) && ! $query_is_search ) {
-				return;
-			}
-
-			// However, if tax_query is specified but post_type isn't, post_type defaults to 'any'. Let's make that explicit.
-			// If the query is a search, an empty post_type means 'any'.
-			if ( empty( $query_post_type ) && ! empty( $query_tax_query ) || $query_is_search ) {
-				$query_post_type = [ 'any' ];
-			}
-
-			// Query will include listings if any listing post type, or literally "any" post type, is specified.
-			$listing_post_types = array_merge(
-				array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
-				[ 'any' ]
-			);
-
-			// Post type can be specified as either a string (for a single post type) or array.
-			// Let's standardize to an array so we can check if it contains listing or "any" post types using array_intersect.
-			if ( ! is_array( $query_post_type ) ) {
-				$query_post_type = [ $query_post_type ];
-			}
-			$query_contains_listings = 0 < count( array_intersect( $listing_post_types, $query_post_type ) );
-
-			// If the query won't include listings, there's no need to modify it.
-			if ( ! $query_contains_listings ) {
-				return;
-			}
-
-			// If the query contains listings, let's add a meta query for feature priority so we can sort by it.
-			$meta_query                     = [ 'relation' => 'OR' ];
-			$meta_query['feature_priority'] = [
-				'key'     => self::META_KEYS['query'],
-				'compare' => 'EXISTS',
-			];
-			$meta_query['no_priority']      = [
-				'key'     => self::META_KEYS['query'],
-				'compare' => 'NOT EXISTS',
-			];
-
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query->set(
-				'meta_query',
-				$meta_query
-			);
-
-			// Let's try to preserve the query's specified ordering after we sort by feature priority.
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_order = $query->get( 'order' );
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_order_by = $query->get( 'orderby' );
-
-			// Sort by feature priority first.
-			$order = [
-				'no_priority' => 'DESC',
-			];
-
-			// Then sort by whatever the query's ordering criteria were.
-			if ( $query_order_by && $query_order ) {
-				if ( is_array( $query_order_by ) ) {
-					$order = array_merge( $order, $query_order_by );
-				} else {
-					$order[ $query_order_by ] = $query_order;
-				}
-			} else {
-				// If the query didn't specify any order, let's just use WP_Query's default ordering as a secondary criterion.
-				$order['date'] = 'DESC';
-			}
-
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query->set(
-				'orderby',
-				$order
-			);
+			return $clauses;
 		}
+
+		global $wpdb;
+
+		$meta_prefix        = 'listings_custom_meta_key';
+		$meta_key           = self::META_KEYS['query'];
+		$clauses['join']   .= "
+			LEFT JOIN {$wpdb->prefix}postmeta AS {$meta_prefix}
+			ON (
+				{$wpdb->prefix}posts.ID = {$meta_prefix}.post_id AND
+				{$meta_prefix}.meta_key = '{$meta_key}'
+			) ";
+		$clauses['orderby'] = "{$meta_prefix}.meta_value DESC, " . $clauses['orderby'];
+
+		return $clauses;
 	}
 
 	/**
