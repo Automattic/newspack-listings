@@ -86,6 +86,7 @@ final class Newspack_Listings_Featured {
 			$sql             = "CREATE TABLE IF NOT EXISTS $table_name (
 				-- Post ID.
 				post_id bigint(20) unsigned NOT NULL,
+				-- Feature priority: 1–9 if featured, 0 if not.
 				feature_priority int(1) unsigned NOT NULL,
 				PRIMARY KEY (post_id),
 				KEY (feature_priority),
