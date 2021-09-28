@@ -118,7 +118,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		// Execute a query.
-		$listings_with_featured = get_posts(
+		$listings_with_featured = new WP_Query(
 			[
 				'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
 				'posts_per_page' => 51,
@@ -128,7 +128,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		$index = 0;
-		foreach ( $listings_with_featured as $listing ) {
+		foreach ( $listings_with_featured->get_posts() as $listing ) {
 			$index             ++;
 			$stringified_index = zeroise( $index - 1, 2 ); // Index will be offset by one because the featured listing comes first.
 			if ( 1 === $index ) {
@@ -177,7 +177,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		// Execute a query.
-		$listings_with_feature_priority = get_posts(
+		$listings_with_feature_priority = new WP_Query(
 			[
 				'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
 				'posts_per_page' => 52,
@@ -187,7 +187,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		$index = 0;
-		foreach ( $listings_with_feature_priority as $listing ) {
+		foreach ( $listings_with_feature_priority->get_posts() as $listing ) {
 			$index             ++;
 			$stringified_index = zeroise( $index - 2, 2 ); // Index will be offset by two because the featured listings come first.
 			if ( 1 === $index ) {
