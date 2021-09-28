@@ -55,13 +55,118 @@ final class Newspack_Listings_Featured {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_action( 'init', [ __CLASS__, 'create_custom_table' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
 		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
-		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ] );
-		add_action( 'pre_get_posts', [ __CLASS__, 'show_featured_listings_first' ], 11 );
+		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ], 10, 2 );
+		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
+	}
+
+	/**
+	 * Get events table name.
+	 */
+	public static function get_table_name() {
+		global $wpdb;
+		return $wpdb->prefix . 'newspack_listings_priority';
+	}
+
+	/**
+	 * Create a custom DB table to store feature priority data.
+	 * Avoids the use of slow post meta for query sorting purposes.
+	 * Only create the table if it doesn't already exist.
+	 */
+	public static function create_custom_table() {
+		global $wpdb;
+		$table_name = self::get_table_name();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) != $table_name ) {
+			$charset_collate = $wpdb->get_charset_collate();
+			$sql             = "CREATE TABLE IF NOT EXISTS $table_name (
+				-- Post ID.
+				post_id bigint(20) unsigned NOT NULL,
+				feature_priority int(1) unsigned NOT NULL,
+				PRIMARY KEY (post_id),
+				KEY (feature_priority),
+				KEY query_priority (post_id, feature_priority)
+			) $charset_collate;";
+
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
+		}
+	}
+
+	/**
+	 * Set the feature priority for the given post ID in the custom table.
+	 *
+	 * @param int $post_id Post ID. Will use current post if none given.
+	 * @param int $priority Priority to set, from 0–9.
+	 *
+	 * @return int|false The number of rows affected, or false on error.
+	 */
+	public static function update_priority( $post_id = null, $priority = 0 ) {
+		global $wpdb;
+
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$table_name = self::get_table_name();
+
+		if ( 0 < $priority ) {
+			$result = $wpdb->replace(
+				$table_name,
+				[
+					'post_id'          => $post_id,
+					'feature_priority' => $priority,
+				],
+				[
+					'%d',
+					'%d',
+				]
+			);
+		} else {
+			// If passing 0, delete any found rows.
+			$result = $wpdb->query(
+				$wpdb->prepare(
+					'DELETE FROM %s WHERE post_id = %d',
+					$table_name,
+					$post_id
+				)
+			); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Get the priority value (0–9) for the given or current post ID.
+	 *
+	 * @param int $post_id Post ID. Will use current post if none given.
+	 *
+	 * @return int The post's priority, 1–9 if featured, or 0 if not.
+	 */
+	public static function get_priority( $post_id = null ) {
+		global $wpdb;
+
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$table_name = self::get_table_name();
+		$priority   = $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT feature_priority FROM %s WHERE post_id = %d',
+				$table_name,
+				$post_id
+			)
+		);
+
+		// Will also return 0 if the $post_id doesn't exist in the table.
+		return intval( $priority );
 	}
 
 	/**
@@ -198,19 +303,20 @@ final class Newspack_Listings_Featured {
 	 * If the item is not featured, delete the query meta value.
 	 * This lets us query based only on this meta value instead of checking both feature status and priority.
 	 *
-	 * @param int $post_id Post ID.
+	 * @param int     $post_id Post ID.
+	 * @param WP_Post $post Post object.
 	 */
-	public static function set_feature_priority( $post_id ) {
+	public static function set_feature_priority( $post_id, $post ) {
 		if ( Core::is_listing() ) {
 			$is_featured      = self::is_featured( $post_id );
 			$feature_priority = self::get_featured_priority( $post_id );
 
 			// If the post is featured, ensure it has a query priority. Otherwise, ensure it has no value.
-			if ( $is_featured ) {
-				update_post_meta( $post_id, self::META_KEYS['query'], $feature_priority );
-			} else {
-				delete_post_meta( $post_id, self::META_KEYS['query'] );
+			if ( ! $is_featured || 'publish' !== $post->post_status ) {
+				$feature_priority = 0;
 			}
+
+			$result = self::update_priority( $post_id, $feature_priority );
 		}
 	}
 
@@ -219,110 +325,35 @@ final class Newspack_Listings_Featured {
 	 * Then order by the query's original ordering criteria, if any were specified.
 	 * Limit query modifications to only queries that will include listing posts.
 	 *
-	 * @param WP_Query $query Query object.
+	 * @param string[] $clauses Associative array of the clauses for the query.
+	 * @param WP_Query $query   The WP_Query instance (passed by reference).
+	 *
+	 * @return string[] Transformed clauses for the query.
 	 */
-	public static function show_featured_listings_first( $query ) {
-
+	public static function sort_featured_listings( $clauses, $query ) {
 		// Only front-end queries (also affects block queries in the post editor, though, which we want).
 		if (
-			! is_admin() &&
-			! is_comment_feed() &&
-			! is_embed() &&
-			! is_feed() &&
-			! is_robots() &&
-			! is_trackback()
+			$query->is_admin() ||
+			$query->is_comment_feed() ||
+			$query->is_embed() ||
+			$query->is_feed() ||
+			$query->is_robots() ||
+			$query->is_trackback()
 		) {
-			// Let's only modify the query if it's going to include listings.
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_post_type = $query->get( 'post_type' );
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_tax_query = $query->get( 'tax_query' );
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_is_search = $query->is_search();
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_is_meta = ! empty( $query->get( 'meta_query' ) );
-
-			// If the query is already a meta query, we don't want to mess with it.
-			if ( $query_is_meta ) {
-				return;
-			}
-
-			// If post_type and tax_query aren't specified in the query, WP_Query defaults to "post", so let's bail.
-			// If the query is a search, an empty post_type means 'any'.
-			if ( empty( $query_post_type ) && empty( $query_tax_query ) && ! $query_is_search ) {
-				return;
-			}
-
-			// However, if tax_query is specified but post_type isn't, post_type defaults to 'any'. Let's make that explicit.
-			// If the query is a search, an empty post_type means 'any'.
-			if ( empty( $query_post_type ) && ! empty( $query_tax_query ) || $query_is_search ) {
-				$query_post_type = [ 'any' ];
-			}
-
-			// Query will include listings if any listing post type, or literally "any" post type, is specified.
-			$listing_post_types = array_merge(
-				array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
-				[ 'any' ]
-			);
-
-			// Post type can be specified as either a string (for a single post type) or array.
-			// Let's standardize to an array so we can check if it contains listing or "any" post types using array_intersect.
-			if ( ! is_array( $query_post_type ) ) {
-				$query_post_type = [ $query_post_type ];
-			}
-			$query_contains_listings = 0 < count( array_intersect( $listing_post_types, $query_post_type ) );
-
-			// If the query won't include listings, there's no need to modify it.
-			if ( ! $query_contains_listings ) {
-				return;
-			}
-
-			// If the query contains listings, let's add a meta query for feature priority so we can sort by it.
-			$meta_query                     = [ 'relation' => 'OR' ];
-			$meta_query['feature_priority'] = [
-				'key'     => self::META_KEYS['query'],
-				'compare' => 'EXISTS',
-			];
-			$meta_query['no_priority']      = [
-				'key'     => self::META_KEYS['query'],
-				'compare' => 'NOT EXISTS',
-			];
-
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query->set(
-				'meta_query',
-				$meta_query
-			);
-
-			// Let's try to preserve the query's specified ordering after we sort by feature priority.
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_order = $query->get( 'order' );
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query_order_by = $query->get( 'orderby' );
-
-			// Sort by feature priority first.
-			$order = [
-				'no_priority' => 'DESC',
-			];
-
-			// Then sort by whatever the query's ordering criteria were.
-			if ( $query_order_by && $query_order ) {
-				if ( is_array( $query_order_by ) ) {
-					$order = array_merge( $order, $query_order_by );
-				} else {
-					$order[ $query_order_by ] = $query_order;
-				}
-			} else {
-				// If the query didn't specify any order, let's just use WP_Query's default ordering as a secondary criterion.
-				$order['date'] = 'DESC';
-			}
-
-			// phpcs:ignore WordPressVIPMinimum.Hooks.PreGetPosts.PreGetPosts
-			$query->set(
-				'orderby',
-				$order
-			);
+			return $clauses;
 		}
+
+		global $wpdb;
+		$table_name = self::get_table_name();
+
+		$clauses['join']   .= "
+			LEFT JOIN {$table_name}
+			ON (
+				{$wpdb->prefix}posts.ID = {$table_name}.post_id
+			) ";
+		$clauses['orderby'] = "{$table_name}.feature_priority DESC, " . $clauses['orderby'];
+
+		return $clauses;
 	}
 
 	/**
