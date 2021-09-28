@@ -314,12 +314,14 @@ final class Newspack_Listings_Featured {
 		global $wpdb;
 		$table_name = self::get_table_name();
 
-		$clauses['join']   .= "
-			LEFT JOIN {$table_name}
-			ON (
-				{$wpdb->prefix}posts.ID = {$table_name}.post_id
-			) ";
-		$clauses['orderby'] = "{$table_name}.feature_priority DESC, " . $clauses['orderby'];
+		if ( false === strpos( $clauses['join'], "LEFT JOIN {$table_name}" ) ) {
+			$clauses['join']   .= "
+				LEFT JOIN {$table_name}
+				ON (
+					{$wpdb->prefix}posts.ID = {$table_name}.post_id
+				) ";
+			$clauses['orderby'] = "{$table_name}.feature_priority DESC, " . $clauses['orderby'];
+		}
 
 		return $clauses;
 	}
