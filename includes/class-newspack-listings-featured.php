@@ -22,6 +22,7 @@ final class Newspack_Listings_Featured {
 	const META_KEYS = [
 		'featured' => 'newspack_listings_featured',
 		'priority' => 'newspack_listings_featured_priority',
+		'query'    => '_newspack_listings_featured_query_priority',
 		'expires'  => 'newspack_listings_featured_expires',
 	];
 
