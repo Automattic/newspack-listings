@@ -39,13 +39,6 @@ final class Newspack_Listings_Featured {
 	protected static $instance = null;
 
 	/**
-	 * Is this class instance running in a unit test?
-	 *
-	 * @var $is_test
-	 */
-	protected static $is_test = false;
-
-	/**
 	 * Main Newspack_Listings_Featured instance.
 	 * Ensures only one instance of Newspack_Listings_Featured is loaded or can be loaded.
 	 *
@@ -70,16 +63,6 @@ final class Newspack_Listings_Featured {
 		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
-	}
-
-	/**
-	 * Set whether the current class instance is running in a unit test.
-	 * Allows us to test the query sorting features independently of WP.
-	 *
-	 * @param boolean $is_test Whether the current class instance is running in a unit test.
-	 */
-	public static function set_is_test( $is_test ) {
-		self::$is_test = $is_test;
 	}
 
 	/**
@@ -314,11 +297,11 @@ final class Newspack_Listings_Featured {
 	 * @return string[] Transformed clauses for the query.
 	 */
 	public static function sort_featured_listings( $clauses, $query ) {
-		// Only category and tag archive pages, for now.
+		// Only category, tag, or listing post type archive pages, for now.
 		if (
 			$query->is_category() ||
 			$query->is_tag() ||
-			self::$is_test
+			$query->is_post_type_archive( array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ) )
 		) {
 			global $wpdb;
 			$table_name = self::get_table_name();
