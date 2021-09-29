@@ -91,7 +91,6 @@ final class Newspack_Listings_Featured {
 				feature_priority int(1) unsigned NOT NULL,
 				PRIMARY KEY (post_id),
 				KEY (feature_priority),
-				KEY query_priority (post_id, feature_priority)
 			) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -300,28 +299,19 @@ final class Newspack_Listings_Featured {
 	 * @return string[] Transformed clauses for the query.
 	 */
 	public static function sort_featured_listings( $clauses, $query ) {
-		// Only front-end queries (also affects block queries in the post editor, though, which we want).
-		if (
-			$query->is_admin() ||
-			$query->is_comment_feed() ||
-			$query->is_embed() ||
-			$query->is_feed() ||
-			$query->is_robots() ||
-			$query->is_trackback()
-		) {
-			return $clauses;
-		}
+		// Only category and tag archive pages, for now.
+		if ( $query->is_category() || $query->is_tag() ) {
+			global $wpdb;
+			$table_name = self::get_table_name();
 
-		global $wpdb;
-		$table_name = self::get_table_name();
-
-		if ( false === strpos( $clauses['join'], "LEFT JOIN {$table_name}" ) ) {
-			$clauses['join']   .= "
-				LEFT JOIN {$table_name}
-				ON (
-					{$wpdb->prefix}posts.ID = {$table_name}.post_id
-				) ";
-			$clauses['orderby'] = "{$table_name}.feature_priority DESC, " . $clauses['orderby'];
+			if ( false === strpos( $clauses['join'], "LEFT JOIN {$table_name}" ) ) {
+				$clauses['join']   .= "
+					LEFT JOIN {$table_name}
+					ON (
+						{$wpdb->prefix}posts.ID = {$table_name}.post_id
+					) ";
+				$clauses['orderby'] = "{$table_name}.feature_priority DESC, " . $clauses['orderby'];
+			}
 		}
 
 		return $clauses;
