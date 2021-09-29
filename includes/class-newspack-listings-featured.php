@@ -22,7 +22,7 @@ final class Newspack_Listings_Featured {
 	const META_KEYS = [
 		'featured' => 'newspack_listings_featured',
 		'priority' => 'newspack_listings_featured_priority',
-		'query'    => 'newspack_listings_featured_query_priority',
+		'query'    => '_newspack_listings_featured_query_priority',
 		'expires'  => 'newspack_listings_featured_expires',
 	];
 
@@ -221,7 +221,7 @@ final class Newspack_Listings_Featured {
 	 *
 	 * @param string[] $clauses Associative array of the clauses for the query.
 	 * @param WP_Query $query   The WP_Query instance (passed by reference).
-	 * 
+	 *
 	 * @return string[] Transformed clauses for the query.
 	 */
 	public static function featured_listings_clauses( $clauses, $query ) {
@@ -318,8 +318,8 @@ final class Newspack_Listings_Featured {
 
 		// If the expiration date has already passed, remove the featured status and query priority.
 		if ( $date_has_passed ) {
-			update_post_meta( $post_id, 'newspack_listings_featured', false );
-			delete_post_meta( $post_id, 'newspack_listings_featured_query_priority' );
+			update_post_meta( $post_id, self::META_KEYS['featured'], false );
+			delete_post_meta( $post_id, self::META_KEYS['query'] );
 			return true;
 		}
 
