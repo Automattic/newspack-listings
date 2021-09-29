@@ -55,13 +55,118 @@ final class Newspack_Listings_Featured {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_action( 'init', [ __CLASS__, 'create_custom_table' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
 		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
-		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ] );
-		add_filter( 'posts_clauses', [ __CLASS__, 'featured_listings_clauses' ], 11, 2 );
+		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ], 10, 2 );
+		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
+	}
+
+	/**
+	 * Get events table name.
+	 */
+	public static function get_table_name() {
+		global $wpdb;
+		return $wpdb->prefix . 'newspack_listings_priority';
+	}
+
+	/**
+	 * Create a custom DB table to store feature priority data.
+	 * Avoids the use of slow post meta for query sorting purposes.
+	 * Only create the table if it doesn't already exist.
+	 */
+	public static function create_custom_table() {
+		global $wpdb;
+		$table_name = self::get_table_name();
+
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) != $table_name ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$charset_collate = $wpdb->get_charset_collate();
+			$sql             = "CREATE TABLE IF NOT EXISTS $table_name (
+				-- Post ID.
+				post_id bigint(20) unsigned NOT NULL,
+				-- Feature priority: 1–9 if featured, 0 if not.
+				feature_priority int(1) unsigned NOT NULL,
+				PRIMARY KEY (post_id),
+				KEY (feature_priority),
+				KEY query_priority (post_id, feature_priority)
+			) $charset_collate;";
+
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
+		}
+	}
+
+	/**
+	 * Set the feature priority for the given post ID in the custom table.
+	 *
+	 * @param int $post_id Post ID. Will use current post if none given.
+	 * @param int $priority Priority to set, from 0–9.
+	 *
+	 * @return int|false The number of rows affected, or false on error.
+	 */
+	public static function update_priority( $post_id = null, $priority = 0 ) {
+		global $wpdb;
+
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$table_name = self::get_table_name();
+
+		if ( 0 < $priority ) {
+			$result = $wpdb->replace( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$table_name,
+				[
+					'post_id'          => $post_id,
+					'feature_priority' => $priority,
+				],
+				[
+					'%d',
+					'%d',
+				]
+			);
+		} else {
+			// If passing 0, delete any found rows.
+			$result = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					'DELETE FROM %s WHERE post_id = %d',
+					$table_name,
+					$post_id
+				)
+			);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Get the priority value (0–9) for the given or current post ID.
+	 *
+	 * @param int $post_id Post ID. Will use current post if none given.
+	 *
+	 * @return int The post's priority, 1–9 if featured, or 0 if not.
+	 */
+	public static function get_priority( $post_id = null ) {
+		global $wpdb;
+
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$table_name = self::get_table_name();
+		$priority   = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				'SELECT feature_priority FROM %s WHERE post_id = %d',
+				$table_name,
+				$post_id
+			)
+		);
+
+		// Will also return 0 if the $post_id doesn't exist in the table.
+		return intval( $priority );
 	}
 
 	/**
@@ -86,17 +191,6 @@ final class Newspack_Listings_Featured {
 				},
 				'default'           => 5,
 				'description'       => __( 'What priority should this featured listing have (1–10)?', 'newspack-gdg' ),
-				'sanitize_callback' => 'absint',
-				'single'            => true,
-				'show_in_rest'      => true,
-				'type'              => 'integer',
-			],
-			'query'    => [
-				'auth_callback'     => function() {
-					return current_user_can( 'edit_posts' );
-				},
-				'default'           => 5,
-				'description'       => __( 'Indexed feature priority used for query purposes.', 'newspack-gdg' ),
 				'sanitize_callback' => 'absint',
 				'single'            => true,
 				'show_in_rest'      => true,
@@ -159,26 +253,6 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
-	 * Get the query priority for the given/current post.
-	 *
-	 * @param int $post_id Post ID. If none given, use the current post ID.
-	 *
-	 * @return int Feature priority level for query purposes (default = 5).
-	 *             Will return 0 if the listing isn't currently featured.
-	 */
-	public static function get_query_priority( $post_id = null ) {
-		if ( null === $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! self::is_featured( $post_id ) ) {
-			return 0;
-		}
-
-		return get_post_meta( $post_id, self::META_KEYS['query'], true );
-	}
-
-	/**
 	 * Get the expiration date string for the given/current post.
 	 *
 	 * @param int $post_id Post ID. If none given, use the current post ID.
@@ -198,19 +272,20 @@ final class Newspack_Listings_Featured {
 	 * If the item is not featured, delete the query meta value.
 	 * This lets us query based only on this meta value instead of checking both feature status and priority.
 	 *
-	 * @param int $post_id Post ID.
+	 * @param int     $post_id Post ID.
+	 * @param WP_Post $post Post object.
 	 */
-	public static function set_feature_priority( $post_id ) {
+	public static function set_feature_priority( $post_id, $post ) {
 		if ( Core::is_listing() ) {
 			$is_featured      = self::is_featured( $post_id );
 			$feature_priority = self::get_featured_priority( $post_id );
 
 			// If the post is featured, ensure it has a query priority. Otherwise, ensure it has no value.
-			if ( $is_featured ) {
-				update_post_meta( $post_id, self::META_KEYS['query'], $feature_priority );
-			} else {
-				delete_post_meta( $post_id, self::META_KEYS['query'] );
+			if ( ! $is_featured || 'publish' !== $post->post_status ) {
+				$feature_priority = 0;
 			}
+
+			$result = self::update_priority( $post_id, $feature_priority );
 		}
 	}
 
@@ -224,30 +299,30 @@ final class Newspack_Listings_Featured {
 	 *
 	 * @return string[] Transformed clauses for the query.
 	 */
-	public static function featured_listings_clauses( $clauses, $query ) {
+	public static function sort_featured_listings( $clauses, $query ) {
 		// Only front-end queries (also affects block queries in the post editor, though, which we want).
 		if (
-			is_admin() ||
-			is_comment_feed() ||
-			is_embed() ||
-			is_feed() ||
-			is_robots() ||
-			is_trackback()
+			$query->is_admin() ||
+			$query->is_comment_feed() ||
+			$query->is_embed() ||
+			$query->is_feed() ||
+			$query->is_robots() ||
+			$query->is_trackback()
 		) {
 			return $clauses;
 		}
 
 		global $wpdb;
+		$table_name = self::get_table_name();
 
-		$meta_prefix        = 'listings_custom_meta_key';
-		$meta_key           = self::META_KEYS['query'];
-		$clauses['join']   .= "
-			LEFT JOIN {$wpdb->prefix}postmeta AS {$meta_prefix}
-			ON (
-				{$wpdb->prefix}posts.ID = {$meta_prefix}.post_id AND
-				{$meta_prefix}.meta_key = '{$meta_key}'
-			) ";
-		$clauses['orderby'] = "{$meta_prefix}.meta_value DESC, " . $clauses['orderby'];
+		if ( false === strpos( $clauses['join'], "LEFT JOIN {$table_name}" ) ) {
+			$clauses['join']   .= "
+				LEFT JOIN {$table_name}
+				ON (
+					{$wpdb->prefix}posts.ID = {$table_name}.post_id
+				) ";
+			$clauses['orderby'] = "{$table_name}.feature_priority DESC, " . $clauses['orderby'];
+		}
 
 		return $clauses;
 	}
@@ -319,7 +394,7 @@ final class Newspack_Listings_Featured {
 		// If the expiration date has already passed, remove the featured status and query priority.
 		if ( $date_has_passed ) {
 			update_post_meta( $post_id, self::META_KEYS['featured'], false );
-			delete_post_meta( $post_id, self::META_KEYS['query'] );
+			self::update_priority( $post_id, 0 );
 			return true;
 		}
 
