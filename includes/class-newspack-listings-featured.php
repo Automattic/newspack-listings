@@ -300,7 +300,10 @@ final class Newspack_Listings_Featured {
 	 */
 	public static function sort_featured_listings( $clauses, $query ) {
 		// Only category and tag archive pages, for now.
-		if ( $query->is_category() || $query->is_tag() ) {
+		if (
+			$query->is_category() ||
+			$query->is_tag() ||
+			( defined( 'NEWSPACK_LISTINGS_TEST_FEATURED' ) && NEWSPACK_LISTINGS_TEST_FEATURED ) ) {
 			global $wpdb;
 			$table_name = self::get_table_name();
 
