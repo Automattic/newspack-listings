@@ -32,6 +32,16 @@ final class Newspack_Listings_Featured {
 	const CRON_HOOK = 'newspack_listings_expiration_checker';
 
 	/**
+	 * Installed version number of the custom table.
+	 */
+	const TABLE_VERSION = '1.0';
+
+	/**
+	 * Option name for the installed version number of the custom table.
+	 */
+	const TABLE_VERSION_OPTION = '_newspack_listings_priority_version';
+
+	/**
 	 * The single instance of the class.
 	 *
 	 * @var $instance
@@ -55,7 +65,8 @@ final class Newspack_Listings_Featured {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'init', [ __CLASS__, 'create_custom_table' ] );
+		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'create_custom_table' ] );
+		add_action( 'plugins_loaded', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
 		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
@@ -71,6 +82,19 @@ final class Newspack_Listings_Featured {
 	public static function get_table_name() {
 		global $wpdb;
 		return $wpdb->prefix . 'newspack_listings_priority';
+	}
+
+	/**
+	 * Checks if the custom table has been created and is up-to-date.
+	 * If not, run the create_custom_table method.
+	 * See: https://codex.wordpress.org/Creating_Tables_with_Plugins
+	 */
+	public static function check_update_version() {
+		$current_version = get_option( self::TABLE_VERSION_OPTION, false );
+
+		if ( self::TABLE_VERSION !== $current_version ) {
+			self::create_custom_table();
+		}
 	}
 
 	/**
@@ -95,6 +119,8 @@ final class Newspack_Listings_Featured {
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
+
+			update_option( self::TABLE_VERSION_OPTION, self::TABLE_VERSION );
 		}
 	}
 
