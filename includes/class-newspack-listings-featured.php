@@ -299,6 +299,17 @@ final class Newspack_Listings_Featured {
 	public static function sort_featured_listings( $clauses, $query ) {
 		// Only category and tag archive pages, for now.
 		if (
+			$query->is_admin() ||
+			$query->is_comment_feed() ||
+			$query->is_embed() ||
+			$query->is_feed() ||
+			$query->is_robots() ||
+			$query->is_trackback()
+		) {
+			return $clauses;
+		}
+
+		if (
 			$query->is_category() ||
 			$query->is_tag() ||
 			( defined( 'NEWSPACK_LISTINGS_TEST_FEATURED' ) && NEWSPACK_LISTINGS_TEST_FEATURED )
