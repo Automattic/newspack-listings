@@ -129,12 +129,10 @@ final class Newspack_Listings_Featured {
 			);
 		} else {
 			// If passing 0, delete any found rows.
-			$result = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					'DELETE FROM %s WHERE post_id = %d',
-					$table_name,
-					$post_id
-				)
+			$result = $wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$table_name,
+				[ 'post_id' => $post_id ],
+				'%d'
 			);
 		}
 
@@ -303,7 +301,8 @@ final class Newspack_Listings_Featured {
 		if (
 			$query->is_category() ||
 			$query->is_tag() ||
-			( defined( 'NEWSPACK_LISTINGS_TEST_FEATURED' ) && NEWSPACK_LISTINGS_TEST_FEATURED ) ) {
+			( defined( 'NEWSPACK_LISTINGS_TEST_FEATURED' ) && NEWSPACK_LISTINGS_TEST_FEATURED )
+		) {
 			global $wpdb;
 			$table_name = self::get_table_name();
 

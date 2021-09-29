@@ -20,6 +20,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		// Remove any listings (from previous tests).
 		foreach ( self::$listings as $listing_id ) {
 			wp_delete_post( $listing_id );
+			Featured::update_priority( $listing_id, 0 );
 		}
 	}
 
@@ -128,7 +129,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		$index = 0;
-		foreach ( $listings_with_featured->get_posts() as $listing ) {
+		foreach ( $listings_with_featured->posts as $listing ) {
 			$index             ++;
 			$stringified_index = zeroise( $index - 1, 2 ); // Index will be offset by one because the featured listing comes first.
 			if ( 1 === $index ) {
@@ -187,7 +188,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		$index = 0;
-		foreach ( $listings_with_feature_priority->get_posts() as $listing ) {
+		foreach ( $listings_with_feature_priority->posts as $listing ) {
 			$index             ++;
 			$stringified_index = zeroise( $index - 2, 2 ); // Index will be offset by two because the featured listings come first.
 			if ( 1 === $index ) {
