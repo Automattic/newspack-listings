@@ -16,6 +16,7 @@ class FeaturedTest extends WP_UnitTestCase {
 	private static $listings = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
 	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+		Featured::set_is_test( false );
 
 		// Remove any listings (from previous tests).
 		foreach ( self::$listings as $listing_id ) {
@@ -77,6 +78,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		}
 
 		// Execute a query.
+		Featured::set_is_test( true );
 		$control_listings = get_posts(
 			[
 				'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
@@ -119,6 +121,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		// Execute a query.
+		Featured::set_is_test( true );
 		$listings_with_featured = new WP_Query(
 			[
 				'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
@@ -178,6 +181,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		);
 
 		// Execute a query.
+		Featured::set_is_test( true );
 		$listings_with_feature_priority = new WP_Query(
 			[
 				'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
