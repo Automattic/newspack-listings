@@ -112,7 +112,7 @@ final class Newspack_Listings_Featured {
 				-- Post ID.
 				post_id bigint(20) unsigned NOT NULL,
 				-- Feature priority: 1–9 if featured, 0 if not.
-				feature_priority int(1) unsigned NOT NULL,
+				feature_priority tinyint(1) unsigned NOT NULL,
 				PRIMARY KEY (post_id),
 				KEY (feature_priority)
 			) $charset_collate;";
