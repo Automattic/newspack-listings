@@ -94,6 +94,7 @@ final class Newspack_Listings_Featured {
 
 		if ( self::TABLE_VERSION !== $current_version ) {
 			self::create_custom_table();
+			self::populate_custom_table();
 		}
 	}
 
@@ -121,6 +122,50 @@ final class Newspack_Listings_Featured {
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
 
 			update_option( self::TABLE_VERSION_OPTION, self::TABLE_VERSION );
+		}
+	}
+
+	/**
+	 * When the table is created, ensure that all featured items and their priority are populated in the custom table.
+	 */
+	public static function populate_custom_table() {
+		// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
+		$current_page = 1;
+		$args         = [
+			'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
+			'post_status'    => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
+			'posts_per_page' => 100,
+			'paged'          => $current_page,
+			'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'relation' => 'AND',
+				[
+					'key'   => self::META_KEYS['featured'],
+					'value' => 1,
+				],
+			],
+		];
+
+		// Get featured listings with an expiration date.
+		$results         = new \WP_Query( $args );
+		$number_of_pages = $results->max_num_pages;
+
+		foreach ( $results->posts as $featured_listing ) {
+			$priority = self::get_featured_priority( $featured_listing->ID );
+			self::update_priority( $featured_listing->ID, $priority );
+		}
+
+		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
+		if ( 1 < $number_of_pages ) {
+			while ( $current_page < $number_of_pages ) {
+				$current_page  ++;
+				$args['paged'] = $current_page;
+				$results       = new \WP_Query( $args );
+
+				foreach ( $results->posts as $featured_listing ) {
+					$priority = self::get_featured_priority( $featured_listing->ID );
+					self::update_priority( $featured_listing->ID, $priority );
+				}
+			}
 		}
 	}
 
