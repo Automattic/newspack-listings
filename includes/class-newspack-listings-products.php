@@ -22,7 +22,33 @@ final class Newspack_Listings_Products {
 	/**
 	 * The option name for the product ID.
 	 */
-	const NEWSPACK_LISTINGS_PRODUCT_OPTION = 'newspack_listings_product_id';
+	const PRODUCT_OPTION = 'newspack_listings_product_id';
+
+	/**
+	 * Meta keys for self-serve listing products.
+	 */
+	const PRODUCT_META_KEYS = [
+		'single'       => 'newspack_listings_single_price',
+		'featured'     => 'newspack_listings_featured_add_on',
+		'subscription' => 'newspack_listings_subscription_price',
+		'premium'      => 'newspack_listings_premium_subscription_add_on',
+	];
+
+	/**
+	 * Meta keys for self-serve listing orders.
+	 */
+	const ORDER_META_KEYS = [
+		'listing_title' => 'newspack_listings_order_title',
+		'listing_type'  => 'newspack_listings_order_type',
+	];
+
+	/**
+	 * User meta keys for self-serve listing customers.
+	 */
+	const CUSTOMER_META_KEYS = [
+		'is_listings_customer' => 'newspack_listings_self_serve_customer',
+		'listing_post_ids'     => 'newspack_listings_post_ids',
+	];
 
 	/**
 	 * The single instance of the class.
@@ -56,6 +82,11 @@ final class Newspack_Listings_Products {
 	 */
 	public function __construct() {
 		add_action( 'init', [ __CLASS__, 'init' ] );
+		add_action( 'wp_loaded', [ __CLASS__, 'handle_purchase_form' ], 99 );
+		add_filter( 'pre_option_woocommerce_enable_guest_checkout', [ __CLASS__, 'require_account_for_listings' ] );
+		add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'listing_details_summary' ] );
+		add_filter( 'woocommerce_billing_fields', [ __CLASS__, 'listing_details_billing_fields' ] );
+		add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'listing_checkout_update_order_meta' ] );
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
 		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
@@ -80,8 +111,8 @@ final class Newspack_Listings_Products {
 			return false;
 		}
 
-		$product_id = get_option( self::NEWSPACK_LISTINGS_PRODUCT_OPTION, false );
-		if ( ! $product_id ) {
+		$products = self::get_products();
+		if ( ! $products ) {
 			$settings     = Settings::get_settings();
 			$product_name = __( 'Self-Serve Listings', 'newspack-listings' );
 
@@ -96,9 +127,9 @@ final class Newspack_Listings_Products {
 			// Single listing product.
 			$single_product = new \WC_Product_Simple();
 			/* translators: %s: Product name */
-			$single_product->set_name( sprintf( __( '%s: Single Listing', 'newspack-listings' ), $product_name ) );
-			$single_product->set_regular_price( $settings['newspack_listings_single_price'] );
-			$single_product->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_single_price' );
+			$single_product->set_name( __( 'Single Listing', 'newspack-listings' ) );
+			$single_product->set_regular_price( $settings[ self::PRODUCT_META_KEYS['single'] ] );
+			$single_product->update_meta_data( '_newspack_listings_product_slug', self::PRODUCT_META_KEYS['single'] );
 			$single_product->set_virtual( true );
 			$single_product->set_downloadable( true );
 			$single_product->set_catalog_visibility( 'hidden' );
@@ -108,9 +139,9 @@ final class Newspack_Listings_Products {
 			// Single "featured" listing upgrade.
 			$featured_upgrade_single = new \WC_Product_Simple();
 			/* translators: %s: Product name */
-			$featured_upgrade_single->set_name( sprintf( __( '%s: “Featured” Listing Upgrade', 'newspack-listings' ), $product_name ) );
-			$featured_upgrade_single->set_regular_price( $settings['newspack_listings_featured_add_on'] );
-			$featured_upgrade_single->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_featured_add_on' );
+			$featured_upgrade_single->set_name( __( '“Featured” Listing Upgrade', 'newspack-listings' ) );
+			$featured_upgrade_single->set_regular_price( $settings[ self::PRODUCT_META_KEYS['featured'] ] );
+			$featured_upgrade_single->update_meta_data( '_newspack_listings_product_slug', self::PRODUCT_META_KEYS['featured'] );
 			$featured_upgrade_single->set_virtual( true );
 			$featured_upgrade_single->set_downloadable( true );
 			$featured_upgrade_single->set_catalog_visibility( 'hidden' );
@@ -120,10 +151,10 @@ final class Newspack_Listings_Products {
 			// Monthly subscription product.
 			$monthly_product = new \WC_Product_Subscription();
 			/* translators: %s: Product name */
-			$monthly_product->set_name( sprintf( __( '%s: Monthly Subscription', 'newspack-listings' ), $product_name ) );
-			$monthly_product->set_regular_price( $settings['newspack_listings_subscription_price'] );
-			$monthly_product->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_subscription_price' );
-			$monthly_product->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_subscription_price'] ) );
+			$monthly_product->set_name( __( 'Listing Subscription', 'newspack-listings' ) );
+			$monthly_product->set_regular_price( $settings[ self::PRODUCT_META_KEYS['subscription'] ] );
+			$monthly_product->update_meta_data( '_newspack_listings_product_slug', self::PRODUCT_META_KEYS['subscription'] );
+			$monthly_product->update_meta_data( '_subscription_price', wc_format_decimal( $settings[ self::PRODUCT_META_KEYS['subscription'] ] ) );
 			$monthly_product->update_meta_data( '_subscription_period', 'month' );
 			$monthly_product->update_meta_data( '_subscription_period_interval', 1 );
 			$monthly_product->set_virtual( true );
@@ -132,28 +163,13 @@ final class Newspack_Listings_Products {
 			$monthly_product->set_sold_individually( true );
 			$monthly_product->save();
 
-			// Monthly "featured" listing upgrade.
-			$featured_upgrade_monthly = new \WC_Product_Subscription();
-			/* translators: %s: Product name */
-			$featured_upgrade_monthly->set_name( sprintf( __( '%s: “Featured” Listing Upgrade (subscription)', 'newspack-listings' ), $product_name ) );
-			$featured_upgrade_monthly->set_regular_price( $settings['newspack_listings_featured_add_on'] );
-			$featured_upgrade_monthly->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_featured_add_on' );
-			$featured_upgrade_monthly->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_featured_add_on'] ) );
-			$featured_upgrade_monthly->update_meta_data( '_subscription_period', 'month' );
-			$featured_upgrade_monthly->update_meta_data( '_subscription_period_interval', 1 );
-			$featured_upgrade_monthly->set_virtual( true );
-			$featured_upgrade_monthly->set_downloadable( true );
-			$featured_upgrade_monthly->set_catalog_visibility( 'hidden' );
-			$featured_upgrade_monthly->set_sold_individually( true );
-			$featured_upgrade_monthly->save();
-
 			// Monthly "premium subscription" upgrade.
 			$premium_upgrade_monthly = new \WC_Product_Subscription();
 			/* translators: %s: Product name */
-			$premium_upgrade_monthly->set_name( sprintf( __( '%s: Premium Subscription Upgrade', 'newspack-listings' ), $product_name ) );
-			$premium_upgrade_monthly->set_regular_price( $settings['newspack_listings_premium_subscription_add_on'] );
-			$premium_upgrade_monthly->update_meta_data( '_newspack_listings_product_slug', 'newspack_listings_premium_subscription_add_on' );
-			$premium_upgrade_monthly->update_meta_data( '_subscription_price', wc_format_decimal( $settings['newspack_listings_premium_subscription_add_on'] ) );
+			$premium_upgrade_monthly->set_name( __( 'Premium Subscription Upgrade', 'newspack-listings' ) );
+			$premium_upgrade_monthly->set_regular_price( $settings[ self::PRODUCT_META_KEYS['premium'] ] );
+			$premium_upgrade_monthly->update_meta_data( '_newspack_listings_product_slug', self::PRODUCT_META_KEYS['premium'] );
+			$premium_upgrade_monthly->update_meta_data( '_subscription_price', wc_format_decimal( $settings[ self::PRODUCT_META_KEYS['premium'] ] ) );
 			$premium_upgrade_monthly->update_meta_data( '_subscription_period', 'month' );
 			$premium_upgrade_monthly->update_meta_data( '_subscription_period_interval', 1 );
 			$premium_upgrade_monthly->set_virtual( true );
@@ -167,13 +183,42 @@ final class Newspack_Listings_Products {
 					$single_product->get_id(),
 					$featured_upgrade_single->get_id(),
 					$monthly_product->get_id(),
-					$featured_upgrade_monthly->get_id(),
 					$premium_upgrade_monthly->get_id(),
 				]
 			);
 			$parent_product->save();
-			update_option( self::NEWSPACK_LISTINGS_PRODUCT_OPTION, $parent_product->get_id() );
+			update_option( self::PRODUCT_OPTION, $parent_product->get_id() );
 		}
+	}
+
+	/**
+	 * Valid single listing types that can be purchased.
+	 *
+	 * @return array Array of listing types.
+	 */
+	public static function get_listing_types() {
+		return [
+			[
+				'slug' => 'blank',
+				'name' => __( 'Blank listing (start from scratch)', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'event',
+				'name' => __( 'Event', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'classified',
+				'name' => __( 'Classified Ad', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'job',
+				'name' => __( 'Job Listing', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'real-estate',
+				'name' => __( 'Real Estate Listing', 'newspack-listings' ),
+			],
+		];
 	}
 
 	/**
@@ -194,7 +239,7 @@ final class Newspack_Listings_Products {
 			return;
 		}
 
-		$product_id = get_option( self::NEWSPACK_LISTINGS_PRODUCT_OPTION, false );
+		$product_id = get_option( self::PRODUCT_OPTION, false );
 		if ( $product_id ) {
 			$parent_product = \wc_get_product( $product_id );
 			$parent_product->set_status( 'publish' );
@@ -231,14 +276,240 @@ final class Newspack_Listings_Products {
 			return false;
 		}
 
-		$product_id = get_option( self::NEWSPACK_LISTINGS_PRODUCT_OPTION, false );
-		$product    = \wc_get_product( $product_id );
+		$product_id     = get_option( self::PRODUCT_OPTION, false );
+		$parent_product = \wc_get_product( $product_id );
 
-		if ( ! $product || ! $product->is_type( 'grouped' ) ) {
+		if ( ! $parent_product || ! $parent_product->is_type( 'grouped' ) || 'publish' !== get_post_status( $product_id ) ) {
 			return false;
 		}
 
-		return $product;
+		$products = [
+			'newspack_listings_parent_product' => $product_id,
+		];
+
+		foreach ( $parent_product->get_children() as $child_id ) {
+			$child_product = \wc_get_product( $child_id );
+
+			if ( ! $child_product ) {
+				continue;
+			}
+
+			$settings_slug              = $child_product->get_meta( '_newspack_listings_product_slug' );
+			$products[ $settings_slug ] = $child_id;
+		}
+
+		return $products;
+	}
+
+	/**
+	 * Remove all listing products from the cart.
+	 */
+	public static function clear_cart() {
+		$products = self::get_products();
+		if ( ! $products || ! self::$wc_is_active ) {
+			return;
+		}
+
+		foreach ( \WC()->cart->get_cart() as $cart_key => $cart_item ) {
+			if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
+				\WC()->cart->remove_cart_item( $cart_key );
+			}
+		}
+	}
+
+	/**
+	 * For self-serve listings, a customer account is required so the user can log in and manage their listings.
+	 * If a listing product is in the cart, force the checkout to require an account regardless of WC settings.
+	 *
+	 * @param string $value String value 'yes' or 'no' of the WC setting to allow guest checkout.
+	 *
+	 * @return string Filtered value.
+	 */
+	public static function require_account_for_listings( $value ) {
+		$products = self::get_products();
+		if ( ! $products || ! self::$wc_is_active ) {
+			return $value;
+		}
+
+		foreach ( \WC()->cart->get_cart() as $cart_key => $cart_item ) {
+			if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
+				$value = 'no';
+				break;
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Handle submission of the purchase form block.
+	 */
+	public static function handle_purchase_form() {
+		$purchase_type = filter_input( INPUT_GET, 'listing-purchase-type', FILTER_SANITIZE_STRING );
+
+		// Only if WC is active.
+		if ( ! self::$wc_is_active ) {
+			return;
+		}
+
+		// Only if purchase type is valid.
+		if ( 'single' !== $purchase_type && 'subscription' !== $purchase_type ) {
+			return;
+		}
+
+		$is_single       = 'single' === $purchase_type;
+		$is_subscription = 'subscription' === $purchase_type;
+
+		// Get form submission data.
+		$title_single       = filter_input( INPUT_GET, 'listing-title-single', FILTER_SANITIZE_STRING );
+		$single_type        = filter_input( INPUT_GET, 'listing-single-type', FILTER_SANITIZE_STRING );
+		$featured_upgrade   = filter_input( INPUT_GET, 'listing-featured-upgrade', FILTER_SANITIZE_STRING );
+		$title_subscription = filter_input( INPUT_GET, 'listing-title-subscription', FILTER_SANITIZE_STRING );
+		$premium_upgrade    = filter_input( INPUT_GET, 'listing-premium-upgrade', FILTER_SANITIZE_STRING );
+		$listing_title      = __( 'Untitled listing', 'newspack-listings' );
+
+		// If a title was provided, use it.
+		if ( $is_single && ! empty( $title_single ) ) {
+			$listing_title = $title_single;
+		} elseif ( $is_subscription && ! empty( $title_subscription ) ) {
+			$listing_title = $title_subscription;
+		}
+
+		// Single purchases must have a valid listing type.
+		if ( $is_single && empty( $single_type ) ) {
+			return;
+		}
+
+		$products = self::get_products();
+		if ( ! $products ) {
+			return;
+		}
+
+		self::clear_cart();
+		$products_to_purchase = [];
+		$checkout_query_args  = [ 'listing_title' => sanitize_text_field( $listing_title ) ];
+
+		if ( $is_single ) {
+			$products_to_purchase[]              = $products['newspack_listings_single_price'];
+			$checkout_query_args['listing_type'] = sanitize_text_field( $single_type );
+
+			if ( 'on' === $featured_upgrade ) {
+				$products_to_purchase[] = $products['newspack_listings_featured_add_on'];
+			}
+		} else {
+			$products_to_purchase[] = $products['newspack_listings_subscription_price'];
+
+			if ( 'on' === $premium_upgrade ) {
+				$products_to_purchase[] = $products['newspack_listings_premium_subscription_add_on'];
+			}
+		}
+
+		foreach ( $products_to_purchase as $product_id ) {
+			\WC()->cart->add_to_cart( $product_id );
+		}
+
+		$checkout_url = add_query_arg(
+			$checkout_query_args,
+			\wc_get_page_permalink( 'checkout' )
+		);
+
+		// Redirect to checkout.
+		\wp_safe_redirect( $checkout_url );
+		exit;
+	}
+
+	/**
+	 * Show listing details in checkout summary.
+	 */
+	public static function listing_details_summary() {
+		$params        = filter_input_array( INPUT_GET, FILTER_SANITIZE_STRING );
+		$listing_title = isset( $params['listing_title'] ) ? $params['listing_title'] : null;
+		$listing_types = self::get_listing_types();
+		$listing_type  = array_reduce(
+			$listing_types,
+			function( $acc, $type ) use ( $params ) {
+				if ( isset( $params['listing_type'] ) && $type['slug'] === $params['listing_type'] ) {
+					$acc = $type['name'];
+				}
+				return $acc;
+			},
+			null
+		);
+
+		if ( $listing_title || $listing_type ) : ?>
+			<h4><?php echo esc_html__( 'Listing Details', 'newspack-listings' ); ?></h4>
+			<p><?php echo esc_html__( 'You can update listing details after purchase.', 'newspack-listings' ); ?>
+			<ul>
+			<?php
+		endif;
+
+		if ( $listing_title ) :
+			?>
+			<li><strong><?php echo esc_html__( 'Listing Title: ', 'newspack-listings' ); ?></strong><?php echo esc_html( $listing_title ); ?></li>
+			<?php
+		endif;
+		if ( $listing_type ) :
+			?>
+			<li><strong><?php echo esc_html__( 'Listing Type: ', 'newspack-listings' ); ?></strong><?php echo esc_html( $listing_type ); ?></li>
+			<?php
+		endif;
+		if ( $listing_title || $listing_type ) :
+			?>
+			</ul>
+			<?php
+		endif;
+	}
+
+
+	/**
+	 * Add hidden billing fields for listing details.
+	 *
+	 * @param Array $form_fields WC form fields.
+	 */
+	public static function listing_details_billing_fields( $form_fields ) {
+		$params = filter_input_array( INPUT_GET, FILTER_SANITIZE_STRING );
+
+		if ( is_array( $params ) ) {
+			foreach ( $params as $param => $value ) {
+				if ( $value && in_array( $param, array_keys( self::ORDER_META_KEYS ) ) ) {
+					$form_fields[ sanitize_text_field( $param ) ] = [
+						'type'    => 'text',
+						'default' => sanitize_text_field( $value ),
+						'class'   => [ 'hide' ],
+					];
+				}
+			}
+		}
+
+		return $form_fields;
+	}
+
+	/**
+	 * Update WC order with listing details from hidden form fields.
+	 *
+	 * @param String $order_id WC order id.
+	 */
+	public static function listing_checkout_update_order_meta( $order_id ) {
+		$params = filter_input_array( INPUT_POST, FILTER_SANITIZE_STRING );
+
+		if ( is_array( $params ) ) {
+			foreach ( $params as $param => $value ) {
+				if ( in_array( $param, array_keys( self::ORDER_META_KEYS ) ) ) {
+					update_post_meta( $order_id, sanitize_text_field( self::ORDER_META_KEYS[ $param ] ), sanitize_text_field( $value ) );
+				}
+			}
+		}
+
+		// Look up the purchasing customer and set relevant user meta.
+		$order = \wc_get_order( $order_id );
+		if ( $order ) {
+			$customer_id = $order->get_customer_id();
+			if ( $customer_id ) {
+				update_user_meta( $customer_id, self::CUSTOMER_META_KEYS['is_listings_customer'], 1 );
+
+				// TODO: create listing post based on form input, and associate it with the customer.
+			}
+		}
 	}
 }
 

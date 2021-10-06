@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Lisitngs\Newspack_Listings_Products as Products;
 use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
@@ -87,26 +88,32 @@ final class Newspack_Listings_Blocks {
 			];
 		}
 
+		$localized_data = [
+			'post_type_label'    => $post_type_label,
+			'post_type'          => $post_type,
+			'post_type_slug'     => array_search( $post_type, Core::NEWSPACK_LISTINGS_POST_TYPES ),
+			'post_types'         => $post_types,
+			'taxonomies'         => $taxonomies,
+			'currency'           => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
+			'currencies'         => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
+
+			// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
+			'no_listings'        => 0 === $total_count,
+			'date_format'        => get_option( 'date_format' ),
+			'time_format'        => get_option( 'time_format' ),
+
+			// Self-serve listings features are gated behind an environment variable.
+			'self_serve_enabled' => defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED,
+		];
+
+		if ( $localized_data['self_serve_enabled'] && class_exists( 'Newspack_Listings\Newspack_Listings_Products' ) ) {
+			$localized_data['self_serve_listing_types'] = Products::get_listing_types();
+		}
+
 		wp_localize_script(
 			'newspack-listings-editor',
 			'newspack_listings_data',
-			[
-				'post_type_label'    => $post_type_label,
-				'post_type'          => $post_type,
-				'post_type_slug'     => array_search( $post_type, Core::NEWSPACK_LISTINGS_POST_TYPES ),
-				'post_types'         => $post_types,
-				'taxonomies'         => $taxonomies,
-				'currency'           => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
-				'currencies'         => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
-
-				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
-				'no_listings'        => 0 === $total_count,
-				'date_format'        => get_option( 'date_format' ),
-				'time_format'        => get_option( 'time_format' ),
-
-				// Self-serve listings features are gated behind an environment variable.
-				'self_serve_enabled' => class_exists( 'Newspack_Listings\Newspack_Listings_Products' ),
-			]
+			$localized_data
 		);
 
 		wp_register_style(

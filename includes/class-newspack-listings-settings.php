@@ -8,6 +8,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Products as Products;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -184,7 +185,7 @@ final class Newspack_Listings_Settings {
 				],
 				[
 					'description' => __( 'The base price for a single listing (no subscription). Single listings expire after 30 days.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_single_price',
+					'key'         => Products::PRODUCT_META_KEYS['single'],
 					'label'       => __( 'Single listing price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 25,
@@ -192,7 +193,7 @@ final class Newspack_Listings_Settings {
 				],
 				[
 					'description' => __( 'The base monthly subscription price. This fee is charged monthly.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_subscription_price',
+					'key'         => Products::PRODUCT_META_KEYS['subscription'],
 					'label'       => __( 'Monthly subscription listing price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 50,
@@ -200,7 +201,7 @@ final class Newspack_Listings_Settings {
 				],
 				[
 					'description' => __( 'The upgrade price to make the primary listing "featured." For subscription listings, this fee is charged monthly.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_featured_add_on',
+					'key'         => Products::PRODUCT_META_KEYS['featured'],
 					'label'       => __( 'Upgrade: Featured listing price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 75,
@@ -208,7 +209,7 @@ final class Newspack_Listings_Settings {
 				],
 				[
 					'description' => __( 'The upgrade price for a premium subscription, which allows subscribers to create up to 5 featured listings linked to the primary listing per month. This fee is charged monthly.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_premium_subscription_add_on',
+					'key'         => Products::PRODUCT_META_KEYS['premium'],
 					'label'       => __( 'Upgrade: Premium subscription price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 100,

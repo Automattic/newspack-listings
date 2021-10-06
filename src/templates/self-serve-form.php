@@ -142,7 +142,7 @@ call_user_func(
 							<?php
 							echo esc_html(
 								__(
-									'A premium subscription lets you publish up to five listings related to your organization per month.',
+									'A premium subscription upgrades your listing to "featured" status and lets you publish up to five listings related to your organization per month.',
 									'newspack-listings'
 								)
 							);

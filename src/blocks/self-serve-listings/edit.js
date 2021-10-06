@@ -20,28 +20,7 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import './editor.scss';
 
-const SINGLE_LISTING_TYPES = [
-	{
-		slug: 'blank',
-		name: 'Blank listing (start from scratch)',
-	},
-	{
-		slug: 'event',
-		name: 'Event',
-	},
-	{
-		slug: 'classified',
-		name: 'Classified Ad',
-	},
-	{
-		slug: 'job',
-		name: 'Job Listing',
-	},
-	{
-		slug: 'real-estate',
-		name: 'Real Estate Listing',
-	},
-];
+const singleListingTypes = window?.self_serve_listing_types;
 
 export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes } ) => {
 	const [ selectedType, setSelectedType ] = useState( 'single' );
@@ -86,7 +65,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 						) }
 						label={ __( 'Allowed Single Listing Types', 'newspack-listings' ) }
 					>
-						{ SINGLE_LISTING_TYPES.map( listingType => {
+						{ singleListingTypes.map( listingType => {
 							const isAllowed = allowedSingleListingTypes.reduce( ( acc, type ) => {
 								if ( type.slug === listingType.slug ) {
 									return true;
@@ -258,7 +237,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									</label>
 									<p class="newspack-listings__help">
 										{ __(
-											'A premium subscription lets you publish up to five listings related to your organization per month.',
+											'A premium subscription upgrades your listing to "featured" status and lets you publish up to five listings related to your organization per month.',
 											'newspack-listings'
 										) }
 									</p>
