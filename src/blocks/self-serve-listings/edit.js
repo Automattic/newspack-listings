@@ -20,7 +20,7 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import './editor.scss';
 
-const singleListingTypes = window?.self_serve_listing_types;
+const singleListingTypes = window?.newspack_listings_data?.self_serve_listing_types || [];
 
 export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes } ) => {
 	const [ selectedType, setSelectedType ] = useState( 'single' );
