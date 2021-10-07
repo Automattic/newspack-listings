@@ -318,9 +318,13 @@ final class Newspack_Listings_Products {
 			return;
 		}
 
-		foreach ( \WC()->cart->get_cart() as $cart_key => $cart_item ) {
-			if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
-				\WC()->cart->remove_cart_item( $cart_key );
+		$cart = \WC()->cart;
+
+		if ( $cart ) {
+			foreach ( $cart->get_cart() as $cart_key => $cart_item ) {
+				if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
+					$cart->remove_cart_item( $cart_key );
+				}
 			}
 		}
 	}
