@@ -9,6 +9,7 @@ namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Settings as Settings;
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Block_Patterns as Patterns;
 use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
@@ -40,6 +41,7 @@ final class Newspack_Listings_Products {
 	const ORDER_META_KEYS = [
 		'listing_title' => 'newspack_listings_order_title',
 		'listing_type'  => 'newspack_listings_order_type',
+		'listing_order' => 'newspack_listings_order_id',
 	];
 
 	/**
@@ -47,7 +49,6 @@ final class Newspack_Listings_Products {
 	 */
 	const CUSTOMER_META_KEYS = [
 		'is_listings_customer' => 'newspack_listings_self_serve_customer',
-		'listing_post_ids'     => 'newspack_listings_post_ids',
 	];
 
 	/**
@@ -87,6 +88,13 @@ final class Newspack_Listings_Products {
 		add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'listing_details_summary' ] );
 		add_filter( 'woocommerce_billing_fields', [ __CLASS__, 'listing_details_billing_fields' ] );
 		add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'listing_checkout_update_order_meta' ] );
+		add_action( 'woocommerce_thankyou_order_received_text', [ __CLASS__, 'listing_append_thank_you' ], 99, 2 );
+		add_action( 'woocommerce_my_account_my_orders_actions', [ __CLASS__, 'listing_append_edit_action' ], 10, 2 );
+		add_action( 'woocommerce_order_details_after_order_table', [ __CLASS__, 'listing_append_details' ] );
+		add_filter( 'wp_dropdown_users_args', [ __CLASS__, 'show_listings_customers_in_authors_field' ], 10, 2 );
+		add_filter( 'user_has_cap', [ __CLASS__, 'allow_customers_to_edit_own_posts' ], 10, 3 );
+		add_action( 'admin_init', [ __CLASS__, 'hide_admin_menu_for_customers' ] );
+		add_filter( 'admin_bar_menu', [ __CLASS__, 'hide_admin_bar_for_customers' ], 1000 );
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
 		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
@@ -486,6 +494,7 @@ final class Newspack_Listings_Products {
 
 	/**
 	 * Update WC order with listing details from hidden form fields.
+	 * Also mark the purchasing customer as a Listings customer, create a listing post for the order, and associate it with the customer.
 	 *
 	 * @param String $order_id WC order id.
 	 */
@@ -506,10 +515,301 @@ final class Newspack_Listings_Products {
 			$customer_id = $order->get_customer_id();
 			if ( $customer_id ) {
 				update_user_meta( $customer_id, self::CUSTOMER_META_KEYS['is_listings_customer'], 1 );
+				$customer = new \WP_User( $customer_id );
+				$customer->add_cap( 'edit_posts' ); // Let this customer edit their own posts.
+				$customer->add_cap( 'edit_published_posts' ); // Let this customer edit their own posts even after they're published.
+				$customer->add_cap( 'upload_files' ); // Let this customer upload media for featured and inline images.
 
-				// TODO: create listing post based on form input, and associate it with the customer.
+				$listing_type  = isset( $params['listing_type'] ) ? $params['listing_type'] : null;
+				$post_title    = isset( $params['listing_title'] ) ? $params['listing_title'] : __( 'Untitled listing', 'newspack-listings' );
+				$post_type     = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
+				$post_content  = false;
+				$block_pattern = false;
+
+				if ( 'event' === $listing_type ) {
+					$post_type = Core::NEWSPACK_LISTINGS_POST_TYPES['event'];
+				}
+				if ( 'classified' === $listing_type ) {
+					$block_pattern = Patterns::get_block_patterns( 'classified_1' );
+				}
+				if ( 'real-estate' === $listing_type ) {
+					$block_pattern = Patterns::get_block_patterns( 'real_estate_1' );
+				}
+				if ( $block_pattern ) {
+					$post_content = $block_pattern['settings']['content'];
+				}
+
+				$args = [
+					'post_author' => $customer_id,
+					'post_status' => 'draft',
+					'post_title'  => $post_title,
+					'post_type'   => $post_type,
+				];
+
+				if ( $post_content ) {
+					$args['post_content'] = $post_content;
+				}
+
+				$post_id = wp_insert_post( $args );
+
+				if ( is_wp_error( $post_id ) ) {
+					return new \WP_Error(
+						'newspack_listings_create_self_serve_listing_error',
+						esc_html__( 'Error creating a listing for this purchase. Please contact the site administrators to create a listing.', 'newspack-listings' )
+					);
+				}
+
+				// Associate the generated post with this order.
+				update_post_meta( $post_id, self::ORDER_META_KEYS['listing_order'], $order_id );
+
+				// TODO: If purchasing a featured upgrade, apply featured meta.
+				// TODO: Create a daily cron job to automatically unpublish posts after 30 days based on the order date (or if the subscription expires).
 			}
 		}
+	}
+
+	/**
+	 * Given a WC order ID, find the listing associated with that order.
+	 *
+	 * @param int $order_id ID of the WooCommerce order.
+	 *
+	 * @return WP_Post|boolean The associated listing, or false if none.
+	 */
+	public static function get_listing_by_order_id( $order_id ) {
+		$listing          = false;
+		$associated_posts = get_posts(
+			[
+				'meta_key'    => self::ORDER_META_KEYS['listing_order'],
+				'meta_value'  => $order_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'post_status' => 'any',
+				'post_type'   => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
+			]
+		);
+
+		if ( 0 < count( $associated_posts ) ) {
+			$listing = reset( $associated_posts );
+		}
+
+		return $listing;
+	}
+
+	/**
+	 * For listing purchases, append links to edit the purchased listing or manage the account to the thank you message.
+	 *
+	 * @param string   $message Thank you message, set in Customizer for Newspack sites.
+	 * @param WC_Order $order WooCommerce order object.
+	 *
+	 * @return string Filtered message.
+	 */
+	public static function listing_append_thank_you( $message, $order ) {
+		if ( ! $order ) {
+			return $message;
+		}
+
+		$order_id     = $order->get_id();
+		$listing      = self::get_listing_by_order_id( $order_id );
+		$account_page = get_option( 'woocommerce_myaccount_page_id', false );
+
+		if ( $listing ) {
+			$message .= sprintf(
+				// Translators: edit listing message and link.
+				__( ' You can now <a href="%1$s">edit your listing</a>%2$s.', 'newspack-listings' ),
+				get_edit_post_link( $listing->ID ),
+				// Translators: manage account message and link.
+				$account_page ? sprintf( __( ' or <a href="%s">manage your account</a>', 'newspack-listings' ), get_permalink( $account_page ) ) : ''
+			);
+		}
+
+		return $message;
+	}
+
+	/**
+	 * Append an "edit listing" action button to the order action column when viewing orders in My Account.
+	 *
+	 * @param array    $actions Actions to be shown for each order.
+	 * @param WC_Order $order WooCommerce order object.
+	 *
+	 * @return array Filtered actions array.
+	 */
+	public static function listing_append_edit_action( $actions, $order ) {
+		// Rename default "View" button to avoid confusion with "View Listing" button.
+		if ( isset( $actions['view'] ) ) {
+			$actions['view']['name'] = __( 'View Details', 'newspack-listings' );
+		}
+
+		if ( ! $order ) {
+			return $actions;
+		}
+
+		$order_id = $order->get_id();
+		$listing  = self::get_listing_by_order_id( $order_id );
+
+		if ( $listing ) {
+			$actions['edit']    = [
+				'url'  => get_edit_post_link( $listing->ID ),
+				'name' => __( 'Edit Listing', 'newspack-listings' ),
+			];
+			$actions['preview'] = [
+				'url'  => get_permalink( $listing->ID ),
+				// Translators: view or preview listing button link.
+				'name' => sprintf( __( '%s Listing', 'newspack-listings' ), 'publish' === $listing->post_status ? __( 'View', 'newspack-listings' ) : __( 'Preview', 'newspack-listings' ) ),
+			];
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * When viewing a single listing order, append details about the listing and links to edit it.
+	 *
+	 * @param WC_Order $order WooCommerce order object.
+	 */
+	public static function listing_append_details( $order ) {
+		if ( ! $order ) {
+			return;
+		}
+
+		$order_id = $order->get_id();
+		$listing  = self::get_listing_by_order_id( $order_id );
+
+		if ( $listing ) :
+			?>
+			<h3><?php echo esc_html__( 'Listing Details', 'newspack-listings' ); ?></h3>
+			<ul>
+				<li><strong><?php echo esc_html__( 'Listing Title:', 'newspack-listings' ); ?></strong> <a href="<?php echo esc_url( get_permalink( $listing->ID ) ); ?>"><?php echo esc_html( $listing->post_title ); ?></a></li>
+				<li><strong><?php echo esc_html__( 'Listing Status:', 'newspack-listings' ); ?></strong> <?php echo esc_html( 'publish' === $listing->post_status ? __( 'published', 'newspack-listings' ) : $listing->post_status ); ?></strong></li>
+			</ul>
+
+			<p>
+				<a href="<?php echo esc_url( get_edit_post_link( $listing->ID ) ); ?>">
+					<?php echo esc_html__( 'Edit this listing', 'newspack-listings' ); ?>
+				</a>
+
+				<?php
+				echo esc_html(
+					sprintf(
+						// Translators: listing details edit message and link.
+						__( 'to update its content or %s.', 'newspack-listings' ),
+						'publish' === $listing->post_status || 'pending' === $listing->post_status ? __( 'unpublish it', 'newspack-listings' ) : __( 'submit it for review', 'newspack-listings' )
+					)
+				);
+				?>
+			</p>
+			<?php
+		endif;
+	}
+
+	/**
+	 * Check whether the given or currently logged-in user is a listings customer.
+	 *
+	 * @param int|null $user_id ID of the user to check. If not given, will check the current user.
+	 *
+	 * @return boolean True if the user is a customer, false if not.
+	 */
+	public static function is_listing_customer( $user_id = null ) {
+		global $user_ID;
+
+		if ( ! $user_id ) {
+			$user_id = $user_ID;
+		}
+
+		$is_listing_customer = get_user_meta( $user_id, self::CUSTOMER_META_KEYS['is_listings_customer'], true );
+
+		return $is_listing_customer;
+	}
+
+	/**
+	 * Filter user capability check. Customers who have purchased a listing item have the edit_posts capability added
+	 * so that they can be assigned as an author to listing posts, edit those posts, and submit for review to publish.
+	 * However, we only want them to be able to edit the specific posts they've purchased, not create new ones.
+	 * So we should remove the edit_posts capability if the user tries to edit another post create a new one,
+	 * or access other WordPress admin pages that are usually allowed under the edit_posts capability.
+	 *
+	 * @param bool[]   $allcaps Array of key/value pairs where keys represent a capability name and boolean values represent whether the user has that capability.
+	 * @param string[] $caps Required primitive capabilities for the requested capability.
+	 * @param array    $args Arguments that accompany the requested capability check.
+	 *
+	 * @return bool[] Filtered array of allowed/disallowed capabilities.
+	 */
+	public static function allow_customers_to_edit_own_posts( $allcaps, $caps, $args ) {
+		$capabilities        = [ 'edit_posts', 'edit_published_posts' ];
+		$capability          = $args[0];
+		$user_id             = $args[1];
+		$is_listing_customer = false;
+
+		if ( in_array( $capability, $capabilities ) && $user_id ) {
+			$is_listing_customer = self::is_listing_customer( $user_id );
+		}
+
+		if ( (bool) $is_listing_customer ) {
+			global $pagenow;
+			$is_edit_screen = isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			// If not an edit screen, if the post ID isn't set or isn't in the user's allowed post IDs,
+			// or the user is trying to access an admin page other than the post editor, disallow.
+			if ( ! $is_edit_screen || 'post.php' !== $pagenow ) {
+				$allcaps[ $capability ] = 0;
+			}
+
+			// TODO: Allow creating new Marketplace or Event listings if the user has an active premium subscription,
+			// and they haven't exceeded their monthly allotment for new posts.
+
+			/**
+			 * TODO: Restrict allowed blocks to only the following block categories:
+			 * - Text
+			 * - Media
+			 * - Design
+			 * - Embeds
+			 */
+		}
+
+		return $allcaps;
+	}
+
+	/**
+	 * For listing customers, hide all admin dashboard links. Capabilities are handled by allow_customers_to_edit_own_posts,
+	 * but we also don't want these users to see any dashboard links they can't access while in the post editor.
+	 */
+	public static function hide_admin_menu_for_customers() {
+		global $menu;
+		$is_listing_customer = self::is_listing_customer();
+
+		if ( $is_listing_customer ) {
+			$menu = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
+	}
+
+	/**
+	 * Modifies the admin bar in dashboard to hide most menu items for customers.
+	 * This affects the admin bar shown at the top of the editor if not in "full-screen" mode.
+	 *
+	 * @param WP_Admin_Bar $wp_admin_bar WP Admin Bar object.
+	 */
+	public static function hide_admin_bar_for_customers( $wp_admin_bar ) {
+		$is_listing_customer = self::is_listing_customer();
+
+		if ( $is_listing_customer ) {
+			$nodes = $wp_admin_bar->get_nodes();
+
+			// Allow user-related nodes to get back to "My Account" pages or to log out.
+			$allowed_nodes = [
+				'edit-profile',
+				'logout',
+				'my-account',
+				'top-secondary',
+				'user-actions',
+				'user-info',
+			];
+
+			// Remove all the other nodes.
+			foreach ( $nodes as $id => $node ) {
+				if ( ! in_array( $id, $allowed_nodes ) ) {
+					$wp_admin_bar->remove_node( $id );
+				}
+			}
+		}
+
+		return $wp_admin_bar;
 	}
 }
 

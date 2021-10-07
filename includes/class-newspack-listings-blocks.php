@@ -10,7 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Lisitngs\Newspack_Listings_Products as Products;
+use \Newspack_Listings\Newspack_Listings_Products as Products;
 use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
@@ -108,6 +108,10 @@ final class Newspack_Listings_Blocks {
 
 		if ( $localized_data['self_serve_enabled'] && class_exists( 'Newspack_Listings\Newspack_Listings_Products' ) ) {
 			$localized_data['self_serve_listing_types'] = Products::get_listing_types();
+		}
+
+		if ( Products::is_listing_customer() ) {
+			$localized_data['is_listing_customer'] = true;
 		}
 
 		wp_localize_script(

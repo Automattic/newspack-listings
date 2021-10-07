@@ -41,7 +41,7 @@
 		},
 		"singleDescription": {
 			"type": "string",
-			"default": "Purchase a single Marketplace or Event listing. Purchased listings are live for 30 days after the publication date."
+			"default": "Purchase a single Marketplace or Event listing."
 		},
 		"subscriptionDescription": {
 			"type": "string",

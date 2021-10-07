@@ -24,6 +24,7 @@ const {
 	post_type: postType,
 	post_types: postTypes,
 	self_serve_enabled: selfServeEnabled,
+	is_listing_customer: isListingCustomer = false,
 } = window?.newspack_listings_data;
 
 /**
@@ -58,6 +59,20 @@ if ( isListing() ) {
 	if ( selfServeEnabled ) {
 		registerSelfServeListingsBlock();
 	}
+}
+
+// If the currently logged-in user is a self-serve listings customer, change the WP logo link shown in the editor while in full-screen mode to redirect back to the "My Account" page. Apologies for the extreme hackiness but there doesn't seem to be any supported way to do this via WP hooks.
+if ( isListingCustomer ) {
+	// eslint-disable-next-line no-unused-expressions
+	window._wpLoadBlockEditor?.then(
+		window.setTimeout( () => {
+			const closeFullScreenButton = document.querySelector( '.edit-post-fullscreen-mode-close' );
+
+			if ( closeFullScreenButton ) {
+				closeFullScreenButton.setAttribute( 'href', '/wp-admin/profile.php' );
+			}
+		}, 1000 )
+	);
 }
 
 // If we don't have a post type, we're probably not in a post editor, so we don't need to register the post taxonomy sidebars.
