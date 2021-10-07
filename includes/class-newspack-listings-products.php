@@ -329,6 +329,8 @@ final class Newspack_Listings_Products {
 	 * For self-serve listings, a customer account is required so the user can log in and manage their listings.
 	 * If a listing product is in the cart, force the checkout to require an account regardless of WC settings.
 	 *
+	 * // TODO: Fix "you must be logged in to checkout" message when "Allow customers to create an account during checkout" option is disabled in WC settings.
+	 *
 	 * @param string $value String value 'yes' or 'no' of the WC setting to allow guest checkout.
 	 *
 	 * @return string Filtered value.
@@ -339,10 +341,14 @@ final class Newspack_Listings_Products {
 			return $value;
 		}
 
-		foreach ( \WC()->cart->get_cart() as $cart_key => $cart_item ) {
-			if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
-				$value = 'no';
-				break;
+		$cart = \WC()->cart;
+
+		if ( $cart ) {
+			foreach ( $cart->get_cart() as $cart_key => $cart_item ) {
+				if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
+					$value = 'no';
+					break;
+				}
 			}
 		}
 

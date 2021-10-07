@@ -10,6 +10,8 @@ namespace Newspack_Listings\Self_Serve_Block;
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Utils as Utils;
 
+// TODO: pull in missing styles from Donate block in case Donate block isn't also present on the same page.
+
 /**
  * Dynamic block registration.
  */

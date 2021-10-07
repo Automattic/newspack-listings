@@ -184,7 +184,7 @@ final class Newspack_Listings_Settings {
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The base price for a single listing (no subscription). Single listings expire after 30 days.', 'newspack-listings' ),
+					'description' => __( 'The base price for a single listing (no subscription).', 'newspack-listings' ),
 					'key'         => Products::PRODUCT_META_KEYS['single'],
 					'label'       => __( 'Single listing price', 'newpack-listings' ),
 					'type'        => 'number',
