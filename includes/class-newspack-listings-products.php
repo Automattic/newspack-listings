@@ -284,9 +284,15 @@ final class Newspack_Listings_Products {
 			return false;
 		}
 
-		$product_id     = get_option( self::PRODUCT_OPTION, false );
-		$parent_product = \wc_get_product( $product_id );
+		$product_id = get_option( self::PRODUCT_OPTION, false );
 
+		// If missing a product option, the products need to be created.
+		if ( ! $product_id ) {
+			return false;
+		}
+
+		// If missing a parent product, the products need to be created.
+		$parent_product = \wc_get_product( $product_id );
 		if ( ! $parent_product || ! $parent_product->is_type( 'grouped' ) || 'publish' !== get_post_status( $product_id ) ) {
 			return false;
 		}
@@ -298,8 +304,9 @@ final class Newspack_Listings_Products {
 		foreach ( $parent_product->get_children() as $child_id ) {
 			$child_product = \wc_get_product( $child_id );
 
+			// If missing a child product, the products need to be created.
 			if ( ! $child_product ) {
-				continue;
+				return false;
 			}
 
 			$settings_slug              = $child_product->get_meta( '_newspack_listings_product_slug' );
