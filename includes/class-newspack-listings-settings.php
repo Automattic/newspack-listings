@@ -171,6 +171,18 @@ final class Newspack_Listings_Settings {
 			],
 		];
 
+		// If Related Posts is on, show the setting to hide it.
+		if ( class_exists( 'Jetpack_RelatedPosts' ) ) {
+			$settings[] = [
+				'description' => __( 'Hide <a href="/wp-admin/admin.php?page=jetpack#/traffic">Jetpack’s Related Posts module</a> on individual listing pages.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_hide_jetpack_related_posts',
+				'label'       => __( 'Hide Jetpack Related Posts module', 'newpack-listings' ),
+				'type'        => 'checkbox',
+				'value'       => true,
+				'section'     => $sections['related']['slug'],
+			];
+		}
+
 		// Product settings are only relevant if WooCommerce is available.
 		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
 			$product_settings = [
@@ -228,7 +240,8 @@ final class Newspack_Listings_Settings {
 	 * @param string|null $option (Optional) Key name of a single setting to get. If not given, will return all settings.
 	 * @param boolean     $get_default (Optional) If true, return the default value.
 	 *
-	 * @return array|boolean Array of current site-wide settings, or false if returning a single option with no value.
+	 * @return array|boolean|WP_Error Array of current site-wide settings, false if returning a single option with no value,
+	 *                                or WP_Error if given a key name that doesn't match a registered settings field.
 	 */
 	public static function get_settings( $option = null, $get_default = false ) {
 		$defaults = self::get_default_settings();
@@ -237,7 +250,7 @@ final class Newspack_Listings_Settings {
 			$defaults,
 			function( $acc, $setting ) use ( $get_default ) {
 				$key   = $setting['key'];
-				$value = $get_default ? $setting['value'] : get_option( $key, '' );
+				$value = $get_default ? $setting['value'] : get_option( $key, $setting['value'] );
 
 				// Guard against empty strings, which can happen if an option is set and then unset.
 				if ( empty( $setting['allow_empty'] ) && '' === $value && 'checkbox' !== $setting['type'] ) {
@@ -250,8 +263,15 @@ final class Newspack_Listings_Settings {
 			[]
 		);
 
-		// If passed an option key name, just give that option.
+		// If passed an option key name, just give that option. If the option doesn't exist, return a WP Error.
 		if ( ! empty( $option ) ) {
+			if ( ! isset( $settings[ $option ] ) ) {
+				return new \WP_Error(
+					'newspack_listings_invalid_settings_key',
+					/* translators: %s: Settings key being requested */
+					sprintf( __( 'The settings key “%s” does not exist.', 'newspack-listings' ), $option )
+				);
+			}
 			return $settings[ $option ];
 		}
 
@@ -326,7 +346,7 @@ final class Newspack_Listings_Settings {
 				esc_attr( $key ),
 				! empty( $value ) ? 'checked' : '',
 				esc_attr( $key ),
-				esc_html( $setting['description'] )
+				wp_kses_post( $setting['description'] )
 			);
 		} elseif ( 'number' === $type ) {
 			if ( empty( $value ) && empty( $setting['allow_empty'] ) ) {
@@ -338,7 +358,7 @@ final class Newspack_Listings_Settings {
 				esc_attr( $key ),
 				esc_attr( $value ),
 				esc_attr( $key ),
-				esc_html( $setting['description'] )
+				wp_kses_post( $setting['description'] )
 			);
 		} else {
 			if ( empty( $value ) && empty( $setting['allow_empty'] ) ) {
@@ -350,7 +370,7 @@ final class Newspack_Listings_Settings {
 				esc_attr( $key ),
 				esc_attr( $value ),
 				esc_attr( $key ),
-				esc_html( $setting['description'] )
+				wp_kses_post( $setting['description'] )
 			);
 		}
 	}
