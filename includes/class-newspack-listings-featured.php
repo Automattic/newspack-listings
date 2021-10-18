@@ -344,7 +344,7 @@ final class Newspack_Listings_Featured {
 	 * @param WP_Post $post Post object.
 	 */
 	public static function set_feature_priority( $post_id, $post ) {
-		if ( Core::is_listing() ) {
+		if ( Core::is_listing( $post->post_type ) ) {
 			$is_featured      = self::is_featured( $post_id );
 			$feature_priority = self::get_featured_priority( $post_id );
 
