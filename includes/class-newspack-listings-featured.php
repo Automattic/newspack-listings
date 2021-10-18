@@ -227,7 +227,7 @@ final class Newspack_Listings_Featured {
 		$table_name = self::get_table_name();
 		$priority   = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				'SELECT feature_priority FROM %s WHERE post_id = %d',
+				'SELECT feature_priority FROM %1$s WHERE post_id = %d', // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 				$table_name,
 				$post_id
 			)
