@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/Automattic/newspack-listings/compare/v2.5.0...v2.6.0) (2021-10-19)
+
+
+### Features
+
+* add new setting to disable Jetpack Related Posts module ([#118](https://github.com/Automattic/newspack-listings/issues/118)) ([ac39c1e](https://github.com/Automattic/newspack-listings/commit/ac39c1e4e04db1f667d3a9540e78fc80ba486d24))
+
 # [2.5.0](https://github.com/Automattic/newspack-listings/compare/v2.4.0...v2.5.0) (2021-09-21)
 
 
