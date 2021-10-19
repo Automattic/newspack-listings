@@ -243,7 +243,7 @@ final class Newspack_Listings_Featured {
 					return current_user_can( 'edit_posts' );
 				},
 				'default'           => false,
-				'description'       => __( 'Is this listing a featured listing?', 'newspack-gdg' ),
+				'description'       => __( 'Is this listing a featured listing?', 'newspack-listings' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
 				'single'            => true,
 				'show_in_rest'      => true,
@@ -254,7 +254,7 @@ final class Newspack_Listings_Featured {
 					return current_user_can( 'edit_posts' );
 				},
 				'default'           => '',
-				'description'       => __( 'When should the listing’s featured status expire?', 'newspack-gdg' ),
+				'description'       => __( 'When should the listing’s featured status expire?', 'newspack-listings' ),
 				'sanitize_callback' => 'sanitize_text_field',
 				'single'            => true,
 				'show_in_rest'      => true,
