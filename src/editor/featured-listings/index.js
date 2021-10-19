@@ -60,7 +60,7 @@ const FeaturedListingsComponent = ( {
 				method: 'POST',
 			} )
 				.then( response => {
-					if ( ! response ) {
+					if ( false === response ) {
 						throw new Error(
 							__(
 								'There was an error updating the feature priority for this post. Please try saving again.',
@@ -81,28 +81,32 @@ const FeaturedListingsComponent = ( {
 		}
 	}, [ isSavingPost ]);
 
+	// If the item is featured, get priority level.
 	useEffect(() => {
 		setError( null );
-		apiFetch( {
-			path: addQueryArgs( '/newspack-listings/v1/priority', {
-				post_id: postId,
-			} ),
-		} )
-			.then( response => {
-				const validatedResponse = validateResponse( response );
-				if ( false !== validatedResponse ) {
-					setPriority( response );
-				}
+
+		if ( newspack_listings_featured && ! priority ) {
+			apiFetch( {
+				path: addQueryArgs( '/newspack-listings/v1/priority', {
+					post_id: postId,
+				} ),
 			} )
-			.catch( e => {
-				setError(
-					e?.message ||
-						__(
-							'There was an error fetching the priority for this post. Please refresh the editor.',
-							'newspack-listings'
-						)
-				);
-			} );
+				.then( response => {
+					const validatedResponse = validateResponse( response );
+					if ( false !== validatedResponse ) {
+						setPriority( response );
+					}
+				} )
+				.catch( e => {
+					setError(
+						e?.message ||
+							__(
+								'There was an error fetching the priority for this post. Please refresh the editor.',
+								'newspack-listings'
+							)
+					);
+				} );
+		}
 	}, [ newspack_listings_featured ]);
 
 	return (
