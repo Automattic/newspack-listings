@@ -67,7 +67,6 @@ class FeaturedTest extends WP_UnitTestCase {
 		// Add featured meta.
 		if ( $args['featured'] ) {
 			update_post_meta( $listing_id, Featured::META_KEYS['featured'], true );
-			update_post_meta( $listing_id, Featured::META_KEYS['priority'], $args['priority'] );
 			update_post_meta( $listing_id, Featured::META_KEYS['expires'], $args['expires'] );
 			Featured::update_priority( $listing_id, $args['priority'] );
 		}
