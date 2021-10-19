@@ -21,8 +21,6 @@ final class Newspack_Listings_Featured {
 	 */
 	const META_KEYS = [
 		'featured' => 'newspack_listings_featured',
-		'priority' => 'newspack_listings_featured_priority',
-		'query'    => '_newspack_listings_featured_query_priority',
 		'expires'  => 'newspack_listings_featured_expires',
 	];
 
@@ -70,7 +68,6 @@ final class Newspack_Listings_Featured {
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
 		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
-		add_action( 'save_post', [ __CLASS__, 'set_feature_priority' ], 10, 2 );
 		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
@@ -146,12 +143,12 @@ final class Newspack_Listings_Featured {
 		];
 
 		// Get featured listings with an expiration date.
-		$results         = new \WP_Query( $args );
-		$number_of_pages = $results->max_num_pages;
+		$results          = new \WP_Query( $args );
+		$number_of_pages  = $results->max_num_pages;
+		$default_priority = 5;
 
 		foreach ( $results->posts as $featured_listing ) {
-			$priority = self::get_featured_priority( $featured_listing->ID );
-			self::update_priority( $featured_listing->ID, $priority );
+			self::update_priority( $featured_listing->ID, $default_priority );
 		}
 
 		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
@@ -162,8 +159,7 @@ final class Newspack_Listings_Featured {
 				$results       = new \WP_Query( $args );
 
 				foreach ( $results->posts as $featured_listing ) {
-					$priority = self::get_featured_priority( $featured_listing->ID );
-					self::update_priority( $featured_listing->ID, $priority );
+					self::update_priority( $featured_listing->ID, $default_priority );
 				}
 			}
 		}
@@ -227,7 +223,7 @@ final class Newspack_Listings_Featured {
 		$table_name = self::get_table_name();
 		$priority   = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				'SELECT feature_priority FROM %1$s WHERE post_id = %d', // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+				'SELECT feature_priority FROM %1$s WHERE post_id = %2$d', // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 				$table_name,
 				$post_id
 			)
@@ -252,17 +248,6 @@ final class Newspack_Listings_Featured {
 				'single'            => true,
 				'show_in_rest'      => true,
 				'type'              => 'boolean',
-			],
-			'priority' => [
-				'auth_callback'     => function() {
-					return current_user_can( 'edit_posts' );
-				},
-				'default'           => 5,
-				'description'       => __( 'What priority should this featured listing have (1–10)?', 'newspack-gdg' ),
-				'sanitize_callback' => 'absint',
-				'single'            => true,
-				'show_in_rest'      => true,
-				'type'              => 'integer',
 			],
 			'expires'  => [
 				'auth_callback'     => function() {
@@ -305,22 +290,6 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
-	 * Get the feature priority for the given/current post.
-	 *
-	 * @param int $post_id Post ID. If none given, use the current post ID.
-	 *
-	 * @return int Feature priority level (default = 5).
-	 *             Will be returned whether or not the listing is featured.
-	 */
-	public static function get_featured_priority( $post_id = null ) {
-		if ( null === $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		return get_post_meta( $post_id, self::META_KEYS['priority'], true );
-	}
-
-	/**
 	 * Get the expiration date string for the given/current post.
 	 *
 	 * @param int $post_id Post ID. If none given, use the current post ID.
@@ -333,28 +302,6 @@ final class Newspack_Listings_Featured {
 		}
 
 		return get_post_meta( $post_id, self::META_KEYS['expires'], true );
-	}
-
-	/**
-	 * On save, duplicate the feature priority meta value to a query meta key if the the item is featured.
-	 * If the item is not featured, delete the query meta value.
-	 * This lets us query based only on this meta value instead of checking both feature status and priority.
-	 *
-	 * @param int     $post_id Post ID.
-	 * @param WP_Post $post Post object.
-	 */
-	public static function set_feature_priority( $post_id, $post ) {
-		if ( Core::is_listing( $post->post_type ) ) {
-			$is_featured      = self::is_featured( $post_id );
-			$feature_priority = self::get_featured_priority( $post_id );
-
-			// If the post is featured, ensure it has a query priority. Otherwise, ensure it has no value.
-			if ( ! $is_featured || 'publish' !== $post->post_status ) {
-				$feature_priority = 0;
-			}
-
-			$result = self::update_priority( $post_id, $feature_priority );
-		}
 	}
 
 	/**
@@ -403,7 +350,7 @@ final class Newspack_Listings_Featured {
 			$feature_classes = [];
 			$is_featured     = self::is_featured( $post_id );
 			if ( $is_featured ) {
-				$feature_priority  = self::get_featured_priority( $post_id );
+				$feature_priority  = self::get_priority( $post_id );
 				$feature_classes[] = 'featured-listing';
 				$feature_classes[] = 'featured-listing-priority-' . strval( $feature_priority );
 				$classes           = array_merge( $classes, $feature_classes );

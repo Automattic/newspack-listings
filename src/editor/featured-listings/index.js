@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import {
 	BaseControl,
 	Button,
@@ -14,13 +15,95 @@ import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { dateI18n } from '@wordpress/date';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
+import { useEffect, useState } from '@wordpress/element';
+import { addQueryArgs } from '@wordpress/url';
 
-const FeaturedListingsComponent = ( { meta, updateMetaValue } ) => {
-	const {
-		newspack_listings_featured,
-		newspack_listings_featured_priority,
-		newspack_listings_featured_expires,
-	} = meta;
+// Priority can be an integer between 0 and 9.
+const validateResponse = ( response = 0 ) => {
+	if ( isNaN( response ) || 0 > response || 9 < response ) {
+		return false;
+	}
+
+	return parseInt( response );
+};
+
+const FeaturedListingsComponent = ( {
+	createNotice,
+	isSavingPost,
+	meta,
+	postId,
+	updateMetaValue,
+} ) => {
+	const [ error, setError ] = useState( null );
+	const [ priority, setPriority ] = useState( null );
+	const { newspack_listings_featured, newspack_listings_featured_expires } = meta;
+
+	// Show error messages thrown by API requests.
+	useEffect(() => {
+		if ( error ) {
+			createNotice( 'error', error, {
+				id: 'newspack-listings__featured-error',
+				isDismissible: true,
+			} );
+		}
+	}, [ error ]);
+
+	// On post save, also update the listing's priority level.
+	useEffect(() => {
+		if ( isSavingPost ) {
+			const priorityToSet = newspack_listings_featured ? priority : 0;
+			apiFetch( {
+				path: addQueryArgs( '/newspack-listings/v1/priority', {
+					post_id: postId,
+					priority: priorityToSet,
+				} ),
+				method: 'POST',
+			} )
+				.then( response => {
+					if ( ! response ) {
+						throw new Error(
+							__(
+								'There was an error updating the feature priority for this post. Please try saving again.',
+								'newspack-listings'
+							)
+						);
+					}
+				} )
+				.catch( e => {
+					setError(
+						e?.message ||
+							__(
+								'There was an error updating the feature priority for this post. Please try saving again.',
+								'newspack-listings'
+							)
+					);
+				} );
+		}
+	}, [ isSavingPost ]);
+
+	useEffect(() => {
+		setError( null );
+		apiFetch( {
+			path: addQueryArgs( '/newspack-listings/v1/priority', {
+				post_id: postId,
+			} ),
+		} )
+			.then( response => {
+				const validatedResponse = validateResponse( response );
+				if ( false !== validatedResponse ) {
+					setPriority( response );
+				}
+			} )
+			.catch( e => {
+				setError(
+					e?.message ||
+						__(
+							'There was an error fetching the priority for this post. Please refresh the editor.',
+							'newspack-listings'
+						)
+				);
+			} );
+	}, [ newspack_listings_featured ]);
 
 	return (
 		<PluginDocumentSettingPanel
@@ -46,13 +129,14 @@ const FeaturedListingsComponent = ( { meta, updateMetaValue } ) => {
 				<>
 					<PanelRow>
 						<RangeControl
+							disabled={ null === priority && null === error }
 							label={ __( 'Priority Level', 'newspack-listings' ) }
 							help={ __(
 								'Relative importance of the featured item. Higher numbers mean higher priority.',
 								'newspack-listings'
 							) }
-							value={ newspack_listings_featured_priority }
-							onChange={ value => updateMetaValue( 'newspack_listings_featured_priority', value ) }
+							value={ priority || 5 }
+							onChange={ value => setPriority( value ) }
 							min={ 1 }
 							max={ 9 }
 							required
@@ -97,18 +181,24 @@ const FeaturedListingsComponent = ( { meta, updateMetaValue } ) => {
 };
 
 const mapStateToProps = select => {
-	const { getEditedPostAttribute } = select( 'core/editor' );
+	const { getCurrentPostId, getEditedPostAttribute, isAutosavingPost, isSavingPost } = select(
+		'core/editor'
+	);
 
 	return {
+		isSavingPost: isSavingPost() && ! isAutosavingPost(),
 		meta: getEditedPostAttribute( 'meta' ),
+		postId: getCurrentPostId(),
 	};
 };
 
 const mapDispatchToProps = dispatch => {
 	const { editPost } = dispatch( 'core/editor' );
+	const { createNotice } = dispatch( 'core/notices' );
 
 	return {
 		updateMetaValue: ( key, value ) => editPost( { meta: { [ key ]: value } } ),
+		createNotice,
 	};
 };
 
