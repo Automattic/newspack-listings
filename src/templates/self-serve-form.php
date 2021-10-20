@@ -19,7 +19,7 @@ call_user_func(
 		$subscription_description = $attributes['subscriptionDescription'];
 		$client_id                = $attributes['clientId'];
 
-		$class_names = [ 'newspack-listings__self-serve-form', 'wpbnbd', 'tiered' ];
+		$class_names = [ 'newspack-listings__self-serve-form', 'wpbnbd' ];
 
 		if ( ! $allow_subscription ) {
 			$class_names[] = 'single-only';
