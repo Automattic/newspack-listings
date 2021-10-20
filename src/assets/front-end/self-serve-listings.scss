@@ -1,5 +1,9 @@
 @import '../shared/self-serve-listings';
 
+.woocommerce-info .showlogin {
+	margin-left: 0.25rem;
+}
+
 .woocommerce-orders-table__cell-order-actions {
 	.button + .button {
 		display: inline-block;

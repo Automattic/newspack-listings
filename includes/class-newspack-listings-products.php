@@ -100,6 +100,8 @@ final class Newspack_Listings_Products {
 		add_action( 'init', [ __CLASS__, 'init' ] );
 		add_action( 'wp_loaded', [ __CLASS__, 'handle_purchase_form' ], 99 );
 		add_filter( 'pre_option_woocommerce_enable_guest_checkout', [ __CLASS__, 'require_account_for_listings' ] );
+		add_filter( 'pre_option_woocommerce_enable_signup_and_login_from_checkout', [ __CLASS__, 'allow_account_creation_and_login_for_listings' ] );
+		add_filter( 'pre_option_woocommerce_enable_checkout_login_reminder', [ __CLASS__, 'allow_account_creation_and_login_for_listings' ] );
 		add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'listing_details_summary' ] );
 		add_filter( 'woocommerce_billing_fields', [ __CLASS__, 'listing_details_billing_fields' ] );
 		add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'listing_checkout_update_order_meta' ] );
@@ -356,8 +358,6 @@ final class Newspack_Listings_Products {
 	 * For self-serve listings, a customer account is required so the user can log in and manage their listings.
 	 * If a listing product is in the cart, force the checkout to require an account regardless of WC settings.
 	 *
-	 * // TODO: Fix "you must be logged in to checkout" message when "Allow customers to create an account during checkout" option is disabled in WC settings.
-	 *
 	 * @param string $value String value 'yes' or 'no' of the WC setting to allow guest checkout.
 	 *
 	 * @return string Filtered value.
@@ -374,6 +374,34 @@ final class Newspack_Listings_Products {
 			foreach ( $cart->get_cart() as $cart_key => $cart_item ) {
 				if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
 					$value = 'no';
+					break;
+				}
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * For self-serve listings, a customer account is required so the user can log in and manage their listings.
+	 * If a listing product is in the cart, force the checkout to allow account creation/login regardless of WC settings.
+	 *
+	 * @param string $value String value 'yes' or 'no' of the WC setting to allow guest checkout.
+	 *
+	 * @return string Filtered value.
+	 */
+	public static function allow_account_creation_and_login_for_listings( $value ) {
+		$products = self::get_products();
+		if ( ! $products || ! self::$wc_is_active ) {
+			return $value;
+		}
+
+		$cart = \WC()->cart;
+
+		if ( $cart ) {
+			foreach ( $cart->get_cart() as $cart_key => $cart_item ) {
+				if ( ! empty( $cart_item['product_id'] ) && in_array( $cart_item['product_id'], array_values( $products ) ) ) {
+					$value = 'yes';
 					break;
 				}
 			}
