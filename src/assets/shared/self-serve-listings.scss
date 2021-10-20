@@ -1,15 +1,98 @@
 @import './variables.scss';
 
-.newspack-listings__self-serve-form {
+.newspack-listings__self-serve-form.wpbnbd {
+	border: 1px solid var( --newspack-listings--border );
+
+	.frequencies {
+		font-size: 0.8em;
+		padding-top: 7.65em;
+		padding-top: calc( 3 * ( 0.76rem + 1.6em + 1px ) );
+		position: relative;
+
+		@media only screen and ( min-width: $tablet_width ) {
+			padding-top: 2.55em;
+			padding-top: calc( 0.76rem + 1.6em + 1px );
+		}
+
+		input[type='radio'] {
+			display: none;
+		}
+	}
+
 	.frequency {
+		.freq-label {
+			align-items: center;
+			border: 0 solid var( --newspack-listings--border );
+			border-width: 0 0 1px;
+			color: var( --newspack-listings--text-light );
+			cursor: pointer;
+			display: flex;
+			font-weight: bold;
+			left: 0;
+			padding: 0.38rem 0.76rem;
+			position: absolute;
+			text-overflow: ellipsis;
+			text-transform: uppercase;
+			top: 0;
+			white-space: nowrap;
+			width: 100%;
+			z-index: 1;
+
+			&:focus,
+			&:hover {
+				background: var( --newspack-listings--background-screen );
+				color: var( --newspack-listings--text-main );
+			}
+
+			&::before {
+				border: 2px solid currentColor;
+				border-radius: 100%;
+				content: '';
+				display: block;
+				height: 20px;
+				padding: 3px;
+				margin-right: 0.25rem;
+				width: 20px;
+			}
+
+			&.listing-subscription {
+				left: 50%;
+				top: calc( 0.76rem + 1.6em + 1px );
+
+				@media only screen and ( min-width: $tablet_width ) {
+					border-left-width: 1px;
+					top: 0;
+				}
+			}
+		}
+
 		@media only screen and ( min-width: $tablet_width ) {
 			.freq-label {
-				width: 50% !important;
+				justify-content: center;
+				width: 50%;
 
-				&.listing-subscription {
-					border-right: none;
-					left: 50% !important;
+				&::before {
+					display: none;
 				}
+			}
+		}
+	}
+
+	input[type='radio']:checked {
+		+ .freq-label {
+			color: inherit;
+
+			&::before {
+				background: var( --newspack-listings--text-main );
+				background-clip: content-box;
+			}
+
+			@media only screen and ( min-width: $tablet_width ) {
+				border-bottom-color: transparent;
+			}
+
+			&:hover {
+				background: var( --newspack-listings--background );
 			}
 		}
 	}
@@ -82,7 +165,7 @@
 		font-size: 16px;
 		font-weight: bold;
 		outline: none;
-		margin-top: 16px;
+		margin: 24px 32px;
 		padding-left: 20px;
 		padding-right: 20px;
 

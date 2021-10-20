@@ -58,7 +58,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 		setAttributes( { clientId } );
 	}, [ clientId ]);
 
-	const classNames = [ 'newspack-listings__self-serve-form', 'wpbnbd', 'tiered' ];
+	const classNames = [ 'newspack-listings__self-serve-form', 'wpbnbd' ];
 
 	if ( ! allowSubscription ) {
 		classNames.push( 'single-only' );
