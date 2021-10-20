@@ -1,1 +1,8 @@
 @import '../shared/self-serve-listings';
+
+.woocommerce-orders-table__cell-order-actions {
+	.button + .button {
+		display: inline-block;
+		margin-left: 0.25rem;
+	}
+}

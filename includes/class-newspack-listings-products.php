@@ -39,9 +39,24 @@ final class Newspack_Listings_Products {
 	 * Meta keys for self-serve listing orders.
 	 */
 	const ORDER_META_KEYS = [
-		'listing_title' => 'newspack_listings_order_title',
-		'listing_type'  => 'newspack_listings_order_type',
-		'listing_order' => 'newspack_listings_order_id',
+		'listing_title'         => 'newspack_listings_order_title',
+		'listing_type'          => 'newspack_listings_order_type',
+		'listing_purchase_type' => 'newspack_listings_order_type',
+	];
+
+	/**
+	 * Meta keys for self-serve listing subscriptions.
+	 */
+	const SUBSCRIPTION_META_KEYS = [
+		'listing_subscription' => 'newspack_listings_is_subscription',
+	];
+
+	/**
+	 * Meta keys for purchased listing posts.
+	 */
+	const POST_META_KEYS = [
+		'listing_order'        => 'newspack_listings_order_id',
+		'listing_subscription' => 'newspack_listings_subscription_id',
 	];
 
 	/**
@@ -91,9 +106,10 @@ final class Newspack_Listings_Products {
 		add_action( 'woocommerce_thankyou_order_received_text', [ __CLASS__, 'listing_append_thank_you' ], 99, 2 );
 		add_action( 'woocommerce_my_account_my_orders_actions', [ __CLASS__, 'listing_append_edit_action' ], 10, 2 );
 		add_action( 'woocommerce_order_details_after_order_table', [ __CLASS__, 'listing_append_details' ] );
-		add_filter( 'wp_dropdown_users_args', [ __CLASS__, 'show_listings_customers_in_authors_field' ], 10, 2 );
+		add_action( 'woocommerce_subscription_status_active', [ __CLASS__, 'listing_subscription_associate_primary_post' ] );
+		add_action( 'woocommerce_subscription_status_updated', [ __CLASS__, 'listing_subscription_unpublish_associated_posts' ], 10, 3 );
 		add_filter( 'user_has_cap', [ __CLASS__, 'allow_customers_to_edit_own_posts' ], 10, 3 );
-		add_action( 'admin_init', [ __CLASS__, 'hide_admin_menu_for_customers' ] );
+		add_action( 'admin_init', [ __CLASS__, 'hide_admin_menu_for_customers' ], 1000 );
 		add_filter( 'admin_bar_menu', [ __CLASS__, 'hide_admin_bar_for_customers' ], 1000 );
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
@@ -412,7 +428,10 @@ final class Newspack_Listings_Products {
 
 		self::clear_cart();
 		$products_to_purchase = [];
-		$checkout_query_args  = [ 'listing_title' => sanitize_text_field( $listing_title ) ];
+		$checkout_query_args  = [
+			'listing_title'         => sanitize_text_field( $listing_title ),
+			'listing_purchase_type' => sanitize_text_field( $purchase_type ),
+		];
 
 		if ( $is_single ) {
 			$products_to_purchase[]              = $products['newspack_listings_single_price'];
@@ -537,21 +556,30 @@ final class Newspack_Listings_Products {
 				$customer->add_cap( 'edit_published_posts' ); // Let this customer edit their own posts even after they're published.
 				$customer->add_cap( 'upload_files' ); // Let this customer upload media for featured and inline images.
 
-				$listing_type  = isset( $params['listing_type'] ) ? $params['listing_type'] : null;
-				$post_title    = isset( $params['listing_title'] ) ? $params['listing_title'] : __( 'Untitled listing', 'newspack-listings' );
-				$post_type     = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
-				$post_content  = false;
-				$block_pattern = false;
+				$purchase_type   = isset( $params['listing_purchase_type'] ) ? $params['listing_purchase_type'] : 'single';
+				$is_subscription = 'subscription' === $purchase_type;
+				$listing_type    = isset( $params['listing_type'] ) ? $params['listing_type'] : null;
+				$post_title      = isset( $params['listing_title'] ) ? $params['listing_title'] : __( 'Untitled listing', 'newspack-listings' );
+				$post_type       = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
+				$post_content    = false;
+				$block_pattern   = false;
+				$subscriptions   = false;
 
-				if ( 'event' === $listing_type ) {
-					$post_type = Core::NEWSPACK_LISTINGS_POST_TYPES['event'];
+				if ( $is_subscription ) {
+					$post_type     = Core::NEWSPACK_LISTINGS_POST_TYPES['place'];
+					$block_pattern = Patterns::get_block_patterns( 'business_1' );
+				} else {
+					if ( 'event' === $listing_type ) {
+						$post_type = Core::NEWSPACK_LISTINGS_POST_TYPES['event'];
+					}
+					if ( 'classified' === $listing_type ) {
+						$block_pattern = Patterns::get_block_patterns( 'classified_1' );
+					}
+					if ( 'real-estate' === $listing_type ) {
+						$block_pattern = Patterns::get_block_patterns( 'real_estate_1' );
+					}
 				}
-				if ( 'classified' === $listing_type ) {
-					$block_pattern = Patterns::get_block_patterns( 'classified_1' );
-				}
-				if ( 'real-estate' === $listing_type ) {
-					$block_pattern = Patterns::get_block_patterns( 'real_estate_1' );
-				}
+
 				if ( $block_pattern ) {
 					$post_content = $block_pattern['settings']['content'];
 				}
@@ -577,10 +605,60 @@ final class Newspack_Listings_Products {
 				}
 
 				// Associate the generated post with this order.
-				update_post_meta( $post_id, self::ORDER_META_KEYS['listing_order'], $order_id );
+				update_post_meta( $post_id, self::POST_META_KEYS['listing_order'], $order_id );
 
 				// TODO: If purchasing a featured upgrade, apply featured meta.
 				// TODO: Create a daily cron job to automatically unpublish posts after 30 days based on the order date (or if the subscription expires).
+			}
+		}
+	}
+
+	/**
+	 * Once a subscription is activated, look up the listing post associated with its purchase order and
+	 * associate the subscription with the listing. This will let us unpublish the associated listings
+	 * when the subscription expires or is canceled.
+	 *
+	 * @param WC_Subscription $subscription Subscription object for the activated subscription.
+	 */
+	public static function listing_subscription_associate_primary_post( $subscription ) {
+		$order_id = $subscription->get_parent_id();
+		$listing  = self::get_listing_by_order_id( $order_id );
+
+		if ( $listing ) {
+			// Mark this subscription as a listing subscription.
+			update_post_meta( $subscription->get_id(), self::SUBSCRIPTION_META_KEYS['listing_subscription'], 1 );
+
+			// Associate the post created during purchase with this subscription.
+			update_post_meta( $listing->ID, self::POST_META_KEYS['listing_subscription'], $subscription->get_id() );
+		}
+	}
+
+	/**
+	 * If a subscription's status changes from active to something other than active, unpublish any listings
+	 * associated with that subscription.
+	 *
+	 * @param WC_Subscription $subscription Subscription object for the subscription whose status has changed.
+	 * @param string          $new_status The string representation of the new status applied to the subscription.
+	 * @param string          $old_status The string representation of the subscriptions status before the change was applied.
+	 */
+	public static function listing_subscription_unpublish_associated_posts( $subscription, $new_status, $old_status ) {
+		if ( 'active' === $old_status && 'active' !== $new_status ) {
+			$associated_listings = get_posts(
+				[
+					'meta_key'    => self::POST_META_KEYS['listing_subscription'],
+					'meta_value'  => $subscription->get_id(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'post_status' => 'publish',
+					'post_type'   => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
+				]
+			);
+
+			foreach ( $associated_listings as $listing ) {
+				wp_update_post(
+					[
+						'ID'          => $listing->ID,
+						'post_status' => 'draft',
+					]
+				);
 			}
 		}
 	}
@@ -596,7 +674,7 @@ final class Newspack_Listings_Products {
 		$listing          = false;
 		$associated_posts = get_posts(
 			[
-				'meta_key'    => self::ORDER_META_KEYS['listing_order'],
+				'meta_key'    => self::POST_META_KEYS['listing_order'],
 				'meta_value'  => $order_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status' => 'any',
 				'post_type'   => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
@@ -791,8 +869,12 @@ final class Newspack_Listings_Products {
 		global $menu;
 		$is_listing_customer = self::is_listing_customer();
 
-		if ( $is_listing_customer ) {
-			$menu = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		if ( $is_listing_customer && is_array( $menu ) ) {
+			foreach ( $menu as $item ) {
+				if ( isset( $item[2] ) ) {
+					remove_menu_page( $item[2] );
+				}
+			}
 		}
 	}
 
