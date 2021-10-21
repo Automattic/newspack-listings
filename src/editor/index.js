@@ -3,7 +3,7 @@
  */
 import {
 	__experimentalMainDashboardButton as MainDashboardButton,
-	__experimentalFullscreenModeClose as FullscrenModeClose,
+	__experimentalFullscreenModeClose as FullscreenModeClose,
 } from '@wordpress/edit-post';
 import { registerPlugin } from '@wordpress/plugins';
 
@@ -73,7 +73,7 @@ if ( isListingCustomer ) {
 	registerPlugin( 'main-dashboard-button-replace', {
 		render: () => (
 			<MainDashboardButton>
-				<FullscrenModeClose href="/wp-admin/profile.php" />
+				<FullscreenModeClose href="/wp-admin/profile.php" />
 			</MainDashboardButton>
 		),
 	} );
