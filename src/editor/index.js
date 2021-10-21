@@ -1,6 +1,10 @@
 /**
  * WordPress dependencies
  */
+import {
+	__experimentalMainDashboardButton as MainDashboardButton,
+	__experimentalFullscreenModeClose as FullscrenModeClose,
+} from '@wordpress/edit-post';
 import { registerPlugin } from '@wordpress/plugins';
 
 /**
@@ -61,13 +65,30 @@ if ( isListing() ) {
 	}
 }
 
-// Apologies for the extreme hackiness that follows, but there doesn't seem to be a WP-supported way to do these things.
+// Editor UI changes for listing customers.
 if ( isListingCustomer ) {
-	// Wait until the editor itself is mounted before doing anything. This doesn't mean all editor UI elements will be mounted, though.
+	// For customers, change the default behavior of the full-screen close button.
+	// This normally links back to the post type list, but that page is inaccessible
+	// to customer users.
+	registerPlugin( 'main-dashboard-button-replace', {
+		render: () => (
+			<MainDashboardButton>
+				<FullscrenModeClose href="/wp-admin/profile.php" />
+			</MainDashboardButton>
+		),
+	} );
+
+	/**
+	 * Remove the "Mapbox Access Token" sidebar panel from the jetpack/map block.
+	 * We can't really avoid exposing the API token (which is public anyway), but we can
+	 * at least try to prevent customers from changing or unsetting it, which affects all users.
+	 *
+	 * Note: I hate this, but WP provides no API For "properly" suppressing block sidebars.
+	 * See https: *github.com/WordPress/gutenberg/issues/33891 for more details.
+	 */
+
 	// eslint-disable-next-line no-unused-expressions
 	window._wpLoadBlockEditor?.then( () => {
-		let editorMounted = false;
-
 		// We need to wait until the editor UI elements we need to edit exist in the DOM.
 		// Keep trying every second until we can query them.
 		const intervalId = window.setInterval( () => {
@@ -75,37 +96,13 @@ if ( isListingCustomer ) {
 
 			// Are the UI elements we need in the DOM yet? If so, we can stop the interval.
 			if ( editor ) {
-				editorMounted = true;
 				window.clearInterval( intervalId );
-			}
 
-			if ( editorMounted ) {
-				// If the currently logged-in user is a self-serve listings customer, change the WP logo link shown
-				// in the editor while in full-screen mode to redirect back to the "My Account" page instead of the
-				// (inaccessible to customers) post type dashboard page.
-				// If the editor starts in full-screen mode, this element will exist as soon as the editor mounts.
-				let closeFullScreenButton = editor.querySelector( '.edit-post-fullscreen-mode-close' );
-				if ( closeFullScreenButton ) {
-					closeFullScreenButton.setAttribute( 'href', '/wp-admin/profile.php' );
-				}
-
-				// Since we're running this outside of React, we can use a MutationObserver to run a callback whenever
-				// the child elements of the editor element change (mutate).
+				// Since we're running this outside of React, we can use a MutationObserver
+				// to run a callback whenever the child elements of the editor element mutate.
 				const observer = new MutationObserver( mutationsList => {
 					for ( const mutation of mutationsList ) {
 						if ( 'childList' === mutation.type ) {
-							// The full-screen close button might be unmounted and remounted if switching between full screen modes.
-							if ( mutation.target.classList.contains( 'edit-post-header' ) ) {
-								closeFullScreenButton = editor.querySelector( '.edit-post-fullscreen-mode-close' );
-								if ( closeFullScreenButton ) {
-									closeFullScreenButton.setAttribute( 'href', '/wp-admin/profile.php' );
-								}
-							}
-
-							// Also remove the "Mapbox Access Token" sidebar panel from the jetpack/map block.
-							// We can't really avoid exposing the API token (which is public anyway), but we can
-							// at least try to prevent customers from changing or unsetting it, which affects all users.
-							// Note: I hate this, but WP provides no API For "properly" suppressing block sidebars.
 							if ( mutation.target.classList.contains( 'components-panel' ) ) {
 								const sidebar = editor.querySelector( '.components-panel' );
 								if ( sidebar ) {
