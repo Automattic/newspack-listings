@@ -111,6 +111,7 @@ final class Newspack_Listings_Products {
 		add_action( 'woocommerce_subscription_status_active', [ __CLASS__, 'listing_subscription_associate_primary_post' ] );
 		add_action( 'woocommerce_subscription_status_updated', [ __CLASS__, 'listing_subscription_unpublish_associated_posts' ], 10, 3 );
 		add_filter( 'user_has_cap', [ __CLASS__, 'allow_customers_to_edit_own_posts' ], 10, 3 );
+		add_filter( 'allowed_block_types_all', [ __CLASS__, 'restrict_blocks_for_customers' ], 10, 2 );
 		add_action( 'admin_init', [ __CLASS__, 'hide_admin_menu_for_customers' ], 1000 );
 		add_filter( 'admin_bar_menu', [ __CLASS__, 'hide_admin_bar_for_customers' ], 1000 );
 
@@ -876,17 +877,108 @@ final class Newspack_Listings_Products {
 
 			// TODO: Allow creating new Marketplace or Event listings if the user has an active premium subscription,
 			// and they haven't exceeded their monthly allotment for new posts.
-
-			/**
-			 * TODO: Restrict allowed blocks to only the following block categories:
-			 * - Text
-			 * - Media
-			 * - Design
-			 * - Embeds
-			 */
 		}
 
 		return $allcaps;
+	}
+
+	/**
+	 * Customer users should have access to a basic set of core blocks only.
+	 *
+	 * @param bool|array              $allowed_block_types Array of block type slugs, or boolean to enable/disable all. Default true (all registered block types supported).
+	 * @param WP_Block_Editor_Context $block_editor_context The current block editor context.
+	 *
+	 * @return bool|array Filtered boolean or array of allowed blocks.
+	 */
+	public static function restrict_blocks_for_customers( $allowed_block_types, $block_editor_context ) {
+		$is_listing_customer = self::is_listing_customer();
+
+		if ( $is_listing_customer ) {
+			$allowed_block_types = [
+				'core/paragraph',
+				'core/image',
+				'core/heading',
+				'core/gallery',
+				'core/list',
+				'core/quote',
+				'core/audio',
+				'core/button',
+				'core/buttons',
+				'core/calendar',
+				'core/code',
+				'core/columns',
+				'core/column',
+				'core/cover',
+				'core/embed',
+				'core/file',
+				'core/group',
+				'core/freeform',
+				'core/html',
+				'core/media-text',
+				'core/more',
+				'core/nextpage',
+				'core/preformatted',
+				'core/pullquote',
+				'core/rss',
+				'core/search',
+				'core/separator',
+				'core/block',
+				'core/social-links',
+				'core/social-link',
+				'core/spacer',
+				'core/table',
+				'core/text-columns',
+				'core/verse',
+				'core/video',
+				'core/site-logo',
+				'core/site-tagline',
+				'core/site-title',
+				'core/post-title',
+				'core/post-content',
+				'core/post-date',
+				'core/post-excerpt',
+				'core/post-featured-image',
+				'core/post-terms',
+				'jetpack/business-hours',
+				'jetpack/button',
+				'jetpack/field-text',
+				'jetpack/field-name',
+				'jetpack/field-email',
+				'jetpack/field-url',
+				'jetpack/field-date',
+				'jetpack/field-telephone',
+				'jetpack/field-textarea',
+				'jetpack/field-checkbox',
+				'jetpack/field-consent',
+				'jetpack/field-checkbox-multiple',
+				'jetpack/field-radio',
+				'jetpack/field-select',
+				'jetpack/contact-info',
+				'jetpack/address',
+				'jetpack/email',
+				'jetpack/phone',
+				'jetpack/gif',
+				'jetpack/image-compare',
+				'jetpack/instagram-gallery',
+				'jetpack/map',
+				'jetpack/markdown',
+				'jetpack/opentable',
+				'jetpack/pinterest',
+				'jetpack/podcast-player',
+				'jetpack/rating-star',
+				'jetpack/repeat-visitor',
+				'jetpack/send-a-message',
+				'jetpack/whatsapp-button',
+				'jetpack/simple-payments',
+				'jetpack/slideshow',
+				'jetpack/story',
+				'jetpack/tiled-gallery',
+				'newspack-listings/event-dates',
+				'newspack-listings/price',
+			];
+		}
+
+		return $allowed_block_types;
 	}
 
 	/**
@@ -898,8 +990,9 @@ final class Newspack_Listings_Products {
 		$is_listing_customer = self::is_listing_customer();
 
 		if ( $is_listing_customer && is_array( $menu ) ) {
+			$allowed_items = [ 'index.php' ];
 			foreach ( $menu as $item ) {
-				if ( isset( $item[2] ) ) {
+				if ( isset( $item[2] ) && ! in_array( $item[2], $allowed_items ) ) {
 					remove_menu_page( $item[2] );
 				}
 			}
@@ -920,6 +1013,8 @@ final class Newspack_Listings_Products {
 
 			// Allow user-related nodes to get back to "My Account" pages or to log out.
 			$allowed_nodes = [
+				'wp-logo',
+				'site-name',
 				'edit-profile',
 				'logout',
 				'my-account',
