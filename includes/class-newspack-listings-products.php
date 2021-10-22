@@ -10,6 +10,7 @@ namespace Newspack_Listings;
 use \Newspack_Listings\Newspack_Listings_Settings as Settings;
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Newspack_Listings_Block_Patterns as Patterns;
+use \Newspack_Listings\Newspack_Listings_Featured as Featured;
 use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
@@ -49,6 +50,7 @@ final class Newspack_Listings_Products {
 	 */
 	const SUBSCRIPTION_META_KEYS = [
 		'listing_subscription' => 'newspack_listings_is_subscription',
+		'is_premium'           => 'newspack_listings_is_premium_subscription',
 	];
 
 	/**
@@ -112,7 +114,7 @@ final class Newspack_Listings_Products {
 		add_action( 'woocommerce_subscription_status_updated', [ __CLASS__, 'listing_subscription_unpublish_associated_posts' ], 10, 3 );
 		add_filter( 'user_has_cap', [ __CLASS__, 'allow_customers_to_edit_own_posts' ], 10, 3 );
 		add_filter( 'allowed_block_types_all', [ __CLASS__, 'restrict_blocks_for_customers' ], 10, 2 );
-		add_action( 'admin_init', [ __CLASS__, 'hide_admin_menu_for_customers' ], 1000 );
+		add_action( 'admin_menu', [ __CLASS__, 'hide_admin_menu_for_customers' ], 1000 );
 		add_filter( 'admin_bar_menu', [ __CLASS__, 'hide_admin_bar_for_customers' ], 1000 );
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
@@ -139,6 +141,7 @@ final class Newspack_Listings_Products {
 		}
 
 		$products = self::get_products();
+
 		if ( ! $products ) {
 			$settings     = Settings::get_settings();
 			$product_name = __( 'Self-Serve Listings', 'newspack-listings' );
@@ -585,9 +588,21 @@ final class Newspack_Listings_Products {
 				$customer->add_cap( 'edit_published_posts' ); // Let this customer edit their own posts even after they're published.
 				$customer->add_cap( 'upload_files' ); // Let this customer upload media for featured and inline images.
 
+				// Get info on purchased products.
+				$products        = self::get_products();
+				$purchased_items = array_map(
+					function( $item ) {
+						return $item->get_product_id();
+					},
+					$order->get_items()
+				);
+
 				$purchase_type   = isset( $params['listing_purchase_type'] ) ? $params['listing_purchase_type'] : 'single';
-				$is_subscription = 'subscription' === $purchase_type;
+				$is_subscription = 'subscription' === $purchase_type && in_array( $products['newspack_listings_subscription_price'], $purchased_items );
+				$is_single       = ! $is_subscription && in_array( $products['newspack_listings_single_price'], $purchased_items );
 				$listing_type    = isset( $params['listing_type'] ) ? $params['listing_type'] : null;
+				$single_upgrade  = $is_single && in_array( $products['newspack_listings_featured_add_on'], $purchased_items );
+				$premium_upgrade = $is_subscription && in_array( $products['newspack_listings_premium_subscription_add_on'], $purchased_items );
 				$post_title      = isset( $params['listing_title'] ) ? $params['listing_title'] : __( 'Untitled listing', 'newspack-listings' );
 				$post_type       = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
 				$post_content    = false;
@@ -636,8 +651,10 @@ final class Newspack_Listings_Products {
 				// Associate the generated post with this order.
 				update_post_meta( $post_id, self::POST_META_KEYS['listing_order'], $order_id );
 
-				// TODO: If purchasing a featured upgrade, apply featured meta.
-				// TODO: Create a daily cron job to automatically unpublish posts after 30 days based on the order date (or if the subscription expires).
+				// If purchasing an upgrade product, set the post to featured status.
+				if ( $single_upgrade || $premium_upgrade ) {
+					Featured::set_featured_status( $post_id );
+				}
 			}
 		}
 	}
@@ -659,7 +676,23 @@ final class Newspack_Listings_Products {
 
 			// Associate the post created during purchase with this subscription.
 			update_post_meta( $listing->ID, self::POST_META_KEYS['listing_subscription'], $subscription->get_id() );
+
+			// If the order included a premium upgrade, mark this subscription as premium.
+			$order           = \wc_get_order( $order_id );
+			$products        = self::get_products();
+			$purchased_items = array_map(
+				function( $item ) {
+					return $item->get_product_id();
+				},
+				$order->get_items()
+			);
+			$premium_upgrade = in_array( $products['newspack_listings_premium_subscription_add_on'], $purchased_items );
+			if ( $premium_upgrade ) {
+				update_post_meta( $subscription->get_id(), self::SUBSCRIPTION_META_KEYS['is_premium'], 1 );
+			}
 		}
+
+		// TODO: If an active subscription is premium, allow the customer to create a certain number of additional Marketplace listings as long as the subscription is active.
 	}
 
 	/**

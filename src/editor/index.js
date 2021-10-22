@@ -45,8 +45,9 @@ if ( isListing() ) {
 			icon: null,
 		} );
 
-		if ( selfServeEnabled ) {
-			// Register featured listing sidebar.
+		// Register featured listing sidebar.
+		// We don't want to show the Featured Listing UI to customers, otherwise anyone could just make their listings featured.
+		if ( selfServeEnabled && ! isListingCustomer ) {
 			registerPlugin( 'newspack-listings-featured', {
 				render: FeaturedListings,
 				icon: null,

@@ -379,6 +379,44 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
+	 * Checks a string to see if it's in valid YYYY-MM-DDT00:00:00 format.
+	 * This is the format we expect to see expiration dates saved as post meta.
+	 *
+	 * @param string $str String to validate.
+	 *
+	 * @return boolean True if a valid date in the expected format, false otherwise.
+	 */
+	public static function is_valid_date_string( $str ) {
+		return false !== \DateTime::createFromFormat( 'Y-m-d\TH:i:s', $str );
+	}
+
+	/**
+	 * Set featured status, priority, and expiration date for the given post.
+	 *
+	 * @param int    $post_id Post ID to update.
+	 * @param int    $priority Priority level (1-9) to set. If not given, will default to 5.
+	 * @param string $expires Date string for the expiration date, in YYYY-MM-DDT00:00:00 format. Will not set if none given.
+	 *
+	 * @return boolean True if the post updated to featured; false if the post wasn't updated or doesn't exist.
+	 */
+	public static function set_featured_status( $post_id = null, $priority = 5, $expires = null ) {
+		if ( null === $post_id ) {
+			return false;
+		}
+
+		// Set featured status.
+		update_post_meta( $post_id, self::META_KEYS['featured'], true );
+
+		// Set feature priority.
+		self::update_priority( $post_id, $priority );
+
+		// Set expiration, if given and a valid time string.
+		if ( $expires && self::is_valid_date_string( $expires ) ) {
+			update_post_meta( $post_id, self::META_KEYS['expires'], $expires );
+		}
+	}
+
+	/**
 	 * Unset featured status for the given post. Also delete the query priority meta key.
 	 *
 	 * @param int $post_id Post ID to update.
