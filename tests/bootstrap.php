@@ -30,7 +30,19 @@ function _manually_load_plugin() {
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
+
+/**
+ * Set the option flags required for testing listing archive queries.
+ */
+function _update_required_options() {
+	// Ensure listing posts can appear on archive pages.
+	update_option( 'newspack_listings_enable_post_type_archives', true );
+	update_option( 'newspack_listings_enable_term_archives', true );
+}
+tests_add_filter( 'init', '_update_required_options' );
+
 define( 'IS_TEST_ENV', 1 );
+define( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED', true );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';

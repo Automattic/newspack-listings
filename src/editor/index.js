@@ -21,14 +21,15 @@ import {
 	setCustomCategory,
 } from '../blocks';
 import { ShadowTaxonomies } from './shadow-taxonomies';
+import { FeaturedListings } from './featured-listings';
 import { isListing } from './utils';
 import './style.scss';
 
 const {
 	post_type: postType,
 	post_types: postTypes,
-	self_serve_enabled: selfServeEnabled,
 	is_listing_customer: isListingCustomer = false,
+	self_serve_enabled: selfServeEnabled,
 } = window?.newspack_listings_data;
 
 /**
@@ -43,6 +44,14 @@ if ( isListing() ) {
 			render: Sidebar,
 			icon: null,
 		} );
+
+		if ( selfServeEnabled ) {
+			// Register featured listing sidebar.
+			registerPlugin( 'newspack-listings-featured', {
+				render: FeaturedListings,
+				icon: null,
+			} );
+		}
 	}
 
 	// Register Event Dates block if we're editing an Event.
