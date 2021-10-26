@@ -188,14 +188,6 @@ final class Newspack_Listings_Settings {
 		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
 			$product_settings = [
 				[
-					'description' => __( 'If turned off, any user-generated listings that were previously published will no longer be publicly visible.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_self_service_enabled',
-					'label'       => __( 'Enable self-serve listings', 'newpack-listings' ),
-					'type'        => 'checkbox',
-					'value'       => false,
-					'section'     => $sections['product']['slug'],
-				],
-				[
 					'description' => __( 'The base price for a single listing (no subscription).', 'newspack-listings' ),
 					'key'         => Products::PRODUCT_META_KEYS['single'],
 					'label'       => __( 'Single listing price', 'newpack-listings' ),
