@@ -5,8 +5,13 @@
 }
 
 .woocommerce-orders-table__cell-order-actions {
-	.button + .button {
-		display: inline-block;
-		margin-left: 0.25rem;
+	.button {
+		margin-bottom: 0.125rem;
+		margin-top: 0.125rem;
+
+		+ .button {
+			display: inline-block;
+			margin-left: 0.25rem;
+		}
 	}
 }

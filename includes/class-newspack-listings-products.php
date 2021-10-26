@@ -1091,7 +1091,11 @@ final class Newspack_Listings_Products {
 			$user_id = $user_ID;
 		}
 
-		$is_listing_customer = get_user_meta( $user_id, self::CUSTOMER_META_KEYS['is_listings_customer'], true );
+		$user_meta      = get_userdata( $user_id );
+		$user_roles     = $user_meta->roles;
+		$customer_roles = [ 'subscriber', 'customer' ]; // Avoid limiting capabilities for contributor/author/editor/admin roles.
+
+		$is_listing_customer = 0 < count( array_intersect( $user_roles, $customer_roles ) ) && get_user_meta( $user_id, self::CUSTOMER_META_KEYS['is_listings_customer'], true );
 
 		return $is_listing_customer;
 	}

@@ -83,7 +83,7 @@ if ( isListingCustomer ) {
 	registerPlugin( 'main-dashboard-button-replace', {
 		render: () => (
 			<MainDashboardButton>
-				<FullscreenModeClose href="/wp-admin/profile.php" />
+				<FullscreenModeClose href="/wp-admin/" />
 			</MainDashboardButton>
 		),
 	} );
