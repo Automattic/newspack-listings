@@ -419,28 +419,35 @@ final class Newspack_Listings_Featured {
 	/**
 	 * Unset featured status for the given post. Also delete the query priority meta key.
 	 *
-	 * @param int $post_id Post ID to update.
+	 * @param int     $post_id Post ID to update.
+	 * @param boolean $ignore_expiration If passed true, skip checking the expiration date and immediately unset featured status.
 	 *
 	 * @return boolean True if the post was featured and updated to unfeatured; false if the post wasn't updated or doesn't exist.
 	 */
-	public static function unset_featured_status( $post_id = null ) {
+	public static function unset_featured_status( $post_id = null, $ignore_expiration = false ) {
 		if ( null === $post_id ) {
 			return false;
 		}
 
-		$expiration_date = self::get_featured_expiration( $post_id );
-		$timezone        = get_option( 'timezone_string', 'UTC' );
+		$unset_featured = false;
 
-		// Guard against 'Unknown or bad timezone' PHP error.
-		if ( empty( trim( $timezone ) ) ) {
-			$timezone = 'UTC';
+		if ( $ignore_expiration ) {
+			$unset_featured = true;
+		} else {
+			$expiration_date = self::get_featured_expiration( $post_id );
+			$timezone        = get_option( 'timezone_string', 'UTC' );
+
+			// Guard against 'Unknown or bad timezone' PHP error.
+			if ( empty( trim( $timezone ) ) ) {
+				$timezone = 'UTC';
+			}
+
+			$parsed_date    = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
+			$unset_featured = 0 > $parsed_date->getTimestamp() - time();
 		}
 
-		$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
-		$date_has_passed = 0 > $parsed_date->getTimestamp() - time();
-
 		// If the expiration date has already passed, remove the featured status and query priority.
-		if ( $date_has_passed ) {
+		if ( $unset_featured ) {
 			update_post_meta( $post_id, self::META_KEYS['featured'], false );
 			self::update_priority( $post_id, 0 );
 			return true;

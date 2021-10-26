@@ -27,6 +27,21 @@ final class Newspack_Listings_Products {
 	const PRODUCT_OPTION = 'newspack_listings_product_id';
 
 	/**
+	 * String representing the "create listing" action, for security purposes.
+	 */
+	const CREATE_LISTING_NONCE = 'newspack_create_listing_nonce';
+
+	/**
+	 * String representing the "delete listing" action, for security purposes.
+	 */
+	const DELETE_LISTING_NONCE = 'newspack_delete_listing_nonce';
+
+	/**
+	 * Number of free listings granted to premium subscribers.
+	 */
+	const TOTAL_FREE_LISTINGS = 10;
+
+	/**
 	 * Meta keys for self-serve listing products.
 	 */
 	const PRODUCT_META_KEYS = [
@@ -99,26 +114,37 @@ final class Newspack_Listings_Products {
 	 * Constructor.
 	 */
 	public function __construct() {
+		// WP actions create the necessary products, and to handle submission of the Self-Serve Listings block form.
 		add_action( 'init', [ __CLASS__, 'init' ] );
 		add_action( 'wp_loaded', [ __CLASS__, 'handle_purchase_form' ], 99 );
-		add_filter( 'pre_option_woocommerce_enable_guest_checkout', [ __CLASS__, 'require_account_for_listings' ] );
-		add_filter( 'pre_option_woocommerce_enable_signup_and_login_from_checkout', [ __CLASS__, 'allow_account_creation_and_login_for_listings' ] );
-		add_filter( 'pre_option_woocommerce_enable_checkout_login_reminder', [ __CLASS__, 'allow_account_creation_and_login_for_listings' ] );
+		add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_premium_listing' ], 99 );
+
+		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
+		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
+
+		// WooCommerce checkout actions (when purchasing a listing product).
+		add_filter( 'pre_option_woocommerce_enable_guest_checkout', [ __CLASS__, 'force_require_account_for_listings' ] );
+		add_filter( 'pre_option_woocommerce_enable_signup_and_login_from_checkout', [ __CLASS__, 'force_account_creation_and_login_for_listings' ] );
+		add_filter( 'pre_option_woocommerce_enable_checkout_login_reminder', [ __CLASS__, 'force_account_creation_and_login_for_listings' ] );
 		add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'listing_details_summary' ] );
 		add_filter( 'woocommerce_billing_fields', [ __CLASS__, 'listing_details_billing_fields' ] );
 		add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'listing_checkout_update_order_meta' ] );
 		add_action( 'woocommerce_thankyou_order_received_text', [ __CLASS__, 'listing_append_thank_you' ], 99, 2 );
+
+		// WooCommerce account actions (post-purchase).
 		add_action( 'woocommerce_my_account_my_orders_actions', [ __CLASS__, 'listing_append_edit_action' ], 10, 2 );
 		add_action( 'woocommerce_order_details_after_order_table', [ __CLASS__, 'listing_append_details' ] );
 		add_action( 'woocommerce_subscription_status_active', [ __CLASS__, 'listing_subscription_associate_primary_post' ] );
 		add_action( 'woocommerce_subscription_status_updated', [ __CLASS__, 'listing_subscription_unpublish_associated_posts' ], 10, 3 );
+		add_action( 'woocommerce_subscription_details_after_subscription_table', [ __CLASS__, 'listing_subscription_manage_premium_listings' ] );
+		add_action( 'wcs_user_removed_item', [ __CLASS__, 'listing_subscription_removed_item' ], 10, 2 );
+		add_action( 'wcs_user_readded_item', [ __CLASS__, 'listing_subscription_readded_item' ], 10, 2 );
+
+		// WP user actions to add capabilities and admin access for WC customers, who normally can't access the post editor.
 		add_filter( 'user_has_cap', [ __CLASS__, 'allow_customers_to_edit_own_posts' ], 10, 3 );
 		add_filter( 'allowed_block_types_all', [ __CLASS__, 'restrict_blocks_for_customers' ], 10, 2 );
-		add_action( 'admin_menu', [ __CLASS__, 'hide_admin_menu_for_customers' ], 1000 );
-		add_filter( 'admin_bar_menu', [ __CLASS__, 'hide_admin_bar_for_customers' ], 1000 );
-
-		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
-		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
+		add_action( 'admin_menu', [ __CLASS__, 'hide_admin_menu_for_customers' ], 1000 ); // Late execution to override other plugins like Jetpack.
+		add_filter( 'admin_bar_menu', [ __CLASS__, 'hide_admin_bar_for_customers' ], 1000 ); // Late execution to override other plugins like Jetpack.
 	}
 
 	/**
@@ -366,7 +392,7 @@ final class Newspack_Listings_Products {
 	 *
 	 * @return string Filtered value.
 	 */
-	public static function require_account_for_listings( $value ) {
+	public static function force_require_account_for_listings( $value ) {
 		$products = self::get_products();
 		if ( ! $products || ! self::$wc_is_active ) {
 			return $value;
@@ -394,7 +420,7 @@ final class Newspack_Listings_Products {
 	 *
 	 * @return string Filtered value.
 	 */
-	public static function allow_account_creation_and_login_for_listings( $value ) {
+	public static function force_account_creation_and_login_for_listings( $value ) {
 		$products = self::get_products();
 		if ( ! $products || ! self::$wc_is_active ) {
 			return $value;
@@ -466,17 +492,17 @@ final class Newspack_Listings_Products {
 		];
 
 		if ( $is_single ) {
-			$products_to_purchase[]              = $products['newspack_listings_single_price'];
+			$products_to_purchase[]              = $products[ self::PRODUCT_META_KEYS['single'] ];
 			$checkout_query_args['listing_type'] = sanitize_text_field( $single_type );
 
 			if ( 'on' === $featured_upgrade ) {
-				$products_to_purchase[] = $products['newspack_listings_featured_add_on'];
+				$products_to_purchase[] = $products[ self::PRODUCT_META_KEYS['featured'] ];
 			}
 		} else {
-			$products_to_purchase[] = $products['newspack_listings_subscription_price'];
+			$products_to_purchase[] = $products[ self::PRODUCT_META_KEYS['subscription'] ];
 
 			if ( 'on' === $premium_upgrade ) {
-				$products_to_purchase[] = $products['newspack_listings_premium_subscription_add_on'];
+				$products_to_purchase[] = $products[ self::PRODUCT_META_KEYS['premium'] ];
 			}
 		}
 
@@ -598,10 +624,10 @@ final class Newspack_Listings_Products {
 				);
 
 				$purchase_type   = isset( $params['listing_purchase_type'] ) ? $params['listing_purchase_type'] : 'single';
-				$is_subscription = 'subscription' === $purchase_type && in_array( $products['newspack_listings_subscription_price'], $purchased_items );
-				$is_single       = ! $is_subscription && in_array( $products['newspack_listings_single_price'], $purchased_items );
+				$is_subscription = 'subscription' === $purchase_type && in_array( $products[ self::PRODUCT_META_KEYS['subscription'] ], $purchased_items );
+				$is_single       = ! $is_subscription && in_array( $products[ self::PRODUCT_META_KEYS['single'] ], $purchased_items );
 				$listing_type    = isset( $params['listing_type'] ) ? $params['listing_type'] : null;
-				$single_upgrade  = $is_single && in_array( $products['newspack_listings_featured_add_on'], $purchased_items );
+				$single_upgrade  = $is_single && in_array( $products[ self::PRODUCT_META_KEYS['featured'] ], $purchased_items );
 				$premium_upgrade = $is_subscription && in_array( $products['newspack_listings_premium_subscription_add_on'], $purchased_items );
 				$post_title      = isset( $params['listing_title'] ) ? $params['listing_title'] : __( 'Untitled listing', 'newspack-listings' );
 				$post_type       = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
@@ -686,7 +712,7 @@ final class Newspack_Listings_Products {
 				},
 				$order->get_items()
 			);
-			$premium_upgrade = in_array( $products['newspack_listings_premium_subscription_add_on'], $purchased_items );
+			$premium_upgrade = in_array( $products[ self::PRODUCT_META_KEYS['premium'] ], $purchased_items );
 			if ( $premium_upgrade ) {
 				update_post_meta( $subscription->get_id(), self::SUBSCRIPTION_META_KEYS['is_premium'], 1 );
 			}
@@ -722,6 +748,201 @@ final class Newspack_Listings_Products {
 					]
 				);
 			}
+		}
+	}
+
+	/**
+	 * Active premium subscriptions grant customers the ability to create up to 10 Marketplace or Event listings for free.
+	 * Show controls to create and manage these listings in the Subscription account page.
+	 *
+	 * @param WC_Subscription $subscription Subscription object for the subscription whose status has changed.
+	 */
+	public static function listing_subscription_manage_premium_listings( $subscription ) {
+		$subscription_id  = $subscription->get_id();
+		$is_active        = 'active' === $subscription->get_status();
+		$is_premium       = $is_active && get_post_meta( $subscription_id, self::SUBSCRIPTION_META_KEYS['is_premium'], true );
+		$customer_id      = $subscription->get_user_id();
+		$premium_listings = get_posts(
+			[
+				'meta_key'       => self::POST_META_KEYS['listing_subscription'],
+				'meta_value'     => $subscription->get_id(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'post_status'    => [ 'draft', 'future', 'pending', 'private', 'publish' ],
+				'post_type'      => [
+					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+				],
+				'posts_per_page' => self::TOTAL_FREE_LISTINGS,
+			]
+		);
+
+		// If not a premium subscription and there are no previously created premium listings, no need to show the UI.
+		if ( ! $is_premium && 0 === count( $premium_listings ) ) {
+			return;
+		}
+
+		$remaining       = self::TOTAL_FREE_LISTINGS - count( $premium_listings );
+		$base_url        = isset( $_SERVER['REQUEST_URI'] ) ? site_url( strtok( sanitize_text_field( $_SERVER['REQUEST_URI'] ), '?' ) ) : get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
+		$marketplace_url = wp_nonce_url(
+			add_query_arg(
+				[
+					'customer_id'     => $customer_id,
+					'subscription_id' => $subscription_id,
+					'create'          => 'marketplace',
+				],
+				$base_url
+			),
+			self::CREATE_LISTING_NONCE
+		);
+		$event_url       = wp_nonce_url(
+			add_query_arg(
+				[
+					'customer_id'     => $customer_id,
+					'subscription_id' => $subscription_id,
+					'create'          => 'event',
+				],
+				$base_url
+			),
+			self::CREATE_LISTING_NONCE
+		);
+
+		?>
+			<h2><?php echo esc_html( __( 'Premium subscription listings', 'newspack-listings' ) ); ?></h2>
+			<p>
+				<?php
+					echo esc_html(
+						sprintf(
+							// translators: explanation of premium subscription benefits.
+							__( 'A premium subscription lets you create up to %1$d free Marketplace or Event listings. %2$s', 'newspack-listings' ),
+							self::TOTAL_FREE_LISTINGS,
+							$remaining && $is_premium ?
+								// translators: explanation of remaining free listings.
+								sprintf( __( 'You have %d free listings remaining.', 'newspack-listings' ), $remaining ) :
+								__( 'You don’t have any free listings available. To create additional listings, please purchase them.', 'newspack-listings' )
+						)
+					);
+				?>
+			</p>
+		<?php
+
+		// To create new listings, subscription must be active and premium, and must have not used up all free listings.
+		if ( $is_premium && $remaining ) :
+			?>
+			<p>
+				<a class="woocommerce-button button" href="<?php echo esc_url( $marketplace_url ); ?>"><?php echo esc_html__( 'Create New Marketplace Listing', 'newspack-listings' ); ?></a>
+				<a class="woocommerce-button button" href="<?php echo esc_url( $event_url ); ?>"><?php echo esc_html__( 'Create New Event Listing', 'newspack-listings' ); ?></a>
+			</p>
+			<?php
+		endif;
+
+		// Show a table with previously created premium listings. This is shown even if the subscription is no longer premium (so that the user can still see their own previously created listings), but if that's the case the "edit" button will no longer be available.
+		if ( 0 < count( $premium_listings ) ) :
+			?>
+			<table class="shop_table shop_table_responsive my_account_orders">
+				<thead>
+					<tr>
+						<th class="woocommerce-orders-table__header"><?php echo esc_html__( 'Listing Title', 'newspack-listings' ); ?></th>
+						<th class="woocommerce-orders-table__header"><?php echo esc_html__( 'Listing Status', 'newspack-listings' ); ?></th>
+						<th class="woocommerce-orders-table__header"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $premium_listings as $listing ) : ?>
+						<?php
+						$trash_listing_url = wp_nonce_url(
+							add_query_arg(
+								[
+									'customer_id'     => $customer_id,
+									'subscription_id' => $subscription_id,
+									'delete'          => $listing->ID,
+									'redirect_uri'    => urlencode( $base_url ),
+								],
+								$base_url
+							),
+							self::DELETE_LISTING_NONCE
+						);
+						?>
+					<tr>
+						<td class="woocommerce-orders-table__cell"><a href="<?php echo esc_url( get_edit_post_link( $listing->ID ) ); ?>"><?php echo wp_kses_post( $listing->post_title ); ?></a></td>
+						<td class="woocommerce-orders-table__cell"><?php echo esc_html( 'publish' === $listing->post_status ? __( 'published', 'newspack-listings' ) : $listing->post_status ); ?></td>
+						<td class="woocommerce-orders-table__cell">
+							<?php if ( $is_premium ) : ?>
+								<a class="woocommerce-button button" href="<?php echo esc_url( get_edit_post_link( $listing->ID ) ); ?>"><?php echo esc_html__( 'Edit', 'newspack-listings' ); ?></a>
+							<?php endif; ?>
+							<a class="woocommerce-button button" href="<?php echo esc_url( get_permalink( $listing->ID ) ); ?>"><?php echo esc_html( 'publish' === $listing->post_status ? __( 'View', 'newspack-listings' ) : __( 'Preview', 'newspack-listings' ) ); ?></a>
+							<a class="woocommerce-button button" href="<?php echo esc_url( $trash_listing_url ); ?>" onclick="return confirm(' <?php echo esc_html__( 'Are you sure you want to delete this listing? This cannot be undone.', 'newspack-listings' ); ?> ');"><?php echo esc_html__( 'Delete', 'newspack-listings' ); ?></a>
+						</td>
+					</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+			<?php
+		endif;
+	}
+
+	/**
+	 * Intercept GET params and create a Marketplace or Event listing for a premium subscription.
+	 */
+	public static function create_or_delete_premium_listing() {
+		$nonce           = filter_input( INPUT_GET, '_wpnonce', FILTER_SANITIZE_STRING );
+		$customer_id     = filter_input( INPUT_GET, 'customer_id', FILTER_SANITIZE_STRING );
+		$subscription_id = filter_input( INPUT_GET, 'subscription_id', FILTER_SANITIZE_STRING );
+		$post_type_slug  = filter_input( INPUT_GET, 'create', FILTER_SANITIZE_STRING );
+		$delete_post     = filter_input( INPUT_GET, 'delete', FILTER_SANITIZE_NUMBER_INT );
+		$redirect_uri    = urldecode( filter_input( INPUT_GET, 'redirect_uri', FILTER_SANITIZE_STRING ) );
+
+		// Only if WC is active.
+		if ( ! self::$wc_is_active ) {
+			return;
+		}
+
+		// Only if we have all of the required query args.
+		if ( ! $customer_id || ! $subscription_id || ( ! $delete_post && 'event' !== $post_type_slug && 'marketplace' !== $post_type_slug ) ) {
+			return;
+		}
+
+		// If deleting the post.
+		if ( $delete_post && $redirect_uri ) {
+			// Check nonce in case someone tries to delete a listing by visiting the URL with the expected params.
+			if ( ! wp_verify_nonce( $nonce, self::DELETE_LISTING_NONCE ) ) {
+				return;
+			}
+
+			wp_trash_post( $delete_post );
+			wp_safe_redirect( $redirect_uri );
+			exit;
+		}
+
+		// Check nonce in case someone tries to create a listing by visiting the URL with the expected params.
+		if ( ! wp_verify_nonce( $nonce, self::CREATE_LISTING_NONCE ) ) {
+			return;
+		}
+
+		// Get order info and remaining premium listings.
+		$subscription = new \WC_Subscription( $subscription_id );
+		$args         = [
+			'post_author' => $customer_id,
+			'post_status' => 'draft',
+			'post_title'  => sprintf(
+				// translators: default "untitled" listing title.
+				__( 'Untitled %s listing', 'newspack-listings' ),
+				'event' === $post_type_slug ? __( 'event', 'newspack-listings' ) : __( 'marketplace', 'newspack-listings' )
+			),
+			'post_type'   => 'event' === $post_type_slug ? Core::NEWSPACK_LISTINGS_POST_TYPES['event'] : Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+		];
+		$post_id      = wp_insert_post( $args );
+
+		if ( $post_id ) {
+			// Associate the new post with this subscription order.
+			update_post_meta( $post_id, self::POST_META_KEYS['listing_subscription'], $subscription_id );
+
+			// Redirect back to subscription page for further management.
+			wp_safe_redirect( html_entity_decode( get_edit_post_link( $post_id ) ) );
+			exit;
+		} else {
+			return new \WP_Error(
+				'newspack_listings_create_listing_error',
+				__( 'There was an error creating your listing. Please try again or contact the site administrators for help.', 'newspack-listings' )
+			);
 		}
 	}
 
@@ -876,13 +1097,104 @@ final class Newspack_Listings_Products {
 	}
 
 	/**
+	 * When a subscription product is removed from a listing subscription, also unpublish the primary listing, if published.
+	 * WHen an upgrade product is removed from a premium subscription, unset the Featured status of the primary listing.
+	 * Also disallow creation of new related Marketplace listings.
+	 *
+	 * @param WC_Product      $line_item Product object of the item removed from the subscription.
+	 * @param WC_Subscription $subscription Subscription object from which the product was removed.
+	 */
+	public static function listing_subscription_removed_item( $line_item, $subscription ) {
+		$product_id              = $line_item->get_product_id();
+		$products                = self::get_products();
+		$is_subscription_product = $product_id === $products[ self::PRODUCT_META_KEYS['subscription'] ];
+		$is_premium_product      = $product_id === $products[ self::PRODUCT_META_KEYS['premium'] ];
+		$associated_listings     = [];
+
+		if ( $is_subscription_product || $is_premium_product ) {
+			$associated_listings = get_posts(
+				[
+					'meta_key'    => self::POST_META_KEYS['listing_subscription'],
+					'meta_value'  => $subscription->get_id(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'post_status' => 'publish',
+					'post_type'   => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
+				]
+			);
+		}
+
+		// If removing the subscription product, unpublish any associated listings.
+		if ( $is_subscription_product ) {
+			foreach ( $associated_listings as $listing ) {
+				wp_update_post(
+					[
+						'ID'          => $listing->ID,
+						'post_status' => 'draft',
+					]
+				);
+			}
+		}
+
+		// If removing the premium upgrade product, unset the featured status of any associated listings.
+		if ( $is_premium_product ) {
+			delete_post_meta( $subscription->get_id(), self::SUBSCRIPTION_META_KEYS['is_premium'] );
+
+			foreach ( $associated_listings as $listing ) {
+				Featured::unset_featured_status( $listing->ID, true );
+			}
+		}
+	}
+
+	/**
+	 * When a product is removed from a subscription, the customer has an opportunity to undo this action.
+	 * When undoing a product removal, we should restore the Featured status of any premium subscription items
+	 * and re-allow creation of new related Marketplace listings.
+	 *
+	 * If a primary listing was unpublished due to removal of a subscription product, the customer will need to
+	 * resubmit the listing for review before it can be published again. This is to prevent a loophole where
+	 * customers could theoretically publish changes without editorial approval by removing and readding the
+	 * subscription product from their subscription.
+	 *
+	 * @param WC_Product      $line_item Product object of the item re-added to the subscription.
+	 * @param WC_Subscription $subscription Subscription object to which the product was re-added.
+	 */
+	public static function listing_subscription_readded_item( $line_item, $subscription ) {
+		$product_id          = $line_item->get_product_id();
+		$products            = self::get_products();
+		$is_premium_product  = $product_id === $products[ self::PRODUCT_META_KEYS['premium'] ];
+		$associated_listings = [];
+
+		// If re-adding the premium upgrade product, reset the featured status for any associated listings.
+		// Feature priority will be reset to the default (5) since there's no way to retrieve older values.
+		if ( $is_premium_product ) {
+			update_post_meta( $subscription->get_id(), self::SUBSCRIPTION_META_KEYS['is_premium'], 1 );
+			$associated_listings = get_posts(
+				[
+					'meta_key'    => self::POST_META_KEYS['listing_subscription'],
+					'meta_value'  => $subscription->get_id(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'post_status' => 'publish',
+					'post_type'   => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
+				]
+			);
+
+			foreach ( $associated_listings as $listing ) {
+				$priority = Featured::get_priority( $listing->ID );
+
+				if ( ! $priority ) {
+					Featured::set_featured_status( $listing->ID );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Filter user capability check. Customers who have purchased a listing item have the edit_posts capability added
 	 * so that they can be assigned as an author to listing posts, edit those posts, and submit for review to publish.
 	 * However, we only want them to be able to edit the specific posts they've purchased, not create new ones.
 	 * So we should remove the edit_posts capability if the user tries to edit another post create a new one,
 	 * or access other WordPress admin pages that are usually allowed under the edit_posts capability.
 	 *
-	 * @param bool[]   $allcaps Array of key/value pairs where keys represent a capability name and boolean values represent whether the user has that capability.
+	 * @param bool[]   $allcaps Array of key/value pairs where keys represent a capability name and
+	 *                          boolean values represent whether the user has that capability.
 	 * @param string[] $caps Required primitive capabilities for the requested capability.
 	 * @param array    $args Arguments that accompany the requested capability check.
 	 *
@@ -900,16 +1212,13 @@ final class Newspack_Listings_Products {
 
 		if ( (bool) $is_listing_customer ) {
 			global $pagenow;
-			$is_edit_screen = isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$is_edit_screen = isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( sanitize_text_field( $_REQUEST['action'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 			// If not an edit screen, if the post ID isn't set or isn't in the user's allowed post IDs,
 			// or the user is trying to access an admin page other than the post editor, disallow.
 			if ( ! $is_edit_screen || 'post.php' !== $pagenow ) {
 				$allcaps[ $capability ] = 0;
 			}
-
-			// TODO: Allow creating new Marketplace or Event listings if the user has an active premium subscription,
-			// and they haven't exceeded their monthly allotment for new posts.
 		}
 
 		return $allcaps;
