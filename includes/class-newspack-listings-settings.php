@@ -212,7 +212,7 @@ final class Newspack_Listings_Settings {
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The upgrade price for a premium subscription, which allows subscribers to create up to 5 featured listings linked to the primary listing per month. This fee is charged monthly.', 'newspack-listings' ),
+					'description' => __( 'The upgrade price for a premium subscription, which allows subscribers to create up to 10 free Marketplace or Event listings. This fee is charged monthly.', 'newspack-listings' ),
 					'key'         => Products::PRODUCT_META_KEYS['premium'],
 					'label'       => __( 'Upgrade: Premium subscription price', 'newpack-listings' ),
 					'type'        => 'number',
