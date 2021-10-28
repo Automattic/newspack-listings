@@ -32,6 +32,7 @@ const FeaturedListingsComponent = ( {
 	isSavingPost,
 	meta,
 	postId,
+	setIsDirty,
 	updateMetaValue,
 } ) => {
 	const [ error, setError ] = useState( null );
@@ -140,7 +141,10 @@ const FeaturedListingsComponent = ( {
 								'newspack-listings'
 							) }
 							value={ priority || 5 }
-							onChange={ value => setPriority( value ) }
+							onChange={ value => {
+								setIsDirty();
+								setPriority( value );
+							} }
 							min={ 1 }
 							max={ 9 }
 							required
@@ -202,6 +206,7 @@ const mapDispatchToProps = dispatch => {
 
 	return {
 		updateMetaValue: ( key, value ) => editPost( { meta: { [ key ]: value } } ),
+		setIsDirty: () => editPost( { editorShouldAllowSave: true } ),
 		createNotice,
 	};
 };
