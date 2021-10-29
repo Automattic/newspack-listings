@@ -11,6 +11,7 @@ namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Newspack_Listings_Blocks as Blocks;
+use \Newspack_Listings\Newspack_Listings_Featured as Featured;
 use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 use \Newspack_Listings\Utils as Utils;
 
@@ -138,6 +139,11 @@ final class Newspack_Listings_Api {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => [ __CLASS__, 'get_children' ],
 					'permission_callback' => '__return_true',
+					'args'                => [
+						'post_id' => [
+							'sanitize_callback' => 'absint',
+						],
+					],
 				],
 			]
 		);
@@ -189,6 +195,41 @@ final class Newspack_Listings_Api {
 				],
 			]
 		);
+
+		// Get and set listing priority level.
+		if ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+			register_rest_route(
+				self::$namespace,
+				'priority',
+				[
+					[
+						'methods'             => \WP_REST_Server::READABLE,
+						'callback'            => [ __CLASS__, 'get_priority' ],
+						'permission_callback' => '__return_true',
+					],
+				]
+			);
+
+			register_rest_route(
+				self::$namespace,
+				'priority',
+				[
+					[
+						'methods'             => \WP_REST_Server::EDITABLE,
+						'callback'            => [ __CLASS__, 'set_priority' ],
+						'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
+						'args'                => [
+							'post_id'  => [
+								'sanitize_callback' => 'absint',
+							],
+							'priority' => [
+								'sanitize_callback' => 'absint',
+							],
+						],
+					],
+				]
+			);
+		}
 	}
 
 	/**
@@ -594,6 +635,33 @@ final class Newspack_Listings_Api {
 		$params   = $request->get_params();
 		$response = Taxonomies::set_child_posts( $params );
 		return new \WP_REST_Response( $response );
+	}
+
+	/**
+	 * Get featured priority by post ID.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function get_priority( $request ) {
+		$params   = $request->get_params();
+		$post_id  = $params['post_id'];
+		$priority = Featured::get_priority( $post_id );
+		return new \WP_REST_Response( $priority );
+	}
+
+	/**
+	 * Set featured priority by post ID.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response.
+	 */
+	public static function set_priority( $request ) {
+		$params   = $request->get_params();
+		$post_id  = $params['post_id'];
+		$priority = $params['priority'];
+		$result   = Featured::update_priority( $post_id, $priority );
+		return new \WP_REST_Response( $result );
 	}
 }
 

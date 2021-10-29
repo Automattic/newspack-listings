@@ -34,6 +34,7 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-
 
 // Enable experimental/in-progress self-serve listings functionality.
 if ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+	require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-featured.php';
 	require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-products.php';
 }
 
