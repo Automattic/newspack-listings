@@ -196,19 +196,27 @@ final class Newspack_Listings_Settings {
 					'section'     => $sections['product']['slug'],
 				],
 				[
+					'description' => __( 'The upgrade price to make a single-purchase listing "featured."', 'newspack-listings' ),
+					'key'         => Products::PRODUCT_META_KEYS['featured'],
+					'label'       => __( 'Upgrade: Featured listing price', 'newpack-listings' ),
+					'type'        => 'number',
+					'value'       => 75,
+					'section'     => $sections['product']['slug'],
+				],
+				[
+					'description' => __( 'The number of days a single listing purchase remains live after being published. Set this value to 0 to allow purchased listings to remain live indefinitely.', 'newspack-listings' ),
+					'key'         => 'newspack_listings_single_purchase_expiration',
+					'label'       => __( 'Single listing expiration period', 'newpack-listings' ),
+					'type'        => 'number',
+					'value'       => 30,
+					'section'     => $sections['product']['slug'],
+				],
+				[
 					'description' => __( 'The base monthly subscription price. This fee is charged monthly.', 'newspack-listings' ),
 					'key'         => Products::PRODUCT_META_KEYS['subscription'],
 					'label'       => __( 'Monthly subscription listing price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 50,
-					'section'     => $sections['product']['slug'],
-				],
-				[
-					'description' => __( 'The upgrade price to make the primary listing "featured." For subscription listings, this fee is charged monthly.', 'newspack-listings' ),
-					'key'         => Products::PRODUCT_META_KEYS['featured'],
-					'label'       => __( 'Upgrade: Featured listing price', 'newpack-listings' ),
-					'type'        => 'number',
-					'value'       => 75,
 					'section'     => $sections['product']['slug'],
 				],
 				[
@@ -342,7 +350,7 @@ final class Newspack_Listings_Settings {
 				wp_kses_post( $setting['description'] )
 			);
 		} elseif ( 'number' === $type ) {
-			if ( empty( $value ) && empty( $setting['allow_empty'] ) ) {
+			if ( '' === $value && empty( $setting['allow_empty'] ) ) {
 				$value = $setting['value'];
 			}
 			printf(

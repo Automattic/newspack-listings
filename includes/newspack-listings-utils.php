@@ -446,3 +446,18 @@ function all_posts_are_type( $post_type = 'post' ) {
 
 	return $matches_type;
 }
+
+/**
+ * Get the UNIX timestamp for the next occurrence of midnight in the site's local timezone.
+ */
+function get_next_midnight() {
+	$timezone = get_option( 'timezone_string', 'UTC' );
+
+	// Guard against 'Unknown or bad timezone' PHP error.
+	if ( empty( trim( $timezone ) ) ) {
+		$timezone = 'UTC';
+	}
+
+	$next_midnight = new \DateTime( 'tomorrow', new \DateTimeZone( $timezone ) );
+	return $next_midnight->getTimestamp();
+}

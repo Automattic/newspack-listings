@@ -29,12 +29,22 @@ final class Newspack_Listings_Products {
 	/**
 	 * String representing the "create listing" action, for security purposes.
 	 */
-	const CREATE_LISTING_NONCE = 'newspack_create_listing_nonce';
+	const CREATE_LISTING_NONCE = 'newspack_listings_create_nonce';
 
 	/**
 	 * String representing the "delete listing" action, for security purposes.
 	 */
-	const DELETE_LISTING_NONCE = 'newspack_delete_listing_nonce';
+	const DELETE_LISTING_NONCE = 'newspack_listings_delete_nonce';
+
+	/**
+	 * String representing the "renew listing" action, for security purposes.
+	 */
+	const RENEW_LISTING_NONCE = 'newspack_listings_renew_nonce';
+
+	/**
+	 * String representing the cron jobs to expire single-purchase listings.
+	 */
+	const EXPIRE_LISTING_CRON_HOOK = 'newspack_expire_listings';
 
 	/**
 	 * Number of free listings granted to premium subscribers.
@@ -55,9 +65,11 @@ final class Newspack_Listings_Products {
 	 * Meta keys for self-serve listing orders.
 	 */
 	const ORDER_META_KEYS = [
-		'listing_title'         => 'newspack_listings_order_title',
-		'listing_type'          => 'newspack_listings_order_type',
-		'listing_purchase_type' => 'newspack_listings_order_type',
+		'listing_title'          => 'newspack_listings_order_title',
+		'listing_type'           => 'newspack_listings_order_type',
+		'listing_purchase_type'  => 'newspack_listings_order_type',
+		'listing_original_order' => 'newspack_listings_original_order',
+		'listing_renewed'        => 'newspack_listings_renewed_id',
 	];
 
 	/**
@@ -74,6 +86,7 @@ final class Newspack_Listings_Products {
 	const POST_META_KEYS = [
 		'listing_order'        => 'newspack_listings_order_id',
 		'listing_subscription' => 'newspack_listings_subscription_id',
+		'listing_has_expired'  => 'newspack_listings_has_expired',
 	];
 
 	/**
@@ -114,7 +127,7 @@ final class Newspack_Listings_Products {
 	 * Constructor.
 	 */
 	public function __construct() {
-		// WP actions create the necessary products, and to handle submission of the Self-Serve Listings block form.
+		// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
 		add_action( 'init', [ __CLASS__, 'init' ] );
 		add_action( 'wp_loaded', [ __CLASS__, 'handle_purchase_form' ], 99 );
 		add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_premium_listing' ], 99 );
@@ -133,6 +146,8 @@ final class Newspack_Listings_Products {
 
 		// WooCommerce account actions (post-purchase).
 		add_action( 'woocommerce_my_account_my_orders_actions', [ __CLASS__, 'listing_append_edit_action' ], 10, 2 );
+		add_filter( 'woocommerce_my_account_my_orders_columns', [ __CLASS__, 'listing_order_status_column' ] );
+		add_action( 'woocommerce_my_account_my_orders_column_order-listing-status', [ __CLASS__, 'listing_order_status_column_content' ] );
 		add_action( 'woocommerce_order_details_after_order_table', [ __CLASS__, 'listing_append_details' ] );
 		add_action( 'woocommerce_subscription_status_active', [ __CLASS__, 'listing_subscription_associate_primary_post' ] );
 		add_action( 'woocommerce_subscription_status_updated', [ __CLASS__, 'listing_subscription_unpublish_associated_posts' ], 10, 3 );
@@ -145,6 +160,10 @@ final class Newspack_Listings_Products {
 		add_filter( 'allowed_block_types_all', [ __CLASS__, 'restrict_blocks_for_customers' ], 10, 2 );
 		add_action( 'admin_menu', [ __CLASS__, 'hide_admin_menu_for_customers' ], 1000 ); // Late execution to override other plugins like Jetpack.
 		add_filter( 'admin_bar_menu', [ __CLASS__, 'hide_admin_bar_for_customers' ], 1000 ); // Late execution to override other plugins like Jetpack.
+
+		// Handle expiration for single-purchase listings.
+		add_action( 'init', [ __CLASS__, 'cron_init' ] );
+		add_action( self::EXPIRE_LISTING_CRON_HOOK, [ __CLASS__, 'expire_single_purchase_listings' ] );
 	}
 
 	/**
@@ -465,6 +484,7 @@ final class Newspack_Listings_Products {
 		$featured_upgrade   = filter_input( INPUT_GET, 'listing-featured-upgrade', FILTER_SANITIZE_STRING );
 		$title_subscription = filter_input( INPUT_GET, 'listing-title-subscription', FILTER_SANITIZE_STRING );
 		$premium_upgrade    = filter_input( INPUT_GET, 'listing-premium-upgrade', FILTER_SANITIZE_STRING );
+		$listing_to_renew   = filter_input( INPUT_GET, 'listing-renew', FILTER_SANITIZE_NUMBER_INT );
 		$listing_title      = __( 'Untitled listing', 'newspack-listings' );
 
 		// If a title was provided, use it.
@@ -487,13 +507,17 @@ final class Newspack_Listings_Products {
 		self::clear_cart();
 		$products_to_purchase = [];
 		$checkout_query_args  = [
-			'listing_title'         => sanitize_text_field( $listing_title ),
-			'listing_purchase_type' => sanitize_text_field( $purchase_type ),
+			'listing-title'         => sanitize_text_field( $listing_title ),
+			'listing-purchase-type' => sanitize_text_field( $purchase_type ),
 		];
 
 		if ( $is_single ) {
 			$products_to_purchase[]              = $products[ self::PRODUCT_META_KEYS['single'] ];
-			$checkout_query_args['listing_type'] = sanitize_text_field( $single_type );
+			$checkout_query_args['listing-type'] = sanitize_text_field( $single_type );
+
+			if ( ! empty( $listing_to_renew ) ) {
+				$checkout_query_args['listing_renewed'] = $listing_to_renew;
+			}
 
 			if ( 'on' === $featured_upgrade ) {
 				$products_to_purchase[] = $products[ self::PRODUCT_META_KEYS['featured'] ];
@@ -525,12 +549,13 @@ final class Newspack_Listings_Products {
 	 */
 	public static function listing_details_summary() {
 		$params        = filter_input_array( INPUT_GET, FILTER_SANITIZE_STRING );
-		$listing_title = isset( $params['listing_title'] ) ? $params['listing_title'] : null;
+		$listing_title = isset( $params['listing-title'] ) ? $params['listing-title'] : null;
 		$listing_types = self::get_listing_types();
+		$is_renewal    = $params['listing_renewed'];
 		$listing_type  = array_reduce(
 			$listing_types,
 			function( $acc, $type ) use ( $params ) {
-				if ( isset( $params['listing_type'] ) && $type['slug'] === $params['listing_type'] ) {
+				if ( isset( $params['listing-type'] ) && $type['slug'] === $params['listing-type'] ) {
 					$acc = $type['name'];
 				}
 				return $acc;
@@ -540,7 +565,22 @@ final class Newspack_Listings_Products {
 
 		if ( $listing_title || $listing_type ) : ?>
 			<h4><?php echo esc_html__( 'Listing Details', 'newspack-listings' ); ?></h4>
-			<p><?php echo esc_html__( 'You can update listing details after purchase.', 'newspack-listings' ); ?>
+			<?php if ( $is_renewal ) : ?>
+				<?php $single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' ); ?>
+				<p>
+					<?php
+						echo esc_html(
+							sprintf(
+								// Translators: if renewing, explain what that does.
+								__( 'The following listing will be renewed for %d days:', 'newspack-listings' ),
+								$single_expiration_period
+							)
+						);
+					?>
+				</p>
+			<?php else : ?>
+				<p><?php echo esc_html__( 'You can update listing details after purchase.', 'newspack-listings' ); ?></p>
+			<?php endif; ?>
 			<ul>
 			<?php
 		endif;
@@ -589,6 +629,7 @@ final class Newspack_Listings_Products {
 	/**
 	 * Update WC order with listing details from hidden form fields.
 	 * Also mark the purchasing customer as a Listings customer, create a listing post for the order, and associate it with the customer.
+	 * This is the big function that ties together Newspack Listings with WooCommerce functionality.
 	 *
 	 * @param String $order_id WC order id.
 	 */
@@ -623,17 +664,58 @@ final class Newspack_Listings_Products {
 					$order->get_items()
 				);
 
-				$purchase_type   = isset( $params['listing_purchase_type'] ) ? $params['listing_purchase_type'] : 'single';
-				$is_subscription = 'subscription' === $purchase_type && in_array( $products[ self::PRODUCT_META_KEYS['subscription'] ], $purchased_items );
-				$is_single       = ! $is_subscription && in_array( $products[ self::PRODUCT_META_KEYS['single'] ], $purchased_items );
-				$listing_type    = isset( $params['listing_type'] ) ? $params['listing_type'] : null;
-				$single_upgrade  = $is_single && in_array( $products[ self::PRODUCT_META_KEYS['featured'] ], $purchased_items );
-				$premium_upgrade = $is_subscription && in_array( $products['newspack_listings_premium_subscription_add_on'], $purchased_items );
-				$post_title      = isset( $params['listing_title'] ) ? $params['listing_title'] : __( 'Untitled listing', 'newspack-listings' );
-				$post_type       = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
-				$post_content    = false;
-				$block_pattern   = false;
-				$subscriptions   = false;
+				$purchase_type    = isset( $params['listing-purchase-type'] ) ? $params['listing-purchase-type'] : 'single';
+				$is_subscription  = 'subscription' === $purchase_type && in_array( $products[ self::PRODUCT_META_KEYS['subscription'] ], $purchased_items );
+				$is_single        = ! $is_subscription && in_array( $products[ self::PRODUCT_META_KEYS['single'] ], $purchased_items );
+				$listing_type     = isset( $params['listing-type'] ) ? $params['listing-type'] : null;
+				$single_upgrade   = $is_single && in_array( $products[ self::PRODUCT_META_KEYS['featured'] ], $purchased_items );
+				$premium_upgrade  = $is_subscription && in_array( $products['newspack_listings_premium_subscription_add_on'], $purchased_items );
+				$post_title       = isset( $params['listing-title'] ) ? $params['listing-title'] : __( 'Untitled listing', 'newspack-listings' );
+				$post_type        = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
+				$listing_to_renew = isset( $params['listing_renewed'] ) ? $params['listing_renewed'] : null;
+				$post_content     = false;
+				$block_pattern    = false;
+				$subscriptions    = false;
+
+				// If we're rewnewing a previously purchased listing, republish it instead of creating a new listing.
+				if ( $listing_to_renew ) {
+					$listing = get_post( (int) $listing_to_renew );
+
+					if ( $listing ) {
+						$original_order_id = get_post_meta( $listing->ID, self::POST_META_KEYS['listing_order'], true );
+						$now               = current_time( 'mysql' ); // Current time in local timezone.
+
+						// When renewing a single-purchase post, set the post status to 'publish' and
+						// also update the publish date to "now" to reset the expiration clock.
+						wp_update_post(
+							[
+								'ID'            => $listing->ID,
+								'post_date'     => $now,
+								'post_date_gmt' => get_gmt_from_date( $time ),
+								'post_status'   => 'publish',
+							]
+						);
+
+						// Clear "expired" meta flag so that the listing is no longer displayed as expired in the My Account UI.
+						delete_post_meta( $listing->ID, self::POST_META_KEYS['listing_has_expired'] );
+
+						// Associate the original order with the new order so we can show details in the Order Details screen.
+						if ( $original_order_id ) {
+							update_post_meta( $order_id, sanitize_text_field( self::ORDER_META_KEYS['listing_original_order'] ), $original_order_id );
+						}
+					} else {
+						return new \WP_Error(
+							'newspack_listings_renew_self_serve_listing_error',
+							sprintf(
+								// Translators: error message when we're not able to renew the given post ID.
+								__( 'Error renewing listing with ID %d. Please contact the site administrators to renew.', 'newspack-listings' ),
+								$listing_to_renew
+							)
+						);
+					}
+
+					return;
+				}
 
 				if ( $is_subscription ) {
 					$post_type     = Core::NEWSPACK_LISTINGS_POST_TYPES['place'];
@@ -752,6 +834,15 @@ final class Newspack_Listings_Products {
 	}
 
 	/**
+	 * Get the base URL of the current page or the My Account page, stripped of query args.
+	 *
+	 * @return string Cleaned URL.
+	 */
+	public static function get_base_url() {
+		return isset( $_SERVER['REQUEST_URI'] ) ? site_url( strtok( sanitize_text_field( $_SERVER['REQUEST_URI'] ), '?' ) ) : get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
+	}
+
+	/**
 	 * Active premium subscriptions grant customers the ability to create up to 10 Marketplace or Event listings for free.
 	 * Show controls to create and manage these listings in the Subscription account page.
 	 *
@@ -781,7 +872,7 @@ final class Newspack_Listings_Products {
 		}
 
 		$remaining       = self::TOTAL_FREE_LISTINGS - count( $premium_listings );
-		$base_url        = isset( $_SERVER['REQUEST_URI'] ) ? site_url( strtok( sanitize_text_field( $_SERVER['REQUEST_URI'] ), '?' ) ) : get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
+		$base_url        = self::get_base_url();
 		$marketplace_url = wp_nonce_url(
 			add_query_arg(
 				[
@@ -863,7 +954,7 @@ final class Newspack_Listings_Products {
 						?>
 					<tr>
 						<td class="woocommerce-orders-table__cell"><a href="<?php echo esc_url( get_edit_post_link( $listing->ID ) ); ?>"><?php echo wp_kses_post( $listing->post_title ); ?></a></td>
-						<td class="woocommerce-orders-table__cell"><?php echo esc_html( 'publish' === $listing->post_status ? __( 'published', 'newspack-listings' ) : $listing->post_status ); ?></td>
+						<td class="woocommerce-orders-table__cell"><?php echo esc_html( self::get_listing_status( $listing ) ); ?></td>
 						<td class="woocommerce-orders-table__cell">
 							<?php if ( $is_premium ) : ?>
 								<a class="woocommerce-button button" href="<?php echo esc_url( get_edit_post_link( $listing->ID ) ); ?>"><?php echo esc_html__( 'Edit', 'newspack-listings' ); ?></a>
@@ -935,7 +1026,7 @@ final class Newspack_Listings_Products {
 			// Associate the new post with this subscription order.
 			update_post_meta( $post_id, self::POST_META_KEYS['listing_subscription'], $subscription_id );
 
-			// Redirect back to subscription page for further management.
+			// Redirect to post editor.
 			wp_safe_redirect( html_entity_decode( get_edit_post_link( $post_id ) ) );
 			exit;
 		} else {
@@ -984,7 +1075,13 @@ final class Newspack_Listings_Products {
 			return $message;
 		}
 
-		$order_id     = $order->get_id();
+		$order_id          = $order->get_id();
+		$original_order_id = get_post_meta( $order_id, self::ORDER_META_KEYS['listing_original_order'], true );
+
+		if ( $original_order_id ) {
+			$order_id = $original_order_id;
+		}
+
 		$listing      = self::get_listing_by_order_id( $order_id );
 		$account_page = get_option( 'woocommerce_myaccount_page_id', false );
 
@@ -1023,10 +1120,28 @@ final class Newspack_Listings_Products {
 		$listing  = self::get_listing_by_order_id( $order_id );
 
 		if ( $listing ) {
-			$actions['edit']    = [
-				'url'  => get_edit_post_link( $listing->ID ),
-				'name' => __( 'Edit Listing', 'newspack-listings' ),
-			];
+			if ( get_post_meta( $listing->ID, self::POST_META_KEYS['listing_has_expired'], true ) ) {
+				$listing_type = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'] === $listing->post_type ? 'marketplace' : 'event';
+				$renew_url    = add_query_arg(
+					[
+						'listing-purchase-type' => 'single',
+						'listing-renew'         => $listing->ID,
+						'listing-title-single'  => $listing->post_title,
+						'listing-single-type'   => $listing_type,
+					],
+					self::get_base_url()
+				);
+
+				$actions['renew'] = [
+					'url'  => $renew_url,
+					'name' => __( 'Renew Listing', 'newspack-listings' ),
+				];
+			} else {
+				$actions['edit'] = [
+					'url'  => get_edit_post_link( $listing->ID ),
+					'name' => __( 'Edit Listing', 'newspack-listings' ),
+				];
+			}
 			$actions['preview'] = [
 				'url'  => get_permalink( $listing->ID ),
 				// Translators: view or preview listing button link.
@@ -1034,7 +1149,112 @@ final class Newspack_Listings_Products {
 			];
 		}
 
+		// If this order was a renewal of an existing listing, link back to the original order.
+		$original_order_id = get_post_meta( $order_id, self::ORDER_META_KEYS['listing_original_order'], true );
+		if ( $original_order_id ) {
+			$original_order = \wc_get_order( $original_order_id );
+
+			if ( $original_order ) {
+				$actions['original'] = [
+					'url'  => $original_order->get_view_order_url(),
+					'name' => __( 'View Original Order', 'newspack-listings' ),
+				];
+			}
+		}
+
 		return $actions;
+	}
+
+	/**
+	 * Add a column to display the listing's current status in the My Orders table.
+	 *
+	 * @param array $columns Array of table columns.
+	 *
+	 * @return array Filtered array of table columns.
+	 */
+	public static function listing_order_status_column( $columns ) {
+		$new_columns = [];
+
+		foreach ( $columns as $key => $name ) {
+			$new_columns[ $key ] = $name;
+
+			// Add Listing Status column after Total column.
+			if ( 'order-total' === $key ) {
+				$new_columns['order-listing-status'] = __( 'Listing Status', 'newspack-listings' );
+			}
+		}
+
+		return $new_columns;
+	}
+
+	/**
+	 * Render content in the new Listing Status column in the My Orders table.
+	 * This column is rendered for every order if the Listings plugin is enabled,
+	 * but will only show content for orders that represent a listings purchase.
+	 *
+	 * @param WC_Order $order Order object for the current table row.
+	 */
+	public static function listing_order_status_column_content( $order ) {
+		$order_id          = $order->get_id();
+		$original_order_id = get_post_meta( $order_id, self::ORDER_META_KEYS['listing_original_order'], true );
+
+		// If this order was a renewal of an existing listing, use the original order ID to get the listing details.
+		if ( $original_order_id ) {
+			$order_id = $original_order_id;
+		}
+
+		$listing = self::get_listing_by_order_id( $order_id );
+		if ( $listing ) {
+			$status = self::get_listing_status( $listing );
+			if ( 'expired' === $status || false !== stripos( $status, 'expires soon' ) ) :
+				?>
+				<mark class="order-status">
+				<?php
+			endif;
+
+			echo esc_html( $status );
+
+			if ( 'expired' === $status ) :
+				?>
+				</mark>
+				<?php
+			endif;
+		} else {
+			// Translators: status to output when the current order is not a listing, a.k.a. "not available".
+			echo esc_html__( 'n/a', 'newspack-listings' );
+		}
+	}
+
+	/**
+	 * Get the string representation of the given listing's post status.
+	 *
+	 * @param WP_Post $listing WP Post object representing a listing.
+	 *
+	 * @return string Listing status: 'published', 'pending', 'future', 'draft', or 'expired'.
+	 */
+	public static function get_listing_status( $listing ) {
+		if ( ! $listing->ID ) {
+			return __( 'Listing not found: please contact the site administrators.', 'newspack-listings' );
+		}
+
+		// If the listing is flagged as expired.
+		if ( get_post_meta( $listing->ID, self::POST_META_KEYS['listing_has_expired'], true ) ) {
+			return __( 'expired', 'newspack-listings' );
+		}
+
+		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
+		$is_published             = 'publish' === $listing->post_status;
+		if ( $is_published && 0 < $single_expiration_period ) {
+			$publish_date = new \DateTime( $listing->post_date );
+			$expires_soon = ( $publish_date->getTimestamp() < strtotime( '-' . strval( $single_expiration_period - 30 ) . ' days' ) );
+
+			// Warn users when a listing will expire within 3 days.
+			if ( $expires_soon ) {
+				return __( 'published (expires soon)', 'newspack-listings' );
+			}
+		}
+
+		return $is_published ? __( 'published', 'newspack-listings' ) : $listing->post_status;
 	}
 
 	/**
@@ -1047,33 +1267,108 @@ final class Newspack_Listings_Products {
 			return;
 		}
 
-		$order_id = $order->get_id();
-		$listing  = self::get_listing_by_order_id( $order_id );
+		$order_id          = $order->get_id();
+		$original_order    = false;
+		$original_order_id = get_post_meta( $order_id, self::ORDER_META_KEYS['listing_original_order'], true );
+
+		// If this order was a renewal of an existing listing, use the original order ID to get the listing details.
+		if ( $original_order_id ) {
+			$order_id       = $original_order_id;
+			$original_order = \wc_get_order( $original_order_id );
+		}
+
+		// Get the listing associated with this order ID.
+		$listing = self::get_listing_by_order_id( $order_id );
 
 		if ( $listing ) :
+			$status       = self::get_listing_status( $listing );
+			$is_expired   = 'expired' === $status;
+			$is_published = 'publish' === $listing->post_status;
+			$listing_type = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'] === $listing->post_type ? 'marketplace' : 'event';
+			$renew_url    = add_query_arg(
+				[
+					'listing-purchase-type' => 'single',
+					'listing-renew'         => $listing->ID,
+					'listing-title-single'  => $listing->post_title,
+					'listing-single-type'   => $listing_type,
+				],
+				self::get_base_url()
+			);
+
+			$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
+
 			?>
 			<h3><?php echo esc_html__( 'Listing Details', 'newspack-listings' ); ?></h3>
+
+			<?php if ( $original_order ) : ?>
+				<p>
+					<?php echo esc_html__( 'This order was a renewal of an expired listing.', 'newspack-listings' ); ?>
+					<a href="<?php echo esc_url( $original_order->get_view_order_url() ); ?>"><?php echo esc_html__( 'Click here to view the original order details', 'newspack-listings' ); ?></a>.
+				</p>
+			<?php endif; ?>
 			<ul>
 				<li><strong><?php echo esc_html__( 'Listing Title:', 'newspack-listings' ); ?></strong> <a href="<?php echo esc_url( get_permalink( $listing->ID ) ); ?>"><?php echo esc_html( $listing->post_title ); ?></a></li>
-				<li><strong><?php echo esc_html__( 'Listing Status:', 'newspack-listings' ); ?></strong> <?php echo esc_html( 'publish' === $listing->post_status ? __( 'published', 'newspack-listings' ) : $listing->post_status ); ?></strong></li>
+				<li><strong><?php echo esc_html__( 'Listing Status:', 'newspack-listings' ); ?></strong> <?php echo esc_html( $status ); ?></strong></li>
 			</ul>
 
-			<p>
-				<a href="<?php echo esc_url( get_edit_post_link( $listing->ID ) ); ?>">
-					<?php echo esc_html__( 'Edit this listing', 'newspack-listings' ); ?>
-				</a>
+			<?php if ( $is_expired ) : ?>
+				<p><?php echo esc_html__( 'Your listing has expired and is no longer published.', 'newspack-listings' ); ?></p>
+			<?php else : ?>
+				<p>
+					<a href="<?php echo esc_url( get_edit_post_link( $listing->ID ) ); ?>">
+						<?php echo esc_html__( 'Edit this listing', 'newspack-listings' ); ?>
+					</a>
 
+					<?php
+					echo esc_html(
+						sprintf(
+							// Translators: listing details edit message and link.
+							__( 'to update its content or %s. ', 'newspack-listings' ),
+							'publish' === $listing->post_status || 'pending' === $listing->post_status ? __( 'unpublish it', 'newspack-listings' ) : __( 'submit it for review', 'newspack-listings' )
+						)
+					);
+					?>
+				</p>
 				<?php
-				echo esc_html(
-					sprintf(
-						// Translators: listing details edit message and link.
-						__( 'to update its content or %s.', 'newspack-listings' ),
-						'publish' === $listing->post_status || 'pending' === $listing->post_status ? __( 'unpublish it', 'newspack-listings' ) : __( 'submit it for review', 'newspack-listings' )
-					)
-				);
+			endif;
+
+			if ( $is_published || $is_expired ) :
+				$expires_in = '';
+
+				if ( $is_published && ! $is_expired ) {
+					$expires_date = new \DateTime( $listing->post_date );
+					$expires_date->modify( '+' . (string) $single_expiration_period . ' days' );
+
+					$date_diff  = $expires_date->diff( new \DateTime() );
+					$expires_in = sprintf(
+						// Translators: message describing how many days are left before this listing expires.
+						__( 'This listing expires in %d days. ' ),
+						$date_diff->days
+					);
+				}
 				?>
-			</p>
-			<?php
+				<p>
+					<?php
+						echo esc_html(
+							sprintf(
+								// Translators: message explaining how many days single-purchase listings are active, and how to renew.
+								__( 'Listings are active for %1$d days after publication. %2$sTo renew for another %3$d days:', 'newspack-listings' ),
+								$single_expiration_period,
+								$expires_in,
+								$single_expiration_period
+							)
+						);
+					?>
+				</p>
+				<p><a href="<?php echo esc_url( $renew_url ); ?>" class="button"><?php esc_html_e( 'Renew', 'woocommerce' ); ?></a></p>
+				<?php
+			endif;
+
+			if ( $order->has_status( apply_filters( 'woocommerce_valid_order_statuses_for_order_again', [ 'completed' ] ) ) ) :
+				?>
+				<p><?php echo esc_html__( 'To quickly purchase a new blank Marketplace listing:', 'newspack-listings' ); ?></p>
+				<?php
+			endif;
 		endif;
 	}
 
@@ -1378,6 +1673,117 @@ final class Newspack_Listings_Products {
 		}
 
 		return $wp_admin_bar;
+	}
+
+	/**
+	 * Set up the cron job. Will run once daily and automatically unpublish single-purchase listings
+	 * whose publish dates are older than the expiration period defined in plugin settings.
+	 */
+	public static function cron_init() {
+		register_deactivation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'cron_deactivate' ] );
+
+		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
+		if ( 0 < $single_expiration_period ) {
+			if ( ! wp_next_scheduled( self::EXPIRE_LISTING_CRON_HOOK ) ) {
+				wp_schedule_event( Utils\get_next_midnight(), 'daily', self::EXPIRE_LISTING_CRON_HOOK );
+			}
+		} else {
+			if ( wp_next_scheduled( self::EXPIRE_LISTING_CRON_HOOK ) ) {
+				self::cron_deactivate(); // If the option has been updated to 0, no need to run the cron job.
+			}
+		}
+	}
+
+	/**
+	 * Clear the cron job when this plugin is deactivated.
+	 */
+	public static function cron_deactivate() {
+		wp_clear_scheduled_hook( self::EXPIRE_LISTING_CRON_HOOK );
+	}
+
+	/**
+	 * Callback function to expire single-purchase listings whose publish date is older than the set expiration period.
+	 */
+	public static function expire_single_purchase_listings() {
+		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
+
+		if ( 0 < $single_expiration_period ) {
+			// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
+			$current_page = 1;
+			$args         = [
+				'post_status'    => 'publish',
+				'post_type'      => [
+					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+				],
+				'posts_per_page' => 100,
+				'date_query'     => [
+					'before' => (string) $single_expiration_period . ' days ago',
+				],
+				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'relation' => 'AND',
+					[
+						'key'     => self::POST_META_KEYS['listing_order'],
+						'compare' => 'EXISTS',
+					],
+					[
+						'key'     => self::POST_META_KEYS['listing_subscription'],
+						'compare' => 'NOT EXISTS',
+					],
+				],
+			];
+
+			// Get single-purchase listings whose publish date is older than $single_expiration_period days.
+			$results         = new \WP_Query( $args );
+			$number_of_pages = $results->max_num_pages;
+
+			foreach ( $results->posts as $listing_to_expire ) {
+				self::expire_single_purchase_listing( $listing_to_expire->ID );
+			}
+
+			// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
+			if ( 1 < $number_of_pages ) {
+				while ( $current_page < $number_of_pages ) {
+					$current_page  ++;
+					$args['paged'] = $current_page;
+					$results       = new \WP_Query( $args );
+
+					foreach ( $results->posts as $listing_to_expire ) {
+						self::expire_single_purchase_listing( $listing_to_expire->ID );
+					}
+				}
+			}
+		} else {
+			self::cron_deactivate(); // If the option has been updated to 0, no need to run the cron job.
+		}
+	}
+
+	/**
+	 * Given a post ID for a published post, unpublish it and flag it as expired.
+	 *
+	 * @param int $post_id ID for the post to expire.
+	 */
+	public static function expire_single_purchase_listing( $post_id ) {
+		if ( $post_id ) {
+			$updated = wp_update_post(
+				[
+					'ID'          => $post_id,
+					'post_status' => 'draft',
+				]
+			);
+
+			if ( $updated ) {
+				update_post_meta( $post_id, self::POST_META_KEYS['listing_has_expired'], 1 );
+			} else {
+				error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					sprintf(
+						// Translators: error message logged when we're unable to expire a listing via cron job.
+						__( 'Newspack Listings: Error expiring listing with ID %d.', 'newspack-listings' ),
+						$post_id
+					)
+				);
+			}
+		}
 	}
 }
 

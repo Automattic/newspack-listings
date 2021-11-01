@@ -8,6 +8,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,7 +68,7 @@ final class Newspack_Listings_Featured {
 		add_action( 'plugins_loaded', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
-		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
+		add_action( self::CRON_HOOK, [ __CLASS__, 'check_expired_featured_items' ] );
 		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
@@ -367,7 +368,7 @@ final class Newspack_Listings_Featured {
 		register_deactivation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'cron_deactivate' ] );
 
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
-			wp_schedule_event( self::get_start_time(), 'daily', self::CRON_HOOK );
+			wp_schedule_event( Utils\get_next_midnight(), 'daily', self::CRON_HOOK );
 		}
 	}
 
@@ -468,7 +469,6 @@ final class Newspack_Listings_Featured {
 			'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
 			'post_status'    => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
 			'posts_per_page' => 100,
-			'paged'          => $current_page,
 			'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'relation' => 'AND',
 				[
@@ -507,21 +507,6 @@ final class Newspack_Listings_Featured {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Get the UNIX timestamp for the next occurrence of midnight in the site's local timezone.
-	 */
-	public static function get_start_time() {
-		$timezone = get_option( 'timezone_string', 'UTC' );
-
-		// Guard against 'Unknown or bad timezone' PHP error.
-		if ( empty( trim( $timezone ) ) ) {
-			$timezone = 'UTC';
-		}
-
-		$next_midnight = new \DateTime( 'tomorrow', new \DateTimeZone( $timezone ) );
-		return $next_midnight->getTimestamp();
 	}
 }
 

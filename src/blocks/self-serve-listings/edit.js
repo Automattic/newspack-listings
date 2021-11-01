@@ -20,7 +20,10 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import './editor.scss';
 
-const singleListingTypes = window?.newspack_listings_data?.self_serve_listing_types || [];
+const {
+	self_serve_listing_types: singleListingTypes = [],
+	self_serve_listing_expiration: singleExpirationPeriod = 30,
+} = window.newspack_listings_data || {};
 
 export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes } ) => {
 	const [ selectedType, setSelectedType ] = useState( 'single' );
@@ -149,6 +152,17 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									value={ singleDescription }
 									tagName="p"
 								/>
+								{ singleExpirationPeriod && (
+									<p className="newspack-listings__help">
+										{ sprintf(
+											__(
+												'Single-purchase listings expire %d days after the date of publication.',
+												'newspack-listings'
+											),
+											singleExpirationPeriod
+										) }
+									</p>
+								) }
 								<hr />
 								<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
 								<label htmlFor={ `listing-title-single-${ clientId }` }>
@@ -215,6 +229,12 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 										value={ subscriptionDescription }
 										tagName="p"
 									/>
+									<p className="newspack-listings__help">
+										{ __(
+											'Subscription listings remain live as long as the subscription is active.',
+											'newspack-listings'
+										) }
+									</p>
 									<hr />
 									<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
 									<label htmlFor={ `listing-title-subscription${ clientId }` }>

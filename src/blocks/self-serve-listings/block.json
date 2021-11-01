@@ -45,7 +45,7 @@
 		},
 		"subscriptionDescription": {
 			"type": "string",
-			"default": "Purchase a monthly subscription for a listing to represent your business or organization. Subscription listings are live for the duration of the subscription period."
+			"default": "Purchase a monthly subscription for a listing to represent your business or organization."
 		}
 	}
 }

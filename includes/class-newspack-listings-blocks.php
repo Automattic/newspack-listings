@@ -11,6 +11,7 @@ namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Newspack_Listings_Products as Products;
+use \Newspack_Listings\Newspack_Listings_Settings as Settings;
 use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
@@ -107,7 +108,8 @@ final class Newspack_Listings_Blocks {
 		];
 
 		if ( $localized_data['self_serve_enabled'] && class_exists( 'Newspack_Listings\Newspack_Listings_Products' ) ) {
-			$localized_data['self_serve_listing_types'] = Products::get_listing_types();
+			$localized_data['self_serve_listing_types']      = Products::get_listing_types();
+			$localized_data['self_serve_listing_expiration'] = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
 		}
 
 		if ( Products::is_listing_customer() ) {
