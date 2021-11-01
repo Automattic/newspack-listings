@@ -1,3 +1,17 @@
+# [2.7.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.6.0...v2.7.0-alpha.1) (2021-11-01)
+
+
+### Bug Fixes
+
+* ci build command typo ([#141](https://github.com/Automattic/newspack-listings/issues/141)) ([371ce2d](https://github.com/Automattic/newspack-listings/commit/371ce2d13ec7f9d7a25360fb92a062ad86e4ae21))
+* prevent shadow taxonomies from being editable via quick edit ([#138](https://github.com/Automattic/newspack-listings/issues/138)) ([4e588ac](https://github.com/Automattic/newspack-listings/commit/4e588acd4aa63a10075d3d30d2fef66358e48671))
+* update ci images ([#139](https://github.com/Automattic/newspack-listings/issues/139)) ([c07ac9b](https://github.com/Automattic/newspack-listings/commit/c07ac9b7fd21ecd5c6c9af2a6c8a4ff45e4211c0))
+
+
+### Features
+
+* **ugc:** featured listings ([#124](https://github.com/Automattic/newspack-listings/issues/124)) ([e1ac8d2](https://github.com/Automattic/newspack-listings/commit/e1ac8d2337602ec3646f4e7c3294d8e8e22fe0a0))
+
 # [2.6.0](https://github.com/Automattic/newspack-listings/compare/v2.5.0...v2.6.0) (2021-10-19)
 
 
