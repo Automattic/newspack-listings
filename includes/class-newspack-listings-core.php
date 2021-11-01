@@ -43,6 +43,11 @@ final class Newspack_Listings_Core {
 	];
 
 	/**
+	 * Cron hook for the daily check to expire listings with an expiration date.
+	 */
+	const NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK = 'newspack_expire_listings_with_date';
+
+	/**
 	 * The single instance of the class.
 	 *
 	 * @var Newspack_Listings_Core
@@ -79,6 +84,10 @@ final class Newspack_Listings_Core {
 		add_filter( 'wpseo_primary_term_taxonomies', [ __CLASS__, 'disable_yoast_primary_categories' ], 10, 2 );
 		add_action( 'pre_get_posts', [ __CLASS__, 'enable_listing_category_archives' ], 11 );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
+
+		// Expire listings with expiration dates.
+		add_action( 'init', [ __CLASS__, 'cron_init' ] );
+		add_action( self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK, [ __CLASS__, 'expire_listings_with_expiration_date' ] );
 	}
 
 	/**
@@ -285,6 +294,26 @@ final class Newspack_Listings_Core {
 				'settings'   => [
 					'object_subtype'    => $post_type,
 					'default'           => get_theme_mod( 'newspack_listing_default_template', 'single-wide.php' ),
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				],
+			],
+			'newspack_listings_expiration_date'   => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Template', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
@@ -862,6 +891,118 @@ final class Newspack_Listings_Core {
 			$post_types,
 			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
 		);
+	}
+
+	/**
+	 * Set up the cron job. Will run once daily and automatically unpublish listings
+	 * who have an expiration date set, and which has passed.
+	 */
+	public static function cron_init() {
+		register_deactivation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'cron_deactivate' ] );
+
+		if ( ! wp_next_scheduled( self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK ) ) {
+			wp_schedule_event( Utils\get_next_midnight(), 'daily', self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK );
+		}
+	}
+
+	/**
+	 * Clear the cron job when this plugin is deactivated.
+	 */
+	public static function cron_deactivate() {
+		wp_clear_scheduled_hook( self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK );
+	}
+
+	/**
+	 * Given a post ID, check its expiration date and unpublish if the date has passed.
+	 *
+	 * @param int $post_id Post ID to check.
+	 */
+	public static function expire_single_listing( $post_id ) {
+		if ( null === $post_id ) {
+			return false;
+		}
+
+		$expire_listing  = false;
+		$expiration_date = get_post_meta( $post_id, 'newspack_listings_expiration_date', true );
+
+		if ( $expiration_date && Utils\is_valid_date_string( $expiration_date ) ) {
+			$timezone = get_option( 'timezone_string', 'UTC' );
+
+			// Guard against 'Unknown or bad timezone' PHP error.
+			if ( empty( trim( $timezone ) ) ) {
+				$timezone = 'UTC';
+			}
+
+			// Listing should be expired if its expiration date has passed.
+			$parsed_date    = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
+			$expire_listing = 0 > $parsed_date->getTimestamp() - time();
+
+			if ( $expire_listing ) {
+				$updated = wp_update_post(
+					[
+						'ID'          => $post_id,
+						'post_status' => 'draft',
+					]
+				);
+
+				if ( ! $updated ) {
+					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+						sprintf(
+							// Translators: error message logged when we're unable to expire a listing via cron job.
+							__( 'Newspack Listings: Error expiring listing with ID %d.', 'newspack-listings' ),
+							$post_id
+						)
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Callback to run on daily cron job.
+	 * Query for published posts with expiration dates and expire those whose dates have passed.
+	 */
+	public static function expire_listings_with_expiration_date() {
+		// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
+		$current_page = 1;
+		$args         = [
+			'post_status'    => 'publish',
+			'post_type'      => array_values( self::NEWSPACK_LISTINGS_POST_TYPES ),
+			'posts_per_page' => 100,
+			'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'relation' => 'AND',
+				[
+					'key'     => 'newspack_listings_expiration_date',
+					'compare' => 'EXISTS',
+				],
+				[
+					'key'     => 'newspack_listings_expiration_date',
+					'compare' => '!=',
+					'value'   => '',
+				],
+			],
+		];
+
+		// Get published listing posts with an expiration date meta value.
+		$results         = new \WP_Query( $args );
+		$number_of_pages = $results->max_num_pages;
+
+		foreach ( $results->posts as $listing ) {
+			self::expire_single_listing( $listing->ID );
+		}
+
+		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
+		if ( 1 < $number_of_pages ) {
+			while ( $current_page < $number_of_pages ) {
+				$current_page  ++;
+				$args['paged'] = $current_page;
+				$results       = new \WP_Query( $args );
+
+				foreach ( $results->posts as $listing ) {
+					self::expire_single_listing( $listing->ID );
+				}
+			}
+		}
 	}
 }
 

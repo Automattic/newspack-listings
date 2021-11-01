@@ -448,6 +448,18 @@ function all_posts_are_type( $post_type = 'post' ) {
 }
 
 /**
+ * Checks a string to see if it's in valid YYYY-MM-DDT00:00:00 format.
+ * This is the format we expect to see expiration dates saved as post meta.
+ *
+ * @param string $str String to validate.
+ *
+ * @return boolean True if a valid date in the expected format, false otherwise.
+ */
+function is_valid_date_string( $str ) {
+	return false !== \DateTime::createFromFormat( 'Y-m-d\TH:i:s', $str );
+}
+
+/**
  * Get the UNIX timestamp for the next occurrence of midnight in the site's local timezone.
  */
 function get_next_midnight() {

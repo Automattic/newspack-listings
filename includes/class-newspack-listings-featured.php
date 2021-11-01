@@ -380,18 +380,6 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
-	 * Checks a string to see if it's in valid YYYY-MM-DDT00:00:00 format.
-	 * This is the format we expect to see expiration dates saved as post meta.
-	 *
-	 * @param string $str String to validate.
-	 *
-	 * @return boolean True if a valid date in the expected format, false otherwise.
-	 */
-	public static function is_valid_date_string( $str ) {
-		return false !== \DateTime::createFromFormat( 'Y-m-d\TH:i:s', $str );
-	}
-
-	/**
 	 * Set featured status, priority, and expiration date for the given post.
 	 *
 	 * @param int    $post_id Post ID to update.
@@ -412,7 +400,7 @@ final class Newspack_Listings_Featured {
 		self::update_priority( $post_id, $priority );
 
 		// Set expiration, if given and a valid time string.
-		if ( $expires && self::is_valid_date_string( $expires ) ) {
+		if ( $expires && Utils\is_valid_date_string( $expires ) ) {
 			update_post_meta( $post_id, self::META_KEYS['expires'], $expires );
 		}
 	}
