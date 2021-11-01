@@ -14,7 +14,7 @@ const { attributes, category, name } = metadata;
 
 export const registerPriceBlock = () => {
 	registerBlockType( name, {
-		title: __( 'Price', 'newspack-listing' ),
+		title: __( 'Price', 'newspack-listings' ),
 		icon: {
 			src: <Icon icon={ currencyDollar } />,
 			foreground: '#36f',

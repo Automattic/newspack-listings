@@ -67,6 +67,16 @@ final class Newspack_Listings_Taxonomies {
 	 * @return object Config options for all shadow taxonomies.
 	 */
 	public static function get_shadow_taxonomy_config() {
+		$default_config = [
+			'hierarchical'       => true,
+			'public'             => true,
+			'show_in_menu'       => false, // Set to 'true' to show in WP admin for debugging purposes.
+			'show_in_quick_edit' => false,
+			'show_in_rest'       => true,
+			'show_tagcloud'      => false,
+			'show_ui'            => true,
+		];
+
 		return [
 			'event'       => [
 				'post_types' => [
@@ -75,16 +85,13 @@ final class Newspack_Listings_Taxonomies {
 					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 				],
-				'config'     => [
-					'hierarchical'  => true,
-					'public'        => true,
-					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['event'] ],
-					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
-					'show_in_rest'  => true,
-					'show_tagcloud' => false,
-					'show_ui'       => true,
-					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['event'] )->labels,
-				],
+				'config'     => wp_parse_args(
+					[
+						'rewrite' => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['event'] ],
+						'labels'  => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['event'] )->labels,
+					],
+					$default_config
+				),
 			],
 			'generic'     => [
 				'post_types' => [
@@ -92,16 +99,13 @@ final class Newspack_Listings_Taxonomies {
 					'page',
 					Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 				],
-				'config'     => [
-					'hierarchical'  => true,
-					'public'        => true,
-					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['event'] ],
-					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
-					'show_in_rest'  => true,
-					'show_tagcloud' => false,
-					'show_ui'       => true,
-					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['generic'] )->labels,
-				],
+				'config'     => wp_parse_args(
+					[
+						'rewrite' => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['generic'] ],
+						'labels'  => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['generic'] )->labels,
+					],
+					$default_config
+				),
 			],
 			'marketplace' => [
 				'post_types' => [
@@ -110,16 +114,13 @@ final class Newspack_Listings_Taxonomies {
 					Core::NEWSPACK_LISTINGS_POST_TYPES['generic'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 				],
-				'config'     => [
-					'hierarchical'  => true,
-					'public'        => true,
-					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['marketplace'] ],
-					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
-					'show_in_rest'  => true,
-					'show_tagcloud' => false,
-					'show_ui'       => true,
-					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'] )->labels,
-				],
+				'config'     => wp_parse_args(
+					[
+						'rewrite' => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['marketplace'] ],
+						'labels'  => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'] )->labels,
+					],
+					$default_config
+				),
 			],
 			'place'       => [
 				'post_types' => [
@@ -130,16 +131,13 @@ final class Newspack_Listings_Taxonomies {
 					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
-				'config'     => [
-					'hierarchical'  => true,
-					'public'        => true,
-					'rewrite'       => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
-					'show_in_menu'  => false, // Set to 'true' to show in WP admin for debugging purposes.
-					'show_in_rest'  => true,
-					'show_tagcloud' => false,
-					'show_ui'       => true,
-					'labels'        => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['place'] )->labels,
-				],
+				'config'     => wp_parse_args(
+					[
+						'rewrite' => [ 'slug' => self::NEWSPACK_LISTINGS_TAXONOMIES['place'] ],
+						'labels'  => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES['place'] )->labels,
+					],
+					$default_config
+				),
 			],
 		];
 	}
