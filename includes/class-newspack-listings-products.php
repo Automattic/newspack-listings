@@ -572,7 +572,7 @@ final class Newspack_Listings_Products {
 						echo esc_html(
 							sprintf(
 								// Translators: if renewing, explain what that does.
-								__( 'The following listing will be renewed for %d days:', 'newspack-listings' ),
+								__( 'The following listing will be renewed for %d days from today:', 'newspack-listings' ),
 								$single_expiration_period
 							)
 						);
@@ -1703,6 +1703,9 @@ final class Newspack_Listings_Products {
 
 	/**
 	 * Callback function to expire single-purchase listings whose publish date is older than the set expiration period.
+	 * Single-purchase listings can be distinguished because they should have an order ID meta value, but no subscription ID.
+	 * Subscription primary listings have both an order ID and a subscription ID.
+	 * Premium subscription "free" listings have a subscription ID, but no order ID.
 	 */
 	public static function expire_single_purchase_listings() {
 		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
