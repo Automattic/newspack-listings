@@ -91,7 +91,10 @@ class FeaturedTest extends WP_UnitTestCase {
 			]
 		);
 
-		self::$terms[] = $term_id;
+		self::$terms[] = [
+			'taxonomy' => $taxonomy,
+			'term_id'  => $term_id,
+		];
 
 		return $term_id;
 	}
