@@ -105,7 +105,7 @@ final class Newspack_Listings_Blocks {
 				'time_format'        => get_option( 'time_format' ),
 
 				// Self-serve listings features are gated behind an environment variable.
-				'self_serve_enabled' => class_exists( 'Newspack_Listings\Newspack_Listings_Products' ),
+				'self_serve_enabled' => defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED,
 			]
 		);
 
