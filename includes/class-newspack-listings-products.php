@@ -1246,7 +1246,7 @@ final class Newspack_Listings_Products {
 		$is_published             = 'publish' === $listing->post_status;
 		if ( $is_published && 0 < $single_expiration_period ) {
 			$publish_date = new \DateTime( $listing->post_date );
-			$expires_soon = ( $publish_date->getTimestamp() < strtotime( '-' . strval( $single_expiration_period - 30 ) . ' days' ) );
+			$expires_soon = ( $publish_date->getTimestamp() < strtotime( '-' . strval( $single_expiration_period - 3 ) . ' days' ) );
 
 			// Warn users when a listing will expire within 3 days.
 			if ( $expires_soon ) {
@@ -1712,16 +1712,15 @@ final class Newspack_Listings_Products {
 
 		if ( 0 < $single_expiration_period ) {
 			$args = [
-				'post_status'    => 'publish',
-				'post_type'      => [
+				'post_status' => 'publish',
+				'post_type'   => [
 					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 				],
-				'posts_per_page' => 100,
-				'date_query'     => [
+				'date_query'  => [
 					'before' => (string) $single_expiration_period . ' days ago',
 				],
-				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					'relation' => 'AND',
 					[
 						'key'     => self::POST_META_KEYS['listing_order'],

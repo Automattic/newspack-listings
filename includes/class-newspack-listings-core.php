@@ -964,10 +964,8 @@ final class Newspack_Listings_Core {
 	 */
 	public static function expire_listings_with_expiration_date() {
 		$args = [
-			'post_status'    => 'publish',
-			'post_type'      => array_values( self::NEWSPACK_LISTINGS_POST_TYPES ),
-			'posts_per_page' => 100,
-			'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'post_status' => 'publish',
+			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'relation' => 'AND',
 				[
 					'key'     => 'newspack_listings_expiration_date',
