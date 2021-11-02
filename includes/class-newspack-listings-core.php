@@ -963,9 +963,7 @@ final class Newspack_Listings_Core {
 	 * Query for published posts with expiration dates and expire those whose dates have passed.
 	 */
 	public static function expire_listings_with_expiration_date() {
-		// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
-		$current_page = 1;
-		$args         = [
+		$args = [
 			'post_status'    => 'publish',
 			'post_type'      => array_values( self::NEWSPACK_LISTINGS_POST_TYPES ),
 			'posts_per_page' => 100,
@@ -983,26 +981,7 @@ final class Newspack_Listings_Core {
 			],
 		];
 
-		// Get published listing posts with an expiration date meta value.
-		$results         = new \WP_Query( $args );
-		$number_of_pages = $results->max_num_pages;
-
-		foreach ( $results->posts as $listing ) {
-			self::expire_single_listing( $listing->ID );
-		}
-
-		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
-		if ( 1 < $number_of_pages ) {
-			while ( $current_page < $number_of_pages ) {
-				$current_page  ++;
-				$args['paged'] = $current_page;
-				$results       = new \WP_Query( $args );
-
-				foreach ( $results->posts as $listing ) {
-					self::expire_single_listing( $listing->ID );
-				}
-			}
-		}
+		Utils\execute_callback_with_paged_query( $args, [ __CLASS__, 'expire_single_listing' ] );
 	}
 }
 

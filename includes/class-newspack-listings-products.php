@@ -1711,9 +1711,7 @@ final class Newspack_Listings_Products {
 		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
 
 		if ( 0 < $single_expiration_period ) {
-			// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
-			$current_page = 1;
-			$args         = [
+			$args = [
 				'post_status'    => 'publish',
 				'post_type'      => [
 					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
@@ -1736,26 +1734,7 @@ final class Newspack_Listings_Products {
 				],
 			];
 
-			// Get single-purchase listings whose publish date is older than $single_expiration_period days.
-			$results         = new \WP_Query( $args );
-			$number_of_pages = $results->max_num_pages;
-
-			foreach ( $results->posts as $listing_to_expire ) {
-				self::expire_single_purchase_listing( $listing_to_expire->ID );
-			}
-
-			// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
-			if ( 1 < $number_of_pages ) {
-				while ( $current_page < $number_of_pages ) {
-					$current_page  ++;
-					$args['paged'] = $current_page;
-					$results       = new \WP_Query( $args );
-
-					foreach ( $results->posts as $listing_to_expire ) {
-						self::expire_single_purchase_listing( $listing_to_expire->ID );
-					}
-				}
-			}
+			Utils\execute_callback_with_paged_query( $args, [ __CLASS__, 'expire_single_purchase_listing' ] );
 		} else {
 			self::cron_deactivate(); // If the option has been updated to 0, no need to run the cron job.
 		}

@@ -7,6 +7,7 @@
 
 namespace Newspack_Listings\Utils;
 
+use \Newspack_Listings\Newspack_Listings_Core as Core;
 use \Newspack_Listings\Newspack_Listings_Featured as Featured;
 
 /**
@@ -472,4 +473,79 @@ function get_next_midnight() {
 
 	$next_midnight = new \DateTime( 'tomorrow', new \DateTimeZone( $timezone ) );
 	return $next_midnight->getTimestamp();
+}
+
+/**
+ * Given a callable and an optional array of args, execute the callable with the args.
+ *
+ * @param callable   $callback Callable function or method to execute.
+ * @param array|null $args Array of args to pass to $callback (optional).
+ */
+function execute_callback( $callback = null, $args = null ) {
+	if ( $callback && is_callable( $callback ) ) {
+		if ( $args ) {
+			call_user_func_array( $callback, $args );
+		} else {
+			call_user_func( $callback );
+		}
+	}
+}
+
+/**
+ * Execute a callback on the results of a WP query with the given query args.
+ * Use WP_Query's paging functionality to ensure that all results are processed,
+ * regardless of the total number of results.
+ *
+ * @param array    $query_args Query args for the WP Query.
+ * @param callable $callback Callback function or method to be called on each query result.
+ *
+ * @return boolean True if the query had results and the callback was run, false if the query has no results,
+ *                 or WP_Error if $callback is not a valid callable function or method.
+ */
+function execute_callback_with_paged_query( $query_args = [], $callback ) {
+	if ( ! is_callable( $callback ) ) {
+		return new \WP_Error(
+			'newspack_listings_query_error',
+			__( '$callback must be callable.', 'newspack-listings' )
+		);
+	}
+
+	// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
+	$current_page = 1;
+	$default_args = [
+		'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
+		'post_status'    => 'publish',
+		'posts_per_page' => 100,
+	];
+
+	$query_args = wp_parse_args( $query_args, $default_args );
+
+	// Get query results.
+	$results         = new \WP_Query( $query_args );
+	$number_of_pages = $results->max_num_pages;
+
+	// Bail early if no results.
+	if ( 0 === count( $results ) ) {
+		return false;
+	}
+
+	// Execute callback on the first page of results.
+	foreach ( $results->posts as $post ) {
+		execute_callback( $callback, [ $post->ID ] );
+	}
+
+	// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
+	if ( 1 < $number_of_pages ) {
+		while ( $current_page < $number_of_pages ) {
+			$current_page        ++;
+			$query_args['paged'] = $current_page;
+			$results             = new \WP_Query( $query_args );
+
+			foreach ( $results->posts as $post ) {
+				execute_callback( $callback, [ $post->ID ] );
+			}
+		}
+	}
+
+	return true;
 }

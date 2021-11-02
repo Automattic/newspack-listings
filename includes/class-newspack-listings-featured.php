@@ -451,13 +451,9 @@ final class Newspack_Listings_Featured {
 	 * fetch results in batches of 100 and iterate through the batches so all results are processed.
 	 */
 	public static function check_expired_featured_items() {
-		// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
-		$current_page = 1;
-		$args         = [
-			'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
-			'post_status'    => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
-			'posts_per_page' => 100,
-			'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		$args = [
+			'post_status' => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
+			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'relation' => 'AND',
 				[
 					'key'   => self::META_KEYS['featured'],
@@ -475,26 +471,7 @@ final class Newspack_Listings_Featured {
 			],
 		];
 
-		// Get featured listings with an expiration date.
-		$results         = new \WP_Query( $args );
-		$number_of_pages = $results->max_num_pages;
-
-		foreach ( $results->posts as $featured_listing ) {
-			self::unset_featured_status( $featured_listing->ID );
-		}
-
-		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
-		if ( 1 < $number_of_pages ) {
-			while ( $current_page < $number_of_pages ) {
-				$current_page  ++;
-				$args['paged'] = $current_page;
-				$results       = new \WP_Query( $args );
-
-				foreach ( $results->posts as $featured_listing ) {
-					self::unset_featured_status( $featured_listing->ID );
-				}
-			}
-		}
+		Utils\execute_callback_with_paged_query( $args, [ __CLASS__, 'unset_featured_status' ] );
 	}
 }
 
