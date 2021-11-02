@@ -799,8 +799,6 @@ final class Newspack_Listings_Products {
 				update_post_meta( $subscription->get_id(), self::SUBSCRIPTION_META_KEYS['is_premium'], 1 );
 			}
 		}
-
-		// TODO: If an active subscription is premium, allow the customer to create a certain number of additional Marketplace listings as long as the subscription is active.
 	}
 
 	/**

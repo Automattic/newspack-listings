@@ -838,7 +838,6 @@ final class Newspack_Listings_Core {
 
 	/**
 	 * Allows listing post types to be displayed in taxonomy term archive pages.
-	 * TODO: Enable re-sorting of query to show featured listings first (requires optimization).
 	 *
 	 * @param WP_Query $query Query.
 	 */
