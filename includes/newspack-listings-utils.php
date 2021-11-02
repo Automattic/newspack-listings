@@ -525,7 +525,7 @@ function execute_callback_with_paged_query( $query_args = [], $callback ) {
 	$number_of_pages = $results->max_num_pages;
 
 	// Bail early if no results.
-	if ( 0 === count( $results ) ) {
+	if ( 0 === count( $results->posts ) ) {
 		return false;
 	}
 
