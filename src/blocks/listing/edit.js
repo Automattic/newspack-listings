@@ -188,7 +188,7 @@ const ListingEditorComponent = ( {
 						href={ `/wp-admin/post.php?post=${ post.id }&action=edit` }
 						target="_blank"
 					>
-						{ __( 'Edit this listing', 'newspack-listing' ) }
+						{ __( 'Edit this listing', 'newspack-listings' ) }
 					</Button>
 				) }
 			</div>
