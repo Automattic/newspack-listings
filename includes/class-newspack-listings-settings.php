@@ -203,6 +203,7 @@ final class Newspack_Listings_Settings {
 					'value'       => 75,
 					'section'     => $sections['product']['slug'],
 				],
+				// TODO: update all copy to be able to handle just 1 day in addition to multiple.
 				[
 					'description' => __( 'The number of days a single listing purchase remains live after being published. Set this value to 0 to allow purchased listings to remain live indefinitely.', 'newspack-listings' ),
 					'key'         => 'newspack_listings_single_purchase_expiration',

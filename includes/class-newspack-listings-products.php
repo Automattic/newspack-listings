@@ -1203,8 +1203,9 @@ final class Newspack_Listings_Products {
 
 		$listing = self::get_listing_by_order_id( $order_id );
 		if ( $listing ) {
-			$status = self::get_listing_status( $listing );
-			if ( 'expired' === $status || false !== stripos( $status, 'expires soon' ) ) :
+			$status                  = self::get_listing_status( $listing );
+			$expired_or_expires_soon = 'expired' === $status || false !== stripos( $status, 'expires soon' ); // TODO: refactor to handle non-English sites.
+			if ( $expired_or_expires_soon ) :
 				?>
 				<mark class="order-status">
 				<?php
@@ -1212,7 +1213,7 @@ final class Newspack_Listings_Products {
 
 			echo esc_html( $status );
 
-			if ( 'expired' === $status ) :
+			if ( $expired_or_expires_soon ) :
 				?>
 				</mark>
 				<?php
