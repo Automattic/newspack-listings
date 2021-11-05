@@ -13,6 +13,7 @@ import {
 	registerEventDatesBlock,
 	registerListingBlock,
 	registerPriceBlock,
+	registerSelfServeListingsBlock,
 	setCustomCategory,
 } from '../blocks';
 import { ShadowTaxonomies } from './shadow-taxonomies';
@@ -22,6 +23,7 @@ import './style.scss';
 
 const {
 	post_type: postType,
+	post_types: postTypes,
 	self_serve_enabled: selfServeEnabled,
 } = window?.newspack_listings_data;
 
@@ -30,8 +32,6 @@ const {
  * (to avoid possibly infinitely nesting lists within list items).
  */
 if ( isListing() ) {
-	const { post_types: postTypes } = window?.newspack_listings_data || {};
-
 	// If we don't have a post type, we're probably not in a post editor, so we don't need to register the post editor sidebars.
 	if ( postType ) {
 		// Register plugin editor settings.
@@ -63,6 +63,10 @@ if ( isListing() ) {
 	registerCuratedListBlock();
 	registerListContainerBlock();
 	registerListingBlock();
+
+	if ( selfServeEnabled ) {
+		registerSelfServeListingsBlock();
+	}
 }
 
 // If we don't have a post type, we're probably not in a post editor, so we don't need to register the post taxonomy sidebars.
