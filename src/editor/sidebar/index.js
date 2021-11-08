@@ -86,10 +86,16 @@ const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } 
 							currentDate={ expirationDate ? new Date( expirationDate ) : null }
 							onChange={ value => {
 								if (
+									value &&
 									publishDate &&
 									0 <= new Date( value ) - new Date( publishDate ) // Expiration date must come after publish date.
 								) {
 									return updateMetaValue( 'newspack_listings_expiration_date', value );
+								}
+
+								// If clearing the value.
+								if ( ! value ) {
+									return updateMetaValue( 'newspack_listings_expiration_date', '' );
 								}
 
 								createNotice(

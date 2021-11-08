@@ -240,9 +240,7 @@ final class Newspack_Listings_Featured {
 	public static function register_featured_meta() {
 		$meta_config = [
 			'featured' => [
-				'auth_callback'     => function() {
-					return current_user_can( 'edit_posts' );
-				},
+				'auth_callback'     => [ 'Core', 'can_edit_posts' ],
 				'default'           => false,
 				'description'       => __( 'Is this listing a featured listing?', 'newspack-listings' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
@@ -251,9 +249,7 @@ final class Newspack_Listings_Featured {
 				'type'              => 'boolean',
 			],
 			'expires'  => [
-				'auth_callback'     => function() {
-					return current_user_can( 'edit_posts' );
-				},
+				'auth_callback'     => [ 'Core', 'can_edit_posts' ],
 				'default'           => '',
 				'description'       => __( 'When should the listing’s featured status expire?', 'newspack-listings' ),
 				'sanitize_callback' => 'sanitize_text_field',

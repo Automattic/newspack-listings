@@ -1510,7 +1510,9 @@ final class Newspack_Listings_Products {
 
 		if ( (bool) $is_listing_customer ) {
 			global $pagenow;
-			$is_edit_screen = isset( $_REQUEST['action'] ) && 'edit' === sanitize_text_field( wp_unslash( sanitize_text_field( $_REQUEST['action'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$actions        = [ 'edit', 'editposts' ];
+			$action         = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( sanitize_text_field( $_REQUEST['action'] ) ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$is_edit_screen = $action && in_array( $action, $actions );
 
 			// If not an edit screen, if the post ID isn't set or isn't in the user's allowed post IDs,
 			// or the user is trying to access an admin page other than the post editor, disallow.

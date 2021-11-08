@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Settings as Settings;
+use \Newspack_Listings\Newspack_Listings_Products as Products;
 use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
@@ -298,9 +299,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_expiration_date'   => [
@@ -310,7 +309,7 @@ final class Newspack_Listings_Core {
 					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
 				],
-				'label'      => __( 'Template', 'newspack-listings' ),
+				'label'      => __( 'Expiration Date', 'newspack-listings' ),
 				'settings'   => [
 					'object_subtype'    => $post_type,
 					'default'           => '',
@@ -318,9 +317,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_contact_email'     => [
@@ -343,9 +340,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_contact_phone'     => [
@@ -375,9 +370,7 @@ final class Newspack_Listings_Core {
 							],
 						],
 					],
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_contact_address'   => [
@@ -440,9 +433,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_event_start_date'  => [
@@ -463,9 +454,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_price'             => [
@@ -486,9 +475,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_author'       => [
@@ -507,9 +494,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_image_ids'         => [
@@ -528,9 +513,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_publish_date' => [
@@ -549,9 +532,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_parents'      => [
@@ -572,9 +553,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_children'     => [
@@ -595,9 +574,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 		];
@@ -615,6 +592,20 @@ final class Newspack_Listings_Core {
 		} else {
 			return array_keys( $matching_fields );
 		}
+	}
+
+	/**
+	 * Extension of current_user_can( 'edit_posts' ) to allow customer users to update post meta registered by this plugin.
+	 *
+	 * @return boolean True if current user can edit posts, or if they're a listings customer.
+	 */
+	public static function can_edit_posts() {
+		$products_enabled = defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED;
+		if ( $products_enabled && Products::is_listing_customer() ) {
+			return true;
+		}
+
+		return current_user_can( 'edit_posts' );
 	}
 
 	/**
