@@ -1,3 +1,10 @@
+# [2.8.0](https://github.com/Automattic/newspack-listings/compare/v2.7.0...v2.8.0) (2021-11-09)
+
+
+### Features
+
+* **ugc:** self-serve listings purchase block ([#128](https://github.com/Automattic/newspack-listings/issues/128)) ([0ff8290](https://github.com/Automattic/newspack-listings/commit/0ff8290a8c8cc3524a663955e0ad0f22fb1d23e0))
+
 # [2.7.0](https://github.com/Automattic/newspack-listings/compare/v2.6.0...v2.7.0) (2021-11-03)
 
 
