@@ -502,7 +502,7 @@ function execute_callback( $callback = null, $args = null ) {
  * @return boolean True if the query had results and the callback was run, false if the query has no results,
  *                 or WP_Error if $callback is not a valid callable function or method.
  */
-function execute_callback_with_paged_query( $query_args = [], $callback ) {
+function execute_callback_with_paged_query( $query_args = [], $callback = null ) {
 	if ( ! is_callable( $callback ) ) {
 		return new \WP_Error(
 			'newspack_listings_query_error',
