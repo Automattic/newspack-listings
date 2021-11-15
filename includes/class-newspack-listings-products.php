@@ -470,6 +470,11 @@ final class Newspack_Listings_Products {
 			return;
 		}
 
+		// Only if coming from a non-checkout page.
+		if ( is_checkout() ) {
+			return;
+		}
+
 		// Only if purchase type is valid.
 		if ( 'single' !== $purchase_type && 'subscription' !== $purchase_type ) {
 			return;
@@ -507,16 +512,16 @@ final class Newspack_Listings_Products {
 		self::clear_cart();
 		$products_to_purchase = [];
 		$checkout_query_args  = [
-			'listing-title'         => sanitize_text_field( $listing_title ),
-			'listing-purchase-type' => sanitize_text_field( $purchase_type ),
+			'listing-title' => urlencode( sanitize_text_field( $listing_title ) ),
+			'purchase-type' => urlencode( sanitize_text_field( $purchase_type ) ),
 		];
 
 		if ( $is_single ) {
 			$products_to_purchase[]              = $products[ self::PRODUCT_META_KEYS['single'] ];
-			$checkout_query_args['listing-type'] = sanitize_text_field( $single_type );
+			$checkout_query_args['listing-type'] = urlencode( sanitize_text_field( $single_type ) );
 
 			if ( ! empty( $listing_to_renew ) ) {
-				$checkout_query_args['listing_renewed'] = $listing_to_renew;
+				$checkout_query_args['listing_renewed'] = urlencode( $listing_to_renew );
 			}
 
 			if ( 'on' === $featured_upgrade ) {
@@ -550,8 +555,8 @@ final class Newspack_Listings_Products {
 	public static function listing_details_summary() {
 		$params        = filter_input_array( INPUT_GET, FILTER_SANITIZE_STRING );
 		$listing_title = isset( $params['listing-title'] ) ? $params['listing-title'] : null;
+		$is_renewal    = isset( $params['listing_renewed'] ) ? $params['listing_renewed'] : false;
 		$listing_types = self::get_listing_types();
-		$is_renewal    = $params['listing_renewed'];
 		$listing_type  = array_reduce(
 			$listing_types,
 			function( $acc, $type ) use ( $params ) {
@@ -664,7 +669,7 @@ final class Newspack_Listings_Products {
 					$order->get_items()
 				);
 
-				$purchase_type    = isset( $params['listing-purchase-type'] ) ? $params['listing-purchase-type'] : 'single';
+				$purchase_type    = isset( $params['purchase-type'] ) ? $params['purchase-type'] : 'single';
 				$is_subscription  = 'subscription' === $purchase_type && in_array( $products[ self::PRODUCT_META_KEYS['subscription'] ], $purchased_items );
 				$is_single        = ! $is_subscription && in_array( $products[ self::PRODUCT_META_KEYS['single'] ], $purchased_items );
 				$listing_type     = isset( $params['listing-type'] ) ? $params['listing-type'] : null;
@@ -860,7 +865,7 @@ final class Newspack_Listings_Products {
 					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 				],
-				'posts_per_page' => self::TOTAL_FREE_LISTINGS,
+				'posts_per_page' => self::TOTAL_FREE_LISTINGS, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
 			]
 		);
 
