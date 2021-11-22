@@ -523,28 +523,26 @@ function execute_callback_with_paged_query( $query_args = [], $callback = null )
 	// Get query results.
 	$results         = new \WP_Query( $query_args );
 	$number_of_pages = $results->max_num_pages;
+	$total_results   = [];
 
 	// Bail early if no results.
 	if ( 0 === count( $results->posts ) ) {
 		return false;
 	}
 
-	// Execute callback on the first page of results.
-	foreach ( $results->posts as $post ) {
-		execute_callback( $callback, [ $post->ID ] );
-	}
+	$total_results = array_merge( $total_results, $results->posts );
 
 	// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
-	if ( 1 < $number_of_pages ) {
-		while ( $current_page < $number_of_pages ) {
-			$current_page        ++;
-			$query_args['paged'] = $current_page;
-			$results             = new \WP_Query( $query_args );
+	while ( $current_page < $number_of_pages ) {
+		$current_page        ++;
+		$query_args['paged'] = $current_page;
+		$results             = new \WP_Query( $query_args );
+		$total_results       = array_merge( $total_results, $results->posts );
+	}
 
-			foreach ( $results->posts as $post ) {
-				execute_callback( $callback, [ $post->ID ] );
-			}
-		}
+	// Execute callback on the first page of results.
+	foreach ( $total_results as $post ) {
+		execute_callback( $callback, [ $post->ID ] );
 	}
 
 	return true;
