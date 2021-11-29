@@ -533,11 +533,13 @@ function execute_callback_with_paged_query( $query_args = [], $callback = null )
 	$total_results = array_merge( $total_results, $results->posts );
 
 	// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
-	while ( $current_page < $number_of_pages ) {
-		$current_page        ++;
-		$query_args['paged'] = $current_page;
-		$results             = new \WP_Query( $query_args );
-		$total_results       = array_merge( $total_results, $results->posts );
+	if ( $current_page < $number_of_pages ) {
+		while ( $current_page < $number_of_pages ) {
+			$current_page        ++;
+			$query_args['paged'] = $current_page;
+			$results             = new \WP_Query( $query_args );
+			$total_results       = array_merge( $total_results, $results->posts );
+		}
 	}
 
 	// Execute callback on the first page of results.
