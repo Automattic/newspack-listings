@@ -58,7 +58,7 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 	}
 
 	// Fetch suggestions for suggestions list on component mount.
-	useEffect(() => {
+	useEffect( () => {
 		if ( canHaveParents ) {
 			setMessage( null );
 			apiFetch( {
@@ -84,7 +84,7 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 					} );
 				} );
 		}
-	}, []);
+	}, [] );
 
 	// Bail early if the post type can't have parent listings.
 	if ( ! canHaveParents ) {
@@ -140,7 +140,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 				setMessage( {
 					status: 'success',
 					children: sprintf(
-						__( '%s listing%s updated.', 'newspack-listings' ),
+						// Translators: Parent listing update success message.
+						__( '%1$s listing%2$s updated.', 'newspack-listings' ),
 						isListing()
 							? __( 'Parent', 'newspack-listings' )
 							: __( 'Related', 'newspack-listings' ),
@@ -152,7 +153,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 				setMessage( {
 					status: 'error',
 					children: sprintf(
-						__( 'Error updating %s listing%s.', 'newspack-listings' ),
+						// Translators: Parent listing update error message.
+						__( 'Error updating %1$s listing%2$s.', 'newspack-listings' ),
 						isListing()
 							? __( 'parent', 'newspack-listings' )
 							: __( 'related', 'newspack-listings' ),
@@ -167,7 +169,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 				children:
 					e.message ||
 					sprintf(
-						__( 'Error updating %s listing%s.', 'newspack-listings' ),
+						// Translators: Parent listing update error message.
+						__( 'Error updating %1$s listing%2$s.', 'newspack-listings' ),
 						isListing()
 							? __( 'parent', 'newspack-listings' )
 							: __( 'related', 'newspack-listings' ),
@@ -189,6 +192,7 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 					return __( 'Search Pages', 'newspack-listings' );
 				default:
 					return sprintf(
+						// Translators: Taxonomy search help message.
 						__( 'Search %ss', 'newspack-listings' ),
 						getTaxonomyLabel( selectedPostType )
 					);
@@ -203,7 +207,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 			className="newspack-listings__parent-listings"
 			name="newspack-listings-parents"
 			title={ sprintf(
-				'%s Listing%s',
+				// Translators: Parent or related listings sidebar panel label.
+				'%1$s Listing%2$s',
 				isListing()
 					? __( 'Parent', 'newspack-listings' )
 					: __( 'Related Newspack', 'newspack-listings' ),
@@ -214,7 +219,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 				<ToggleControl
 					className={ 'newspack-listings__toggle-control' }
 					label={ sprintf(
-						__( 'Hide %s listing%s', 'newspack-listings' ),
+						// Translators: Hide parent listing toggle label.
+						__( 'Hide %1$s listing%2$s', 'newspack-listings' ),
 						isListing()
 							? __( 'parent', 'newspack-listings' )
 							: __( 'related', 'newspack-listings' ),
@@ -235,7 +241,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 			{ ! hideParents && (
 				<Button isSecondary onClick={ () => setModalVisible( true ) }>
 					{ sprintf(
-						__( 'Manage %s Listing%s' ),
+						// Translators: Manage parent or related listing button label.
+						__( 'Manage %1$s Listing%2$s' ),
 						isListing()
 							? __( 'Parent', 'newspack-listings' )
 							: __( 'Related', 'newspack-listings' ),
@@ -247,7 +254,8 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 				<Modal
 					className="newspack-listings__modal"
 					title={ sprintf(
-						__( 'Manage %s Listing%s' ),
+						// Translators: Manage parent or related listing modal title.
+						__( 'Manage %1$s Listing%2$s' ),
 						isListing()
 							? __( 'Parent', 'newspack-listings' )
 							: __( 'Related', 'newspack-listings' ),
@@ -320,7 +328,7 @@ const ParentListingsComponent = ( { hideParents, postId, updateMetaValue } ) => 
 						>
 							<>
 								{ isUpdating
-									? __( 'Saving...', 'newspack-listings' )
+									? __( 'Saving…', 'newspack-listings' )
 									: __( 'Save', 'newspack-listings' ) }
 							</>
 						</Button>
