@@ -36,6 +36,7 @@ const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } 
 			className="newspack-listings__editor-sidebar"
 			name="newspack-listings"
 			title={ sprintf(
+				// Translators: Listing post type sidebar settings label.
 				__( '%s Settings', 'newspack-listings' ),
 				isListing() ? postTypeLabel : __( 'Newspack Listings', 'newspack-listings' )
 			) }
@@ -53,6 +54,7 @@ const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } 
 					className={ 'newspack-listings__toggle-control' }
 					label={ __( 'Hide listing author', 'newspack-listings' ) }
 					help={ sprintf(
+						// Translators: Show or hide author byline toggle label.
 						__( '%s the author byline for this listing.', 'newspack-listings' ),
 						hideAuthor ? __( 'Hide', 'newspack-listings' ) : __( 'Show', 'newspack-listings' )
 					) }
@@ -65,6 +67,7 @@ const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } 
 					className={ 'newspack-listings__toggle-control' }
 					label={ __( 'Hide publish date', 'newspack-listings' ) }
 					help={ sprintf(
+						// Translators: Show or hide publish date toggle label.
 						__( '%s the publish and updated dates for this listing.', 'newspack-listings' ),
 						hidePublishDate ? __( 'Hide', 'newspack-listings' ) : __( 'Show', 'newspack-listings' )
 					) }

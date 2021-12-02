@@ -86,7 +86,8 @@ export const Listing = ( { attributes, error, post } ) => {
 							<span className="sponsor-byline">
 								{ sponsors.map( ( sponsor, index ) =>
 									sprintf(
-										'%s%s%s%s',
+										// Translators: Sponsorship attribution.
+										'%1$s%2$s%3$s%4$s',
 										0 === index ? sponsor.sponsor_byline + ' ' : '',
 										1 < sponsors.length && index + 1 === sponsors.length
 											? __( ' and ', 'newspack-listings' )

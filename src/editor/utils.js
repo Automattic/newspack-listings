@@ -195,7 +195,6 @@ export const getContrastRatio = backgroundColor => {
  *
  * @param {string} className The base class name for the block.
  * @param {Object} attributes Block attributes.
- *
  * @return {Array} Array of class names for the block.
  */
 export const getCuratedListClasses = ( className, attributes ) => {
@@ -247,9 +246,9 @@ export const getCuratedListClasses = ( className, attributes ) => {
 export const useDidMount = () => {
 	const didMount = useRef( true );
 
-	useEffect(() => {
+	useEffect( () => {
 		didMount.current = false;
-	}, []);
+	}, [] );
 
 	return didMount.current;
 };
@@ -285,8 +284,8 @@ export const getIcon = listingTypeSlug => {
 /**
  * Get an array of term-based class names for the given or current listing.
  *
- * @param {object} post Post object for the post.
- * @return {array} Array of term-based class names.
+ * @param {Object} post Post object for the post.
+ * @return {Array} Array of term-based class names.
  */
 export const getTermClasses = post => {
 	const classes = [];

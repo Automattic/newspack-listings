@@ -36,9 +36,9 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 		subscriptionDescription,
 	} = attributes;
 
-	useEffect(() => {
+	useEffect( () => {
 		setAttributes( { clientId } );
-	}, [ clientId ]);
+	}, [ clientId ] );
 
 	const classNames = [ 'newspack-listings__self-serve-form', 'wpbnbd' ];
 
