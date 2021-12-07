@@ -47,9 +47,9 @@ final class Newspack_Listings_Products {
 	const EXPIRE_LISTING_CRON_HOOK = 'newspack_expire_listings';
 
 	/**
-	 * Number of free listings granted to premium subscribers.
+	 * Number of included listings granted to premium subscribers.
 	 */
-	const TOTAL_FREE_LISTINGS = 10;
+	const TOTAL_INCLUDED_LISTINGS = 10;
 
 	/**
 	 * Meta keys for self-serve listing products.
@@ -847,7 +847,7 @@ final class Newspack_Listings_Products {
 	}
 
 	/**
-	 * Active premium subscriptions grant customers the ability to create up to 10 Marketplace or Event listings for free.
+	 * Active premium subscriptions grant customers the ability to create up to 10 Marketplace or Event listings.
 	 * Show controls to create and manage these listings in the Subscription account page.
 	 *
 	 * @param WC_Subscription $subscription Subscription object for the subscription whose status has changed.
@@ -866,7 +866,7 @@ final class Newspack_Listings_Products {
 					Core::NEWSPACK_LISTINGS_POST_TYPES['event'],
 					Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
 				],
-				'posts_per_page' => self::TOTAL_FREE_LISTINGS, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
+				'posts_per_page' => self::TOTAL_INCLUDED_LISTINGS, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
 			]
 		);
 
@@ -875,7 +875,7 @@ final class Newspack_Listings_Products {
 			return;
 		}
 
-		$remaining       = self::TOTAL_FREE_LISTINGS - count( $premium_listings );
+		$remaining       = self::TOTAL_INCLUDED_LISTINGS - count( $premium_listings );
 		$base_url        = self::get_base_url();
 		$marketplace_url = wp_nonce_url(
 			add_query_arg(
@@ -907,19 +907,19 @@ final class Newspack_Listings_Products {
 					echo esc_html(
 						sprintf(
 							// translators: explanation of premium subscription benefits.
-							__( 'A premium subscription lets you create up to %1$d free Marketplace or Event listings. %2$s', 'newspack-listings' ),
-							self::TOTAL_FREE_LISTINGS,
+							__( 'A premium subscription lets you create up to %1$d additional Marketplace or Event listings. %2$s', 'newspack-listings' ),
+							self::TOTAL_INCLUDED_LISTINGS,
 							$remaining && $is_premium ?
-								// translators: explanation of remaining free listings.
-								sprintf( __( 'You have %d free listings remaining.', 'newspack-listings' ), $remaining ) :
-								__( 'You don’t have any free listings available. To create additional listings, please purchase them.', 'newspack-listings' )
+								// translators: explanation of remaining included listings.
+								sprintf( __( 'You have %d included listings remaining.', 'newspack-listings' ), $remaining ) :
+								__( 'You don’t have any included listings available. To create additional listings, please purchase them.', 'newspack-listings' )
 						)
 					);
 				?>
 			</p>
 		<?php
 
-		// To create new listings, subscription must be active and premium, and must have not used up all free listings.
+		// To create new listings, subscription must be active and premium, and must have not used up all included listings.
 		if ( $is_premium && $remaining ) :
 			?>
 			<p>
@@ -1712,7 +1712,7 @@ final class Newspack_Listings_Products {
 	 * Callback function to expire single-purchase listings whose publish date is older than the set expiration period.
 	 * Single-purchase listings can be distinguished because they should have an order ID meta value, but no subscription ID.
 	 * Subscription primary listings have both an order ID and a subscription ID.
-	 * Premium subscription "free" listings have a subscription ID, but no order ID.
+	 * Premium subscription "included" listings have a subscription ID, but no order ID.
 	 */
 	public static function expire_single_purchase_listings() {
 		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );

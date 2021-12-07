@@ -257,7 +257,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									</label>
 									<p class="newspack-listings__help">
 										{ __(
-											'A premium subscription upgrades your listing to "featured" status and lets you create up to 10 free Marketplace or Event listings.',
+											'A premium subscription upgrades your listing to "featured" status and lets you create up to 10 additional Marketplace or Event listings.',
 											'newspack-listings'
 										) }
 									</p>

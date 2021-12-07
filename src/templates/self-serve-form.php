@@ -163,7 +163,7 @@ call_user_func(
 							<?php
 							echo esc_html(
 								__(
-									'A premium subscription upgrades your listing to "featured" status and lets you create up to 10 free Marketplace or Event listings.',
+									'A premium subscription upgrades your listing to "featured" status and lets you create up to 10 additional Marketplace or Event listings.',
 									'newspack-listings'
 								)
 							);
