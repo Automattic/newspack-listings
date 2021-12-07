@@ -615,10 +615,11 @@ final class Newspack_Listings_Products {
 	 */
 	public static function listing_details_billing_fields( $form_fields ) {
 		$params = filter_input_array( INPUT_GET, FILTER_SANITIZE_STRING );
+		$fields = array_keys( self::ORDER_META_KEYS );
 
 		if ( is_array( $params ) ) {
 			foreach ( $params as $param => $value ) {
-				if ( $value && in_array( $param, array_keys( self::ORDER_META_KEYS ) ) ) {
+				if ( ! empty( $value ) && in_array( str_replace( '-', '_', $param ), $fields ) ) {
 					$form_fields[ sanitize_text_field( $param ) ] = [
 						'type'    => 'text',
 						'default' => sanitize_text_field( $value ),
