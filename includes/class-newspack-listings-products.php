@@ -67,9 +67,9 @@ final class Newspack_Listings_Products {
 	const ORDER_META_KEYS = [
 		'listing_title'          => 'newspack_listings_order_title',
 		'listing_type'           => 'newspack_listings_order_type',
-		'listing_purchase_type'  => 'newspack_listings_order_type',
 		'listing_original_order' => 'newspack_listings_original_order',
 		'listing_renewed'        => 'newspack_listings_renewed_id',
+		'purchase_type'          => 'newspack_listings_order_type',
 	];
 
 	/**
