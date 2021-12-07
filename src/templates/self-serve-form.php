@@ -67,7 +67,6 @@ call_user_func(
 							?>
 						</p>
 					<?php endif; ?>
-					<p class="newspack-listings__help"></p>
 					<hr />
 					<h3><?php echo esc_html( __( 'Listing Details', 'newspack-listings' ) ); ?></h3>
 					<label for="listing-title-single-<?php echo esc_attr( $client_id ); ?>">
