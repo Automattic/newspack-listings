@@ -47,7 +47,7 @@ final class Newspack_Listings_Settings {
 		];
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		if ( class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions_Product' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
 			$sections['product'] = [
 				'slug'  => 'newspack_listings_product_settings',
 				'title' => __( 'Self-Serve Settings', 'newspack-listings' ),

@@ -1690,6 +1690,13 @@ final class Newspack_Listings_Products {
 		register_deactivation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'cron_deactivate' ] );
 
 		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
+
+		// If WC Subscriptions is inactive, $single_expiration_period may be a WP error.
+		// Let's not schedule the cron job in this case.
+		if ( is_wp_error( $single_expiration_period ) ) {
+			$single_expiration_period = 0;
+		}
+
 		if ( 0 < $single_expiration_period ) {
 			if ( ! wp_next_scheduled( self::EXPIRE_LISTING_CRON_HOOK ) ) {
 				wp_schedule_event( Utils\get_next_midnight(), 'daily', self::EXPIRE_LISTING_CRON_HOOK );
