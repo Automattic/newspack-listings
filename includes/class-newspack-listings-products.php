@@ -697,7 +697,7 @@ final class Newspack_Listings_Products {
 							[
 								'ID'            => $listing->ID,
 								'post_date'     => $now,
-								'post_date_gmt' => get_gmt_from_date( $time ),
+								'post_date_gmt' => get_gmt_from_date( $now ),
 								'post_status'   => 'publish',
 							]
 						);
