@@ -134,6 +134,7 @@ final class Newspack_Listings_Products {
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
 		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
+		add_action( 'save_post_product', [ __CLASS__, 'update_product_option' ], 10 );
 
 		// WooCommerce checkout actions (when purchasing a listing product).
 		add_filter( 'pre_option_woocommerce_enable_guest_checkout', [ __CLASS__, 'force_require_account_for_listings' ] );
@@ -339,6 +340,30 @@ final class Newspack_Listings_Products {
 
 					$child_product->save();
 				}
+			}
+		}
+	}
+
+	/**
+	 * When a listing product's price is updated in the WooCommerce UI, also update the corresponding plugin setting.
+	 *
+	 * @param int $post_id Post ID of the product being updated via WooCommerce.
+	 */
+	public static function update_product_option( $post_id ) {
+		$products = self::get_products();
+
+		if ( ! $products || ! is_array( $products ) ) {
+			return;
+		}
+
+		// If the product being updated is a Listings product, update the corresponding plugin setting.
+		$product_key = array_search( $post_id, $products, true );
+		if ( $product_key && in_array( $product_key, self::PRODUCT_META_KEYS ) ) {
+			$product = \wc_get_product( $post_id );
+			$price   = $product->get_regular_price();
+
+			if ( $price ) {
+				update_option( $product_key, $price );
 			}
 		}
 	}
@@ -675,7 +700,7 @@ final class Newspack_Listings_Products {
 				$is_single        = ! $is_subscription && in_array( $products[ self::PRODUCT_META_KEYS['single'] ], $purchased_items );
 				$listing_type     = isset( $params['listing-type'] ) ? $params['listing-type'] : null;
 				$single_upgrade   = $is_single && in_array( $products[ self::PRODUCT_META_KEYS['featured'] ], $purchased_items );
-				$premium_upgrade  = $is_subscription && in_array( $products['newspack_listings_premium_subscription_add_on'], $purchased_items );
+				$premium_upgrade  = $is_subscription && in_array( $products[ self::PRODUCT_META_KEYS['premium'] ], $purchased_items );
 				$post_title       = isset( $params['listing-title'] ) ? $params['listing-title'] : __( 'Untitled listing', 'newspack-listings' );
 				$post_type        = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'];
 				$listing_to_renew = isset( $params['listing_renewed'] ) ? $params['listing_renewed'] : null;
