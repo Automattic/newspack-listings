@@ -73,7 +73,8 @@ final class Newspack_Listings_Core {
 		add_filter( 'newspack_listings_hide_author', [ __CLASS__, 'hide_author' ] );
 		add_filter( 'newspack_listings_hide_publish_date', [ __CLASS__, 'hide_publish_date' ] );
 		add_filter( 'newspack_theme_featured_image_post_types', [ __CLASS__, 'support_featured_image_options' ] );
-		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_newspack_sponsors' ] );
+		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_listing_post_types' ] );
+		add_filter( 'newspack_campaigns_default_supported_post_types', [ __CLASS__, 'support_listing_post_types' ] );
 		add_filter( 'jetpack_relatedposts_filter_options', [ __CLASS__, 'disable_jetpack_related_posts' ] );
 		add_filter( 'jetpack_related_posts_customize_options', [ __CLASS__, 'disable_jetpack_related_posts_customizer' ] );
 		add_filter( 'wpseo_primary_term_taxonomies', [ __CLASS__, 'disable_yoast_primary_categories' ], 10, 2 );
@@ -852,12 +853,12 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
-	 * If using the Newspack Sponsors plugin, add support for sponsors to all listings.
+	 * For filters from other plugins to allow certain post types, add support for all listing post types.
 	 *
 	 * @param array $post_types Array of supported post types.
 	 * @return array Filtered array of supported post types.
 	 */
-	public static function support_newspack_sponsors( $post_types ) {
+	public static function support_listing_post_types( $post_types ) {
 		return array_merge(
 			$post_types,
 			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
