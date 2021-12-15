@@ -903,6 +903,55 @@ final class Newspack_Listings_Core {
 	}
 
 	/**
+	 * Get the set expiration date for the given or current post.
+	 *
+	 * @param int $post_id Post ID to fetch. If not given, will use the current post.
+	 *
+	 * @return DateTime|boolean A DateTime object representing the expiraiton date if set, or false if not.
+	 */
+	public static function get_expiration_date( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$expiration_date = get_post_meta( $post_id, 'newspack_listings_expiration_date', true );
+		if ( ! $expiration_date || ! Utils\is_valid_date_string( $expiration_date ) ) {
+			return false;
+		}
+
+		$timezone = get_option( 'timezone_string', 'UTC' );
+
+		// Guard against 'Unknown or bad timezone' PHP error.
+		if ( empty( trim( $timezone ) ) ) {
+			$timezone = 'UTC';
+		}
+
+		return new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
+	}
+
+	/**
+	 * Check whether the given or current post ID has a set expiration date that has already passed.
+	 *
+	 * @param int $post_id Post ID to fetch. If not given, will use the current post.
+	 *
+	 * @return boolean True if the set expiration date has passed, false if not or if the post doesn't have a set expiration date.
+	 */
+	public static function listing_has_expired( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$expiration_date = self::get_expiration_date( $post_id );
+		if ( $expiration_date ) {
+			// Listing should be expired if its expiration date has passed.
+			$is_expired = 0 > $expiration_date->getTimestamp() - time();
+			return $is_expired;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Given a post ID, check its expiration date and unpublish if the date has passed.
 	 *
 	 * @param int $post_id Post ID to check.
@@ -912,38 +961,22 @@ final class Newspack_Listings_Core {
 			return false;
 		}
 
-		$expire_listing  = false;
-		$expiration_date = get_post_meta( $post_id, 'newspack_listings_expiration_date', true );
+		if ( self::listing_has_expired( $post_id ) ) {
+			$updated = wp_update_post(
+				[
+					'ID'          => $post_id,
+					'post_status' => 'draft',
+				]
+			);
 
-		if ( $expiration_date && Utils\is_valid_date_string( $expiration_date ) ) {
-			$timezone = get_option( 'timezone_string', 'UTC' );
-
-			// Guard against 'Unknown or bad timezone' PHP error.
-			if ( empty( trim( $timezone ) ) ) {
-				$timezone = 'UTC';
-			}
-
-			// Listing should be expired if its expiration date has passed.
-			$parsed_date    = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
-			$expire_listing = 0 > $parsed_date->getTimestamp() - time();
-
-			if ( $expire_listing ) {
-				$updated = wp_update_post(
-					[
-						'ID'          => $post_id,
-						'post_status' => 'draft',
-					]
+			if ( ! $updated ) {
+				error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					sprintf(
+						// Translators: error message logged when we're unable to expire a listing via cron job.
+						__( 'Newspack Listings: Error expiring listing with ID %d.', 'newspack-listings' ),
+						$post_id
+					)
 				);
-
-				if ( ! $updated ) {
-					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-						sprintf(
-							// Translators: error message logged when we're unable to expire a listing via cron job.
-							__( 'Newspack Listings: Error expiring listing with ID %d.', 'newspack-listings' ),
-							$post_id
-						)
-					);
-				}
 			}
 		}
 	}

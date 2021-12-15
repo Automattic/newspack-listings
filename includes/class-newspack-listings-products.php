@@ -605,7 +605,7 @@ final class Newspack_Listings_Products {
 						echo esc_html(
 							sprintf(
 								// Translators: if renewing, explain what that does.
-								__( 'The following listing will be renewed for %d days from today:', 'newspack-listings' ),
+								__( 'The following listing will be extended by %d days:', 'newspack-listings' ),
 								$single_expiration_period
 							)
 						);
@@ -716,19 +716,24 @@ final class Newspack_Listings_Products {
 					$listing = get_post( (int) $listing_to_renew );
 
 					if ( $listing ) {
-						$original_order_id = get_post_meta( $listing->ID, self::POST_META_KEYS['listing_order'], true );
-						$now               = current_time( 'mysql' ); // Current time in local timezone.
+						$original_order_id        = get_post_meta( $listing->ID, self::POST_META_KEYS['listing_order'], true );
+						$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
+						$set_expiration           = Core::get_expiration_date( $listing->ID );
+						$expires_date             = $set_expiration ? $set_expiration : ( new \DateTime( $listing->post_date ) )->modify( '+' . (string) $single_expiration_period . ' days' );
+						$now                      = current_time( 'mysql' ); // Current time in local timezone.
+						$update_args              = [
+							'ID'            => $listing->ID,
+							'post_date'     => $now,
+							'post_date_gmt' => get_gmt_from_date( $now ),
+							'post_status'   => 'publish',
+							'meta_input'    => [
+								'newspack_listings_expiration_date' => $expires_date->modify( '+' . (string) $single_expiration_period . ' days' )->format( 'Y-m-d\TH:i:s' ),
+							],
+						];
 
 						// When renewing a single-purchase post, set the post status to 'publish' and
-						// also update the publish date to "now" to reset the expiration clock.
-						wp_update_post(
-							[
-								'ID'            => $listing->ID,
-								'post_date'     => $now,
-								'post_date_gmt' => get_gmt_from_date( $now ),
-								'post_status'   => 'publish',
-							]
-						);
+						// also extend the expiration date to reset the expiration clock.
+						wp_update_post( $update_args );
 
 						// Clear "expired" meta flag so that the listing is no longer displayed as expired in the My Account UI.
 						delete_post_meta( $listing->ID, self::POST_META_KEYS['listing_has_expired'] );
@@ -1315,7 +1320,7 @@ final class Newspack_Listings_Products {
 
 		if ( $listing ) :
 			$status       = self::get_listing_status( $listing );
-			$is_expired   = 'expired' === $status;
+			$is_expired   = 'expired' === $status || Core::listing_has_expired( $listing->ID );
 			$is_published = 'publish' === $listing->post_status;
 			$listing_type = Core::NEWSPACK_LISTINGS_POST_TYPES['marketplace'] === $listing->post_type ? 'marketplace' : 'event';
 			$renew_url    = add_query_arg(
@@ -1369,14 +1374,14 @@ final class Newspack_Listings_Products {
 				$expires_in = '';
 
 				if ( $is_published && ! $is_expired ) {
-					$expires_date = new \DateTime( $listing->post_date );
-					$expires_date->modify( '+' . (string) $single_expiration_period . ' days' );
+					$set_expiration = Core::get_expiration_date( $listing->ID );
+					$expires_date   = $set_expiration ? $set_expiration : ( new \DateTime( $listing->post_date ) )->modify( '+' . (string) $single_expiration_period . ' days' );
 
 					$date_diff  = $expires_date->diff( new \DateTime() );
 					$expires_in = sprintf(
 						// Translators: message describing how many days are left before this listing expires.
-						__( 'This listing expires in %d days. ' ),
-						$date_diff->days
+						__( 'This listing is set to expire after %s.' ),
+						$expires_date->format( 'F j, Y' )
 					);
 				}
 				?>
@@ -1385,15 +1390,18 @@ final class Newspack_Listings_Products {
 						echo esc_html(
 							sprintf(
 								// Translators: message explaining how many days single-purchase listings are active, and how to renew.
-								__( 'Listings are active for %1$d days after publication. %2$sTo renew for another %3$d days:', 'newspack-listings' ),
+								__( 'Listings are active for %1$d days after publication by default. %2$sTo extend your listing by an additional %3$s:', 'newspack-listings' ),
 								$single_expiration_period,
 								$expires_in,
-								$single_expiration_period
+								1 < $single_expiration_period ?
+									// Translators: If $single_expiration_period is more than one, show the number.
+									sprintf( __( '%d days', 'newspack-listings' ), $single_expiration_period ) :
+									__( 'day', 'newspack-listings' )
 							)
 						);
 					?>
 				</p>
-				<p><a href="<?php echo esc_url( $renew_url ); ?>" class="button"><?php esc_html_e( 'Renew', 'woocommerce' ); ?></a></p>
+				<p><a href="<?php echo esc_url( $renew_url ); ?>" class="button"><?php esc_html_e( 'Extend', 'woocommerce' ); ?></a></p>
 				<?php
 			endif;
 
@@ -1533,7 +1541,7 @@ final class Newspack_Listings_Products {
 	 * @return bool[] Filtered array of allowed/disallowed capabilities.
 	 */
 	public static function allow_customers_to_edit_own_posts( $allcaps, $caps, $args ) {
-		$capabilities        = [ 'edit_posts', 'edit_published_posts' ];
+		$capabilities        = [ 'edit_posts', 'edit_published_posts', 'publish_posts' ];
 		$capability          = $args[0];
 		$user_id             = $args[1];
 		$is_listing_customer = false;
@@ -1544,6 +1552,7 @@ final class Newspack_Listings_Products {
 
 		if ( (bool) $is_listing_customer ) {
 			global $pagenow;
+			$is_published   = 'publish' === get_post_status( get_the_ID() );
 			$actions        = [ 'edit', 'editposts' ];
 			$action         = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( sanitize_text_field( $_REQUEST['action'] ) ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$is_edit_screen = $action && in_array( $action, $actions );
@@ -1552,6 +1561,11 @@ final class Newspack_Listings_Products {
 			// or the user is trying to access an admin page other than the post editor, disallow.
 			if ( ! $is_edit_screen || 'post.php' !== $pagenow ) {
 				$allcaps[ $capability ] = 0;
+			}
+
+			// If on the edit screen for a post that has already been published, allow the user to update their published post.
+			if ( 'publish_posts' === $capability ) {
+				$allcaps[ $capability ] = $is_published ? 1 : 0;
 			}
 		}
 
@@ -1764,12 +1778,21 @@ final class Newspack_Listings_Products {
 				],
 				'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					'relation' => 'AND',
+					// Only get listings that are associated with a WooCommerce order.
 					[
 						'key'     => self::POST_META_KEYS['listing_order'],
 						'compare' => 'EXISTS',
 					],
+
+					// Exclude listings that are associated with a subscription, which are active as long as the subscription is active.
 					[
 						'key'     => self::POST_META_KEYS['listing_subscription'],
+						'compare' => 'NOT EXISTS',
+					],
+
+					// Exclude listings with a set expiration date, as those are handled by the Core::expire_listings_with_expiration_date method.
+					[
+						'key'     => 'newspack_listings_expiration_date',
 						'compare' => 'NOT EXISTS',
 					],
 				],

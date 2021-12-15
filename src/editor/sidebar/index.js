@@ -12,6 +12,7 @@ import {
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
+import { useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -20,12 +21,25 @@ import { isListing } from '../utils';
 import './style.scss';
 
 const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } ) => {
-	const { post_type_label: postTypeLabel, post_types: postTypes } = window.newspack_listings_data;
+	const [ initialExpirationDate, setInitialExpirationDate ] = useState( null );
+	const {
+		is_listing_customer: isListingCustomer = false,
+		post_type_label: postTypeLabel,
+		post_types: postTypes,
+		self_serve_listing_expiration: expirationPeriod,
+	} = window.newspack_listings_data;
 	const {
 		newspack_listings_hide_author: hideAuthor,
 		newspack_listings_hide_publish_date: hidePublishDate,
 		newspack_listings_expiration_date: expirationDate,
 	} = meta;
+
+	// Get the last saved expiration date, if any.
+	useEffect( () => {
+		if ( expirationDate ) {
+			setInitialExpirationDate( expirationDate );
+		}
+	}, [] );
 
 	if ( ! postTypes ) {
 		return null;
@@ -88,6 +102,46 @@ const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } 
 						<DateTimePicker
 							currentDate={ expirationDate ? new Date( expirationDate ) : null }
 							onChange={ value => {
+								/**
+								 * If the current user is a listings customer, don't allow them to set the expiraiton date beyond the
+								 * last saved expiration date or `expirationPeriod` days from the publish date, whichever is later.
+								 */
+								if ( isListingCustomer ) {
+									const fromExpirationDate = initialExpirationDate
+										? new Date( initialExpirationDate )
+										: null;
+									const publishDateDate = new Date( publishDate );
+									const fromPublishDate = new Date(
+										publishDateDate.setDate(
+											publishDateDate.getDate() + parseInt( expirationPeriod )
+										)
+									);
+									const laterDate = fromExpirationDate
+										? new Date( Math.max( fromPublishDate, fromExpirationDate ) )
+										: fromPublishDate;
+
+									if ( 0 < new Date( value ) - laterDate ) {
+										return createNotice(
+											'warning',
+											sprintf(
+												// Translators: warning when listings customer tries to extend expiration beyond allowed range.
+												__( 'Cannot set expiration date beyond %s.', 'newspack-listings' ),
+												laterDate.toLocaleDateString( undefined, {
+													weekday: 'long',
+													year: 'numeric',
+													month: 'long',
+													day: 'numeric',
+												} )
+											),
+											{
+												id: 'newspack-listings__date-error',
+												isDismissible: true,
+												type: 'default',
+											}
+										);
+									}
+								}
+
 								if (
 									value &&
 									publishDate &&
