@@ -92,12 +92,12 @@
     "url": "https://github.com/Automattic/newspack-listings/issues"
   },
   "dependencies": {
-    "@babel/preset-env": "^7.16.4",
+    "@babel/preset-env": "^7.16.5",
     "@wordpress/api-fetch": "^5.2.6",
     "@wordpress/base-styles": "^4.0.4",
     "@wordpress/block-editor": "^8.0.10",
     "@wordpress/blocks": "^11.1.2",
-    "@wordpress/components": "^19.1.4",
+    "@wordpress/components": "^19.1.5",
     "@wordpress/compose": "^5.0.6",
     "@wordpress/data": "^6.1.4",
     "@wordpress/date": "^4.2.1",
