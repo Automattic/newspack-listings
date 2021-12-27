@@ -99,7 +99,7 @@
     "@wordpress/blocks": "^11.1.2",
     "@wordpress/components": "^19.1.5",
     "@wordpress/compose": "^5.0.6",
-    "@wordpress/data": "^6.1.4",
+    "@wordpress/data": "^6.1.5",
     "@wordpress/date": "^4.2.1",
     "@wordpress/dom-ready": "^3.2.2",
     "@wordpress/edit-post": "^5.0.17",
