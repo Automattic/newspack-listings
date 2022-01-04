@@ -12,7 +12,7 @@ import {
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
-import { useEffect, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -21,7 +21,6 @@ import { isListing } from '../utils';
 import './style.scss';
 
 const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } ) => {
-	const [ initialExpirationDate, setInitialExpirationDate ] = useState( null );
 	const {
 		is_listing_customer: isListingCustomer = false,
 		post_type_label: postTypeLabel,
@@ -33,13 +32,7 @@ const SidebarComponent = ( { createNotice, meta, publishDate, updateMetaValue } 
 		newspack_listings_hide_publish_date: hidePublishDate,
 		newspack_listings_expiration_date: expirationDate,
 	} = meta;
-
-	// Get the last saved expiration date, if any.
-	useEffect( () => {
-		if ( expirationDate ) {
-			setInitialExpirationDate( expirationDate );
-		}
-	}, [] );
+	const [ initialExpirationDate ] = useState( expirationDate );
 
 	if ( ! postTypes ) {
 		return null;
