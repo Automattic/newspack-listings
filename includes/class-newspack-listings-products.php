@@ -179,6 +179,15 @@ final class Newspack_Listings_Products {
 	}
 
 	/**
+	 * Check whether the required plugins are active, for use outside of the class.
+	 *
+	 * @return boolean
+	 */
+	public static function is_active() {
+		return self::$wc_is_active;
+	}
+
+	/**
 	 * Create the WooCommerce products for self-serve listings.
 	 */
 	public static function create_products() {
