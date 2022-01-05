@@ -841,7 +841,9 @@ final class Newspack_Listings_Core {
 		}
 
 		if ( ! is_admin() && $query->is_main_query() ) {
-			if ( is_category() || is_tag() ) {
+			$archive_should_include_listings = is_category() || is_tag();
+
+			if ( apply_filters( 'newspack_listings_archive_types', $archive_should_include_listings ) ) {
 				$existing_post_types = $query->get( 'post_type' );
 
 				// Don't alter the query for templates.
