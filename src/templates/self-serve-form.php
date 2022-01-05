@@ -7,6 +7,7 @@
  */
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Settings as Settings;
 use \Newspack_Listings\Utils as Utils;
 
 call_user_func(
@@ -18,6 +19,7 @@ call_user_func(
 		$single_description       = $attributes['singleDescription'];
 		$subscription_description = $attributes['subscriptionDescription'];
 		$client_id                = $attributes['clientId'];
+		$single_expiration_period = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
 
 		$class_names = [ 'newspack-listings__self-serve-form', 'wpbnbd' ];
 
@@ -49,6 +51,22 @@ call_user_func(
 				</label>
 				<div class="input-container listing-details">
 					<p><?php echo wp_kses_post( $single_description ); ?></p>
+					<?php if ( 0 < $single_expiration_period ) : ?>
+						<p class="newspack-listings__help">
+							<?php
+							echo esc_html(
+								sprintf(
+									// Translators: user-facing explanation of expiration behavior.
+									__(
+										'Single-purchase listings expire %d days after the date of publication.',
+										'newspack-listings'
+									),
+									$single_expiration_period
+								)
+							);
+							?>
+						</p>
+					<?php endif; ?>
 					<hr />
 					<h3><?php echo esc_html( __( 'Listing Details', 'newspack-listings' ) ); ?></h3>
 					<label for="listing-title-single-<?php echo esc_attr( $client_id ); ?>">
@@ -118,6 +136,9 @@ call_user_func(
 					</label>
 					<div class="input-container listing-details">
 						<p><?php echo wp_kses_post( $subscription_description ); ?></p>
+						<p class="newspack-listings__help">
+							<?php echo esc_html( __( 'Subscription listings remain live as long as the subscription is active.', 'newspack-listings' ) ); ?>
+						</p>
 						<hr />
 						<h3><?php echo esc_html( __( 'Listing Details', 'newspack-listings' ) ); ?></h3>
 						<label for="listing-title-subscription-<?php echo esc_attr( $client_id ); ?>">
@@ -142,7 +163,7 @@ call_user_func(
 							<?php
 							echo esc_html(
 								__(
-									'A premium subscription lets you publish up to five listings related to your organization per month.',
+									'A premium subscription upgrades your listing to "featured" status and lets you create up to 10 additional Marketplace or Event listings.',
 									'newspack-listings'
 								)
 							);

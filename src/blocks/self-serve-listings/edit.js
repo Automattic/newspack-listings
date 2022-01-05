@@ -20,28 +20,10 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import './editor.scss';
 
-const SINGLE_LISTING_TYPES = [
-	{
-		slug: 'blank',
-		name: 'Blank listing (start from scratch)',
-	},
-	{
-		slug: 'event',
-		name: 'Event',
-	},
-	{
-		slug: 'classified',
-		name: 'Classified Ad',
-	},
-	{
-		slug: 'job',
-		name: 'Job Listing',
-	},
-	{
-		slug: 'real-estate',
-		name: 'Real Estate Listing',
-	},
-];
+const {
+	self_serve_listing_types: singleListingTypes = [],
+	self_serve_listing_expiration: singleExpirationPeriod = 30,
+} = window.newspack_listings_data || {};
 
 export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes } ) => {
 	const [ selectedType, setSelectedType ] = useState( 'single' );
@@ -86,7 +68,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 						) }
 						label={ __( 'Allowed Single Listing Types', 'newspack-listings' ) }
 					>
-						{ SINGLE_LISTING_TYPES.map( listingType => {
+						{ singleListingTypes.map( listingType => {
 							const isAllowed = allowedSingleListingTypes.reduce( ( acc, type ) => {
 								if ( type.slug === listingType.slug ) {
 									return true;
@@ -170,6 +152,17 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									value={ singleDescription }
 									tagName="p"
 								/>
+								{ singleExpirationPeriod && (
+									<p className="newspack-listings__help">
+										{ sprintf(
+											__(
+												'Single-purchase listings expire %d days after the date of publication.',
+												'newspack-listings'
+											),
+											singleExpirationPeriod
+										) }
+									</p>
+								) }
 								<hr />
 								<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
 								<label htmlFor={ `listing-title-single-${ clientId }` }>
@@ -236,6 +229,12 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 										value={ subscriptionDescription }
 										tagName="p"
 									/>
+									<p className="newspack-listings__help">
+										{ __(
+											'Subscription listings remain live as long as the subscription is active.',
+											'newspack-listings'
+										) }
+									</p>
 									<hr />
 									<h3>{ __( 'Listing Details', 'newspack-listings' ) }</h3>
 									<label htmlFor={ `listing-title-subscription${ clientId }` }>
@@ -258,7 +257,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									</label>
 									<p class="newspack-listings__help">
 										{ __(
-											'A premium subscription lets you publish up to five listings related to your organization per month.',
+											'A premium subscription upgrades your listing to "featured" status and lets you create up to 10 additional Marketplace or Event listings.',
 											'newspack-listings'
 										) }
 									</p>
