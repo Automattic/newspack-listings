@@ -185,7 +185,7 @@ final class Newspack_Listings_Settings {
 		}
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		if ( class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions_Product' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
 			$product_settings = [
 				[
 					'description' => __( 'The base price for a single listing (no subscription).', 'newspack-listings' ),

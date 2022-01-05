@@ -149,7 +149,13 @@ final class Newspack_Listings_Featured {
 		$default_priority = 5;
 
 		foreach ( $results->posts as $featured_listing ) {
-			self::update_priority( $featured_listing->ID, $default_priority );
+			$priority = get_post_meta( $featured_listing->ID, 'newspack_listings_featured_priority', true );
+
+			if ( ! $priority ) {
+				$priority = $default_priority;
+			}
+
+			self::update_priority( $featured_listing->ID, $priority );
 		}
 
 		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
