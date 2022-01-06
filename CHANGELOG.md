@@ -1,3 +1,10 @@
+# [2.9.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.8.0...v2.9.0-alpha.1) (2022-01-06)
+
+
+### Features
+
+* **ugc:** handle self-serve purchase form submission ([#135](https://github.com/Automattic/newspack-listings/issues/135)) ([7a62bd8](https://github.com/Automattic/newspack-listings/commit/7a62bd8bca95ac47ff1ef8fbb5899854df71f07c))
+
 # [2.8.0](https://github.com/Automattic/newspack-listings/compare/v2.7.0...v2.8.0) (2021-11-09)
 
 
