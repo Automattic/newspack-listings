@@ -32,7 +32,7 @@
 	}
 
 	&__empty-message {
-		border-bottom: 1px solid $light-gray-500;
+		border-bottom: 1px solid var( --newspack-listings--grey-light );
 		margin-bottom: 2rem;
 		padding-bottom: 1.75rem;
 	}

@@ -20,14 +20,14 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 	const locale = window.navigator?.language || 'en-US';
 	const { currency, formattedPrice, price, showDecimals } = attributes;
 
-	useEffect(() => {
+	useEffect( () => {
 		// Guard against setting invalid price attribute.
 		if ( isNaN( price ) || '' === price || 0 > price ) {
 			setAttributes( { price: 0 } );
 		}
-	}, [ isSelected ]);
+	}, [ isSelected ] );
 
-	useEffect(() => {
+	useEffect( () => {
 		// Guard against rendering invalid price attribute.
 		const priceToFormat = isNaN( price ) || '' === price || 0 > price ? 0 : price;
 
@@ -40,7 +40,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 				maximumFractionDigits: showDecimals ? 2 : 0,
 			} ).format( priceToFormat ),
 		} );
-	}, [ currency, showDecimals, price ]);
+	}, [ currency, showDecimals, price ] );
 
 	return (
 		<>
@@ -84,6 +84,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 				>
 					<TextControl
 						label={ sprintf(
+							// Translators: Price currency help message.
 							__( 'Price in %s', 'newspack-listings' ),
 							currency || defaultCurrency
 						) }

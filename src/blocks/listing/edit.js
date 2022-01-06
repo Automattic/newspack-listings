@@ -55,11 +55,11 @@ const ListingEditorComponent = ( {
 	const listingType = post_types[ listingTypeSlug ];
 
 	// Fetch listing post data if we have a listing post ID.
-	useEffect(() => {
+	useEffect( () => {
 		if ( ! post && listing ) {
 			fetchPost( listing );
 		}
-	}, [ listing ]);
+	}, [ listing ] );
 
 	// Fetch listing post by listingId.
 	const fetchPost = async listingId => {
