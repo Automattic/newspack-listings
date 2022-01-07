@@ -93,6 +93,7 @@ final class Newspack_Listings_Featured {
 		if ( self::TABLE_VERSION !== $current_version ) {
 			self::create_custom_table();
 			self::populate_custom_table();
+			update_option( self::TABLE_VERSION_OPTION, self::TABLE_VERSION );
 		}
 	}
 
@@ -118,8 +119,6 @@ final class Newspack_Listings_Featured {
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
-
-			update_option( self::TABLE_VERSION_OPTION, self::TABLE_VERSION );
 		}
 	}
 
@@ -149,7 +148,13 @@ final class Newspack_Listings_Featured {
 		$default_priority = 5;
 
 		foreach ( $results->posts as $featured_listing ) {
-			self::update_priority( $featured_listing->ID, $default_priority );
+			$priority = get_post_meta( $featured_listing->ID, 'newspack_listings_featured_priority', true );
+
+			if ( ! $priority ) {
+				$priority = $default_priority;
+			}
+
+			self::update_priority( $featured_listing->ID, $priority );
 		}
 
 		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
@@ -160,7 +165,13 @@ final class Newspack_Listings_Featured {
 				$results       = new \WP_Query( $args );
 
 				foreach ( $results->posts as $featured_listing ) {
-					self::update_priority( $featured_listing->ID, $default_priority );
+					$priority = get_post_meta( $featured_listing->ID, 'newspack_listings_featured_priority', true );
+
+					if ( ! $priority ) {
+						$priority = $default_priority;
+					}
+
+					self::update_priority( $featured_listing->ID, $priority );
 				}
 			}
 		}
