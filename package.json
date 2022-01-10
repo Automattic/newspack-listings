@@ -95,7 +95,7 @@
     "@babel/preset-env": "^7.16.5",
     "@wordpress/api-fetch": "^5.2.6",
     "@wordpress/base-styles": "^4.0.4",
-    "@wordpress/block-editor": "^8.0.11",
+    "@wordpress/block-editor": "^8.0.13",
     "@wordpress/blocks": "^11.1.2",
     "@wordpress/components": "^19.2.0",
     "@wordpress/compose": "^5.0.6",
