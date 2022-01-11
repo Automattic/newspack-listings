@@ -107,13 +107,13 @@ final class Newspack_Listings_Blocks {
 			'self_serve_enabled' => defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED,
 		];
 
-		if ( $localized_data['self_serve_enabled'] && class_exists( 'Newspack_Listings\Newspack_Listings_Products' ) ) {
+		if ( $localized_data['self_serve_enabled'] ) {
 			$localized_data['self_serve_listing_types']      = Products::get_listing_types();
 			$localized_data['self_serve_listing_expiration'] = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
-		}
 
-		if ( Products::is_listing_customer() ) {
-			$localized_data['is_listing_customer'] = true;
+			if ( Products::is_listing_customer() ) {
+				$localized_data['is_listing_customer'] = true;
+			}
 		}
 
 		wp_localize_script(
