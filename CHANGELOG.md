@@ -1,3 +1,10 @@
+# [2.9.0-alpha.3](https://github.com/Automattic/newspack-listings/compare/v2.9.0-alpha.2...v2.9.0-alpha.3) (2022-01-11)
+
+
+### Bug Fixes
+
+* a fatal error when self-serve listings env variable is not defined ([#196](https://github.com/Automattic/newspack-listings/issues/196)) ([59f6ab6](https://github.com/Automattic/newspack-listings/commit/59f6ab6216b80ab32f9aa30ccc8d77eb54b26865))
+
 # [2.9.0-alpha.2](https://github.com/Automattic/newspack-listings/compare/v2.9.0-alpha.1...v2.9.0-alpha.2) (2022-01-07)
 
 
