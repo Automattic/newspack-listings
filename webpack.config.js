@@ -14,7 +14,6 @@ const path = require( 'path' );
  * Internal variables
  */
 const editor = path.join( __dirname, 'src', 'editor' );
-// const assets = [ path.join( __dirname, 'src', 'assets/front-end/*.js' ) ];
 const assetsDir = path.join( __dirname, 'src', 'assets', 'front-end' );
 const assets = fs
 	.readdirSync( assetsDir )
