@@ -252,7 +252,7 @@ final class Newspack_Listings_Blocks {
 		}
 
 		// Styles for Self-Serve Listings admin UI.
-		if ( is_singular() && function_exists( 'is_account_page' ) && is_account_page() ) {
+		if ( function_exists( 'is_account_page' ) && is_account_page() ) {
 			wp_enqueue_style(
 				'newspack-listings-self-serve-listings',
 				NEWSPACK_LISTINGS_URL . 'dist/self-serve-listings.css',
