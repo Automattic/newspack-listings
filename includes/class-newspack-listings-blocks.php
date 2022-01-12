@@ -189,16 +189,14 @@ final class Newspack_Listings_Blocks {
 	 * Enqueue custom scripts for Newspack Listings front-end components.
 	 */
 	public static function custom_scripts() {
-		if ( ! Utils\is_amp() ) {
-			wp_register_script(
-				'newspack-listings',
-				NEWSPACK_LISTINGS_URL . 'dist/assets.js',
+		if ( ! Utils\is_amp() && has_block( 'newspack-listings/curated-list', get_the_ID() ) ) {
+			wp_enqueue_script(
+				'newspack-listings-curated-list',
+				NEWSPACK_LISTINGS_URL . 'dist/curated-list.js',
 				[],
 				NEWSPACK_LISTINGS_VERSION,
 				true
 			);
-
-			wp_enqueue_script( 'newspack-listings' );
 		}
 	}
 
@@ -206,15 +204,61 @@ final class Newspack_Listings_Blocks {
 	 * Enqueue custom styles for Newspack Listings front-end components.
 	 */
 	public static function custom_styles() {
-		if ( ! is_admin() ) {
-			wp_register_style(
-				'newspack-listings-styles',
-				NEWSPACK_LISTINGS_URL . 'dist/assets.css',
+		if ( is_admin() ) {
+			return;
+		}
+
+		$post_id = get_the_ID();
+
+		// Styles for listing archives.
+		$archive_should_include_listings = is_category() || is_tag();
+		if ( apply_filters( 'newspack_listings_archive_types', $archive_should_include_listings ) ) {
+			wp_enqueue_style(
+				'newspack-listings-archives',
+				NEWSPACK_LISTINGS_URL . 'dist/archives.css',
 				[],
 				NEWSPACK_LISTINGS_VERSION
 			);
+		}
 
-			wp_enqueue_style( 'newspack-listings-styles' );
+		// Styles for Curated List block.
+		if ( is_singular() && has_block( 'newspack-listings/curated-list', $post_id ) ) {
+			wp_enqueue_style(
+				'newspack-listings-curated-list',
+				NEWSPACK_LISTINGS_URL . 'dist/curated-list.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+		}
+
+		// Styles for any singular listing type.
+		if ( is_singular( array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ) ) ) {
+			wp_enqueue_style(
+				'newspack-listings-patterns',
+				NEWSPACK_LISTINGS_URL . 'dist/patterns.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+		}
+
+		// Styles for singular event listings.
+		if ( is_singular( Core::NEWSPACK_LISTINGS_POST_TYPES['event'] ) ) {
+			wp_enqueue_style(
+				'newspack-listings-event',
+				NEWSPACK_LISTINGS_URL . 'dist/event.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+		}
+
+		// Styles for Self-Serve Listings admin UI.
+		if ( is_singular() && function_exists( 'is_account_page' ) && is_account_page() ) {
+			wp_enqueue_style(
+				'newspack-listings-self-serve-listings',
+				NEWSPACK_LISTINGS_URL . 'dist/self-serve-listings.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
 		}
 	}
 }
