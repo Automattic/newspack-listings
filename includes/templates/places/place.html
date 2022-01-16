@@ -1,0 +1,46 @@
+{featured_image}
+<!-- wp:group {"className":"newspack-listings__business-pattern-1"} -->
+<div class="wp-block-group newspack-listings__business-pattern-1"><!-- wp:columns -->
+    <div class="wp-block-columns"><!-- wp:column {"width":"66.66%"} -->
+        <div class="wp-block-column" style="flex-basis:66.66%"><!-- wp:paragraph -->
+            <p>{description}</p>
+            <!-- /wp:paragraph --></div>
+        <!-- /wp:column -->
+
+        <!-- wp:column {"width":"33.33%"} -->
+        <div class="wp-block-column" style="flex-basis:33.33%">
+            <!-- wp:jetpack/map {"mapCenter":{"lng":-122.41941550000001,"lat":37.7749295}} -->
+            <div class="wp-block-jetpack-map" data-map-style="default" data-map-details="true" data-points="[]"
+                 data-zoom="13" data-map-center="{&quot;lng&quot;:-122.41941550000001,&quot;lat&quot;:37.7749295}"
+                 data-marker-color="red" data-show-fullscreen-button="true"></div>
+            <!-- /wp:jetpack/map -->
+
+            <!-- wp:jetpack/contact-info -->
+            <div class="wp-block-jetpack-contact-info"><!-- wp:jetpack/email {"email":"{email}"} -->
+                <div class="wp-block-jetpack-email"><a href="mailto:{email}">{email}</a></div>
+                <!-- /wp:jetpack/email -->
+
+                <!-- wp:jetpack/phone {"phone":"{phone_display}"} -->
+                <div class="wp-block-jetpack-phone"><a href="tel:{phone}">{phone_display}</a></div>
+                <!-- /wp:jetpack/phone -->
+
+                <!-- wp:jetpack/address {"address":"{address_street}","city":"{address_city}","region":"{address_region}","postal":"{address_postal}"} -->
+                <div class="wp-block-jetpack-address">
+                    <div class="jetpack-address__address jetpack-address__address1">
+                        {address_street}
+                    </div>
+                    <div><span class="jetpack-address__city">{address_city}</span>, <span
+                            class="jetpack-address__region">{address_region}</span> <span
+                            class="jetpack-address__postal">{address_postal}</span></div>
+                </div>
+                <!-- /wp:jetpack/address --></div>
+            <!-- /wp:jetpack/contact-info -->
+
+            <!-- wp:separator {"className":"is-style-wide"} -->
+            <hr class="wp-block-separator is-style-wide"/>
+            <!-- /wp:separator -->
+
+            <!-- wp:jetpack/business-hours /--></div>
+        <!-- /wp:column --></div>
+    <!-- /wp:columns --></div>
+<!-- /wp:group -->
