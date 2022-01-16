@@ -9,8 +9,15 @@ namespace Newspack_Listings\Importer;
 
 use Exception;
 use Iterator;
+use Newspack_Listings\Contracts\Importer_Mode as Importer_Mode_Interface;
+use Newspack_Listings\Contracts\Listings_Type_Mapper as Listings_Type_Mapper_Interface;
 use Newspack_Listings\File_Import_Factory;
+use Newspack_Listings\Importer_Mode;
+use Newspack_Listings\Listing_Type;
+use Newspack_Listings\Listings_Type_Mapper;
+use Newspack_Listings\Newspack_Listings_Core as Core;
 use WP_CLI;
+use WP_Error;
 use WP_Post;
 
 /**
@@ -20,10 +27,6 @@ use WP_Post;
  * @class Newspack_Listings_Callable_Importer
  */
 class Newspack_Listings_Callable_Importer {
-
-	private const MODE_DRY_RUN = 'dry-run';
-	private const MODE_UPDATE = 'update';
-	private const MODE_SKIP = 'skip';
 
 	/**
 	 * Singleton instance property.
@@ -47,25 +50,45 @@ class Newspack_Listings_Callable_Importer {
 	protected $callable_post_create;
 
 	/**
-	 * This boolean flag tracks whether records should be created in the database.
+	 * Object representing the import mode to be referenced.
 	 *
-	 * @var bool $mode_dry_run Boolean flag used to determine whether records should be created.
+	 * @var Importer_Mode_Interface $importer_mode
 	 */
-	protected bool $mode_dry_run = false;
+	protected Importer_Mode_Interface $importer_mode;
 
 	/**
-	 * This boolean flag tracks whether records should be updated in the database.
-	 *
-	 * @var bool $mode_update Boolean flag used to determine whether records should be updated.
+	 * @var Listings_Type_Mapper_Interface $listings_mapper Custom mapper for Newspack Listings Type and user defined types.
 	 */
-	protected bool $mode_update = true;
+	protected Listings_Type_Mapper_Interface $listings_mapper;
 
 	/**
-	 * This boolean flag tracks whether records found in the database should disregard any updates.
+	 * If a listing type is not found, will default to the below. Can be set during execution.
 	 *
-	 * @var bool $mode_skip Boolean flag used to determine whether existing records should be skipped.
+	 * @var string $default_listing_type Default Listing Post Type.
 	 */
-	protected bool $mode_skip = false;
+	protected string $default_listing_type = Listing_Type::GENERIC;
+
+	/**
+	 * @var array $listing_param_to_type_map
+	 */
+	protected array $listing_param_to_type_map = [
+		'generic-listing-types'     => [
+			'name'        => Listing_Type::GENERIC,
+			'description' => 'Custom post types that should be mapped to the Generic Listing Type.',
+		],
+		'event-listing-types'       => [
+			'name'        => Listing_Type::EVENT,
+			'description' => 'Custom post types that should be mapped to the Event Listing Type',
+		],
+		'marketplace-listing-types' => [
+			'name'        => Listing_Type::MARKETPLACE,
+			'description' => 'Custom post types that should be mapped to the Marketplace Listing Type.',
+		],
+		'place-listing-types'       => [
+			'name'        => Listing_Type::PLACE,
+			'description' => 'Custom post types that should be mapped to the Place Listing Type.',
+		],
+	];
 
 	/**
 	 * Return's singleton instance.
@@ -75,11 +98,14 @@ class Newspack_Listings_Callable_Importer {
 	public static function get_instance(): Newspack_Listings_Callable_Importer {
 
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new static();
+			self::$instance                  = new static();
+			self::$instance->importer_mode   = new Importer_Mode();
+			self::$instance->listings_mapper = new Listings_Type_Mapper();
 		}
 
 		return self::$instance;
 	}
+
 	/**
 	 * Constructor.
 	 *
@@ -95,42 +121,68 @@ class Newspack_Listings_Callable_Importer {
 	 * Register's CLI command.
 	 */
 	public static function add_cli_command() {
+		$synopsis = [
+			[
+				'type'        => 'positional',
+				'name'        => 'file',
+				'description' => 'Path to file',
+				'optional'    => false,
+				'repeating'   => false,
+			],
+			[
+				'type'        => 'assoc',
+				'name'        => 'start',
+				'description' => 'Row number to start at.',
+				'optional'    => true,
+				'repeating'   => false,
+			],
+			[
+				'type'        => 'assoc',
+				'name'        => 'end',
+				'description' => 'Row number to start at.',
+				'optional'    => true,
+				'repeating'   => false,
+			],
+			[
+				'type'        => 'assoc',
+				'name'        => 'mode',
+				'description' => 'Whether to perform a dry-run (no DB interaction), update, or skip if already imported.',
+				'optional'    => true,
+				'default'     => 'update',
+				'options'     => [ 'dry-run', 'update', 'skip' ],
+			],
+			[
+				'type'        => 'assoc',
+				'name'        => 'default-listing-type',
+				'description' => 'The default listing type to use, if none found.',
+				'optional'    => true,
+				'default'     => Listing_Type::GENERIC,
+				'options'     => [
+					Listing_Type::GENERIC,
+					Listing_Type::EVENT,
+					Listing_Type::MARKETPLACE,
+					Listing_Type::PLACE,
+				],
+			],
+		];
+
+		// Add Newspack Listing Types params.
+		foreach ( self::$instance->listing_param_to_type_map as $key => $values ) {
+			$synopsis[] = [
+				'type'        => 'assoc',
+				'name'        => $key,
+				'description' => $values['description'],
+				'optional'    => true,
+				'repeating'   => true,
+			];
+		}
+
 		WP_CLI::add_command(
 			'newspack-listings new-import',
 			[ self::$instance, 'handle_import_command' ],
 			[
 				'shortdesc' => 'Import listings data.',
-				'synopsis'  => [
-					[
-						'type'          => 'positional',
-						'name'          => 'file',
-						'description'   => 'Path to file',
-						'optional'      => false,
-						'repeating'     => false,
-					],
-					[
-						'type'          => 'assoc',
-						'name'          => 'start',
-						'description'   => 'Row number to start at.',
-						'optional'      => true,
-						'repeating'     => false,
-					],
-					[
-						'type'          => 'assoc',
-						'name'          => 'end',
-						'description'   => 'Row number to start at.',
-						'optional'      => true,
-						'repeating'     => false,
-					],
-					[
-						'type'          => 'assoc',
-						'name'          => 'mode',
-						'description'   => 'Whether to perform a dry-run (no DB interaction), update, or skip if already imported.',
-						'optional'      => true,
-						'default'       => 'update',
-						'options'       => [ 'dry-run', 'update', 'skip' ],
-					],
-				],
+				'synopsis'  => $synopsis,
 			],
 		);
 	}
@@ -145,7 +197,7 @@ class Newspack_Listings_Callable_Importer {
 	 */
 	protected function set_callable_pre_create( $callable_pre_create ) {
 		if ( is_string( $callable_pre_create ) ) {
-			$callable_pre_create = new $callable_pre_create;
+			$callable_pre_create = new $callable_pre_create();
 		}
 
 		if ( ! ( $callable_pre_create instanceof Abstract_Callable_Pre_Create ) ) {
@@ -156,12 +208,41 @@ class Newspack_Listings_Callable_Importer {
 	}
 
 	/**
-	 * Get the instance of Abstract Callable Pre Create that was set.
+	 * Get the instance of @return Abstract_Callable_Pre_Create|null
 	 *
-	 * @return Abstract_Callable_Pre_Create|null
+	 * @see Abstract_Callable_Pre_Create that was set.
 	 */
 	protected function get_callable_pre_create(): ?Abstract_Callable_Pre_Create {
 		return $this->callable_pre_create;
+	}
+
+	/**
+	 * Set a callable instance for execution.
+	 *
+	 * @param string|Abstract_Callable_Post_Create $callable_post_create TBD.
+	 *
+	 * @return void
+	 * @throws Exception Will throw an exception is class is not found.
+	 */
+	protected function set_callable_post_create( $callable_post_create ) {
+		if ( is_string( $callable_post_create ) ) {
+			$callable_post_create = new $callable_post_create();
+		}
+
+		if ( ! ( $callable_post_create instanceof Abstract_Callable_Post_Create ) ) {
+			throw new Exception( 'Please provide a valid class of type Abstract_Callable_Post_Create.' );
+		}
+
+		$this->callable_post_create = $callable_post_create;
+	}
+
+	/**
+	 * Get the instance of @return Abstract_Callable_Post_Create|null
+	 *
+	 * @see Abstract_Callable_Post_Create that was set
+	 */
+	protected function get_callable_post_create(): ?Abstract_Callable_Post_Create {
+		return $this->callable_post_create;
 	}
 
 	/**
@@ -173,108 +254,72 @@ class Newspack_Listings_Callable_Importer {
 	 * @throws Exception Thrown if file is not on system.
 	 */
 	public function handle_import_command( $args, $assoc_args ) {
-//		WP_CLI::log('Got here');
-//		var_dump($assoc_args);
+		// WP_CLI::log('Got here');
+
 		$this->set_callable_pre_create( new Custom_Callback_Pre_Create() );
 
-		$this->set_mode( $assoc_args['dry-run'] ?? '' );
+		$this->set_callable_post_create( new Custom_Callback_Post_Create() );
+
+		$this->get_importer_mode()->set_mode( $assoc_args['mode'] ?? '' );
+
+		$this->set_default_listing_type( $assoc_args['default-listing-type'] ?? Listing_Type::GENERIC );
+
+		$assoc_keys            = array_keys( $assoc_args );
+		$custom_listings_types = array_intersect(
+			array_keys( $this->listing_param_to_type_map ),
+			$assoc_keys
+		);
+
+		if ( ! empty( $custom_listings_types ) ) {
+			$listings_type_mapper = new Listings_Type_Mapper();
+
+			foreach ( $custom_listings_types as $key ) {
+				$listings_type_mapper->set_types(
+					$this->listing_param_to_type_map[ $key ]['name'],
+					explode( ',', trim( $assoc_args[ $key ] ) )
+				);
+
+				$this->set_listings_type_mapper( $listings_type_mapper );
+			}
+		}
 
 		$this->import(
 			( new File_Import_Factory() )
 				->get_file( $args[0] )
-				->set_start( $assoc_args['start'] ?? 0)
+				->set_start( $assoc_args['start'] ?? 0 )
 				->set_end( $assoc_args['end'] ?? PHP_INT_MAX )
 				->getIterator()
 		);
 	}
 
 	/**
-	 * Sets the mode under which to run the import.
+	 * Set the default listing type to be used when a listing type can't be found.
 	 *
-	 * @param string $mode Should a mode from the options list.
+	 * @param string $type Listing type.
 	 */
-	protected function set_mode( string $mode ) {
-		switch ( strtolower( $mode ) ) {
-			case self::MODE_DRY_RUN:
-				$this->set_mode_dry_run();
-				break;
-			case self::MODE_SKIP:
-				$this->set_mode_skip();
-				break;
-			case self::MODE_UPDATE:
-			default:
-				$this->set_mode_update();
-				break;
+	protected function set_default_listing_type( string $type ) {
+		// TODO does WP CLI throw an exception/error if a value not in the options list is given?
+		if ( Core::is_listing( $type ) ) {
+			$this->default_listing_type = $type;
 		}
 	}
 
 	/**
-	 * Sets the $mode_dry_run flag. No records should be created or updated.
+	 * Returns the default listing type to use when no listing type can be found.
 	 *
-	 * @param bool $mode_dry_run False by default.
+	 * @return string
 	 */
-	protected function set_mode_dry_run( bool $mode_dry_run = true ) {
-		$this->mode_dry_run = $mode_dry_run;
-
-		if ( $this->mode_dry_run ) {
-			$this->set_mode_update( false );
-			$this->set_mode_skip( false );
-		}
+	protected function get_default_listing_type(): string {
+		return $this->default_listing_type;
 	}
 
 	/**
-	 * Returns the $mode_dry_run flag.
+	 * Get the object representing the mode the importer is running under.
 	 *
-	 * @return bool
+	 * @return Importer_Mode_Interface
 	 */
-	protected function is_mode_dry_run(): bool {
-		return $this->mode_dry_run;
-	}
-
-	/**
-	 * Set the $mode_update flag. Determines whether existing records should be updated.
-	 *
-	 * @param bool $mode_update Boolean flag.
-	 */
-	protected function set_mode_update( bool $mode_update = true ) {
-		$this->mode_update = $mode_update;
-
-		if ( $this->mode_update ) {
-			$this->set_mode_dry_run( false );
-			$this->set_mode_skip( false );
-		}
-	}
-
-	/**
-	 * Returns $mode_update flag, determining whether records should be updated.
-	 *
-	 * @return bool
-	 */
-	protected function is_mode_update(): bool {
-		return $this->mode_update;
-	}
-
-	/**
-	 * Set the $mode_skip flag. Determines whether existing records should disregard updates.
-	 *
-	 * @param bool $mode_skip Boolean flag.
-	 */
-	protected function set_mode_skip( bool $mode_skip = true ) {
-		$this->mode_skip = $mode_skip;
-
-		if ( $this->mode_skip ) {
-			$this->set_mode_dry_run( false );
-			$this->set_mode_update( false );
-		}
-	}
-
-	/**
-	 * Returns $mode_skip flag, determining whether existing records should desregard updates.
-	 *
-	 * @return bool
-	 */
-	protected function is_mode_skip(): bool {
-		return $this->mode_skip;
+	protected function get_importer_mode(): Importer_Mode_Interface {
+		return $this->importer_mode;
 	}
 
 	/**
@@ -285,13 +330,13 @@ class Newspack_Listings_Callable_Importer {
 	protected function import( Iterator $iterator ) {
 		do {
 			if ( ! is_null( $this->get_callable_pre_create() ) ) {
-				$this->get_callable_pre_create()( $iterator->current() );
+				$this->get_callable_pre_create()( $iterator->current(), $this->get_importer_mode() );
 			}
 
 			$listing = $this->create_or_update_listing( $iterator->current() );
 
 			if ( isset( $this->callable_post_create ) ) {
-				$this->callable_post_create( $listing );
+				$this->get_callable_post_create()( $listing, $this->get_importer_mode(), $iterator->current() );
 			}
 
 			$iterator->next();
@@ -306,17 +351,316 @@ class Newspack_Listings_Callable_Importer {
 	 * @return WP_Post
 	 */
 	protected function create_or_update_listing( array $row ): WP_Post {
-		// TODO need to implement Newspack_Listings_Importer::get_post_type_mapping function.
+		$post_type     = $this->get_listing_type( $row );
 		$existing_post = function_exists( 'wpcom_vip_get_page_by_title' ) ?
 			wpcom_vip_get_page_by_title( $row['wp_post.post_title'], OBJECT, 'NEWSPACK_LISTING_TYPE' ) :
 			get_page_by_title( $row['wp_post.post_title'], OBJECT, 'NEWSPACK_LISTING_TYPE' );
 
-		// TODO flesh out the rest of this function.
-		if ( $this->is_mode_dry_run() || $this->is_mode_skip() ) {
-			return new WP_Post();
+		$incoming_post_data = [
+			'post_author' => 1, // Default user in case author isn't defined.
+		];
+
+		$other_data = [];
+
+		foreach ( $row as $key => $value ) {
+			if ( str_starts_with( $key, 'wp_post.' ) ) {
+				$incoming_post_data[ str_replace( 'wp_post.', '', $key ) ] = $value;
+			} else {
+				$other_data[ $key ] = $value;
+			}
 		}
 
-		return new WP_Post();
+		$date_format                        = 'Y-m-d H:i:s';
+		$incoming_post_data['post_type']    = $post_type;
+		$incoming_post_data['post_date']    = isset( $incoming_post_data['post_date'] ) ?
+			gmdate( $date_format, $incoming_post_data['post_date'] ) :
+			gmdate( $date_format, time() );
+		$incoming_post_data['post_excerpt'] = $incoming_post_data['post_excerpt'] ?? '';
+		$incoming_post_data['post_title']   = $incoming_post_data['post_title'] ?? __( '(no title)', 'newspack-listing' );
+		$incoming_post_data['post_status']  = 'publish';
+		$incoming_post_data['meta_input']   = [
+			'_wp_page_template'                => 'single-wide.php',
+			'newspack_featured_image_position' => 'hidden', // Featured image is shown in listing content.
+		];
+
+		if ( is_string( $incoming_post_data['post_author'] ) ) {
+			$incoming_post_data['post_author'] = $this->handle_post_author( $incoming_post_data['post_author'] );
+		}
+
+		$images = [];
+
+		if ( array_key_exists( 'images', $row ) ) {
+			$images = $this->handle_post_images( $row['images'] );
+		}
+
+		$incoming_post_data['post_content'] = $this->handle_post_content(
+			$incoming_post_data['post_type'] ?? '',
+			$other_data,
+			$images
+		);
+
+		if ( $this->get_importer_mode()->is_dry_run() ) {
+			if ( $existing_post ) {
+				$diff = array_diff_assoc( $existing_post->to_array(), $incoming_post_data );
+
+				var_dump(
+					[
+						'Existing Post' => $existing_post->to_array(),
+						'Updates'       => $diff,
+					]
+				);
+
+				return $this->handle_existing_post_properties( $existing_post, $incoming_post_data, $post_type );
+			} else {
+				var_dump(
+					[
+						'New Post' => $incoming_post_data,
+					]
+				);
+
+				return new WP_Post( (object) $incoming_post_data );
+			}
+		}
+
+		if ( $this->get_importer_mode()->is_skip() ) {
+			$post_exists = $existing_post ? 'exists' : 'does not exist';
+			WP_CLI::line( "Post '{$incoming_post_data['post_title']}' $post_exists" );
+		}
+
+		if ( $this->get_importer_mode()->is_update() ) {
+			if ( $existing_post ) {
+				$post_id = wp_update_post(
+					$this->handle_existing_post_properties( $existing_post, $incoming_post_data, $post_type ),
+					true
+				);
+			} else {
+				$post_id = wp_insert_post( $incoming_post_data, true );
+			}
+
+			if ( $post_id instanceof WP_Error ) {
+				WP_CLI::error( $post_id->get_error_message() );
+			} else {
+				$existing_post = get_post( $post_id );
+			}
+		}
+
+		return $existing_post ?? new WP_Post( (object) $incoming_post_data );
+	}
+
+	/**
+	 * Setter for @see Listings_Type_Mapper.
+	 *
+	 * @param Listings_Type_Mapper_Interface $mapper Custom mapper to handle relationship between custom types and Newspack Listing Types.
+	 */
+	protected function set_listings_type_mapper( Listings_Type_Mapper_Interface $mapper ) {
+		$this->listings_mapper = $mapper;
+	}
+
+	/**
+	 * Getter for @return Listings_Type_Mapper_Interface
+	 *
+	 * @see Listings_Type_Mapper.
+	 */
+	protected function get_listings_type_mapper(): Listings_Type_Mapper_Interface {
+		return $this->listings_mapper;
+	}
+
+	/**
+	 * Convenience function to handle the proper retrieval of Newspack Listing Type.
+	 *
+	 * @param array $row Row of data from file.
+	 *
+	 * @return string
+	 */
+	protected function get_listing_type( array $row ): string {
+		if ( ! is_null( $this->listings_mapper ) ) {
+			try {
+				return $this->listings_mapper->get_listing_type( $row['wp_post.post_type'] );
+			} catch ( Exception $e ) {
+				return $this->get_default_listing_type();
+			}
+		}
+
+		return $this->get_default_listing_type();
+	}
+
+	/**
+	 * Get or create the Author's ID.
+	 *
+	 * @param string $author_slug URL representing the Author.
+	 *
+	 * @return int
+	 */
+	protected function handle_post_author( string $author_slug ): int {
+		$post_author = get_user_by( 'slug', $author_slug );
+
+		if ( $post_author ) {
+			return $post_author->ID;
+		} else {
+			return wp_create_user( $author_slug, wp_generate_password() );
+		}
+	}
+
+	/**
+	 * Generates a Newspack Listing Block from a template.
+	 *
+	 * @param string $listing_type @see Listing_Type.
+	 * @param array  $data Newspack Listing Post Data.
+	 * @param array  $images Array of images to be inserted into post.
+	 *
+	 * @return string
+	 */
+	protected function handle_post_content( string $listing_type, array $data, array $images = [] ): string {
+		switch ( $listing_type ) {
+			case Listing_Type::PLACE:
+				$place          = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/places/place.html' );
+				$featured_image = '';
+
+				if ( array_key_exists( 'featured_image', $images ) ) {
+					$featured_image = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/featured_image.html' );
+					$featured_image = strtr(
+						$featured_image,
+						[
+							'{id}'  => $images['featured_image']['id'],
+							'{url}' => $images['featured_image']['path'],
+						]
+					);
+				}
+				$content = strtr(
+					$place,
+					[
+						'{featured_image}' => $featured_image,
+						'{description}'    => $data['description'] ?? '',
+						'{email}'          => $data['email'] ?? '',
+						'{phone}'          => $data['phone'] ?? '',
+						'{phone_display}'  => $data['phone_display'] ?? '',
+						'{address_street}' => $data['address_street'] ?? '',
+						'{address_city}'   => $data['address_city'] ?? '',
+						'{address_region}' => $data['address_region'] ?? '',
+						'{address_postal}' => $data['address_postal'] ?? '',
+					]
+				);
+				break;
+			case Listing_Type::MARKETPLACE:
+				$content = 'marketplace';
+				break;
+			case Listing_Type::EVENT:
+				$content = 'event';
+				break;
+			case Listing_Type::GENERIC:
+			default:
+				$content = 'generic';
+		}
+
+		return $content;
+	}
+
+	/**
+	 * Handles properly uploading images.
+	 *
+	 * @param string[]|array $images Array of image paths or URL's.
+	 *
+	 * @return string[]
+	 * @throws Exception
+	 */
+	protected function handle_post_images( array $images ): array {
+		$uploaded_images  = [];
+		$upload_directory = wp_upload_dir();
+
+		foreach ( $images as $key => $image ) {
+			$image_name   = basename( $image['path'] );
+			$image_exists = function_exists( 'wpcom_vip_get_page_by_title' ) ?
+				wpcom_vip_get_page_by_title( $image_name, OBJECT, 'attachment' ) :
+				get_page_by_title( $image_name, OBJECT, 'attachment' );
+
+			if ( $image_exists ) {
+				if ( is_string( $key ) ) {
+					$uploaded_images[ $key ] = [
+						'id'   => $image_exists->ID,
+						'path' => $image_exists->guid,
+					];
+				} else {
+					if ( ! array_key_exists( 'featured_image', $uploaded_images ) ) {
+						$uploaded_images['featured_image'] = $image_exists->ID;
+					} else {
+						$uploaded_images[] = [
+							'id'   => $image_exists->ID,
+							'path' => $image_exists->guid,
+						];
+					}
+				}
+
+				continue;
+			}
+
+			if ( file_exists( $image ) ) {
+				$image_data = file_get_contents( $image );
+				$image_type = wp_check_filetype( $image_name );
+
+				$file_path = "/$image_name";
+				if ( wp_mkdir_p( $upload_directory['path'] ) ) {
+					$file_path = "{$upload_directory['path']}$file_path";
+				} else {
+					$file_path = "{$upload_directory['basedir']}$file_path";
+				}
+
+				file_put_contents( $file_path, $image_data );
+
+				$attachment = [
+					'post_mime_type' => $image_type['type'],
+					'post_title'     => sanitize_file_name( $image_name ),
+					'post_content'   => '',
+					'post_status'    => 'inherit',
+				];
+
+				$attachment_id = random_int( 5, 5 );
+				$path          = "https://example.com/$attachment_id";
+
+				if ( $this->get_importer_mode()->is_update() ) {
+					$attachment_id = wp_insert_attachment( $attachment, $file_path );
+					require_once ABSPATH . 'wp-admin/includes/image.php';
+					$attachment_data = wp_generate_attachment_metadata( $attachment_id, $file_path );
+					wp_update_attachment_metadata( $attachment_id, $attachment_data );
+					$path = $attachment_data['file'];
+				}
+
+				$uploaded_images[] = [
+					'id'   => $attachment_id,
+					'path' => $path,
+				];
+			} else if ( $this->get_importer_mode()->is_dry_run() ) {
+				if ( is_string( $key ) ) {
+					$uploaded_images[ $key ] = $image;
+				} else {
+					if ( ! array_key_exists( 'featured_image', $uploaded_images ) ) {
+						$uploaded_images['featured_image'] = $image;
+					} else {
+						$uploaded_images[] = $image;
+					}
+				}
+			}
+		}
+
+		return $uploaded_images;
+	}
+
+	/**
+	 * This function will sync the $new_params into an existing $post.
+	 *
+	 * @param WP_Post $post Existing post.
+	 * @param array   $new_params New data from file.
+	 * @param string  $post_type Newspack Listing Type.
+	 *
+	 * @return WP_Post
+	 */
+	private function handle_existing_post_properties( WP_Post $post, array $new_params, string $post_type ): WP_Post {
+		foreach ( $new_params as $key => $value ) {
+			$post->$key = $value;
+		}
+
+		$post->post_type = $post_type;
+
+		return $post;
 	}
 }
 
