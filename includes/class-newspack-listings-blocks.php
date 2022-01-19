@@ -128,7 +128,6 @@ final class Newspack_Listings_Blocks {
 			[],
 			NEWSPACK_LISTINGS_VERSION
 		);
-		add_editor_style( plugins_url( '../dist/editor.css', __FILE__ ) );
 		wp_style_add_data( 'newspack-listings-editor', 'rtl', 'replace' );
 		wp_enqueue_style( 'newspack-listings-editor' );
 	}
