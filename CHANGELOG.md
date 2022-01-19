@@ -1,3 +1,24 @@
+# [2.9.0-alpha.3](https://github.com/Automattic/newspack-listings/compare/v2.9.0-alpha.2...v2.9.0-alpha.3) (2022-01-11)
+
+
+### Bug Fixes
+
+* a fatal error when self-serve listings env variable is not defined ([#196](https://github.com/Automattic/newspack-listings/issues/196)) ([59f6ab6](https://github.com/Automattic/newspack-listings/commit/59f6ab6216b80ab32f9aa30ccc8d77eb54b26865))
+
+# [2.9.0-alpha.2](https://github.com/Automattic/newspack-listings/compare/v2.9.0-alpha.1...v2.9.0-alpha.2) (2022-01-07)
+
+
+### Bug Fixes
+
+* minor bugfixes for featured and self-serve listings ([#181](https://github.com/Automattic/newspack-listings/issues/181)) ([3609e7a](https://github.com/Automattic/newspack-listings/commit/3609e7a031793179e46e0374385bea499b234779))
+
+# [2.9.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.8.0...v2.9.0-alpha.1) (2022-01-06)
+
+
+### Features
+
+* **ugc:** handle self-serve purchase form submission ([#135](https://github.com/Automattic/newspack-listings/issues/135)) ([7a62bd8](https://github.com/Automattic/newspack-listings/commit/7a62bd8bca95ac47ff1ef8fbb5899854df71f07c))
+
 # [2.8.0](https://github.com/Automattic/newspack-listings/compare/v2.7.0...v2.8.0) (2021-11-09)
 
 

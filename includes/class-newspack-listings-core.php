@@ -10,6 +10,7 @@
 namespace Newspack_Listings;
 
 use \Newspack_Listings\Newspack_Listings_Settings as Settings;
+use \Newspack_Listings\Newspack_Listings_Products as Products;
 use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
@@ -41,6 +42,11 @@ final class Newspack_Listings_Core {
 		'place'       => 'places',
 
 	];
+
+	/**
+	 * Cron hook for the daily check to expire listings with an expiration date.
+	 */
+	const NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK = 'newspack_expire_listings_with_date';
 
 	/**
 	 * The single instance of the class.
@@ -79,6 +85,10 @@ final class Newspack_Listings_Core {
 		add_filter( 'wpseo_primary_term_taxonomies', [ __CLASS__, 'disable_yoast_primary_categories' ], 10, 2 );
 		add_action( 'pre_get_posts', [ __CLASS__, 'enable_listing_category_archives' ], 11 );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
+
+		// Expire listings with expiration dates.
+		add_action( 'init', [ __CLASS__, 'cron_init' ] );
+		add_action( self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK, [ __CLASS__, 'expire_listings_with_expiration_date' ] );
 	}
 
 	/**
@@ -289,9 +299,25 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
+				],
+			],
+			'newspack_listings_expiration_date'   => [
+				'post_types' => [
+					self::NEWSPACK_LISTINGS_POST_TYPES['event'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['generic'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['marketplace'],
+					self::NEWSPACK_LISTINGS_POST_TYPES['place'],
+				],
+				'label'      => __( 'Expiration Date', 'newspack-listings' ),
+				'settings'   => [
+					'object_subtype'    => $post_type,
+					'default'           => '',
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_contact_email'     => [
@@ -314,9 +340,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_contact_phone'     => [
@@ -346,9 +370,7 @@ final class Newspack_Listings_Core {
 							],
 						],
 					],
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_contact_address'   => [
@@ -411,9 +433,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_event_start_date'  => [
@@ -434,9 +454,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_price'             => [
@@ -457,9 +475,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'sanitize_text_field',
 					'single'            => true,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_author'       => [
@@ -478,9 +494,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_image_ids'         => [
@@ -499,9 +513,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'Utils\sanitize_array',
 					'single'            => false,
 					'show_in_rest'      => false,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_publish_date' => [
@@ -520,9 +532,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_parents'      => [
@@ -543,9 +553,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 			'newspack_listings_hide_children'     => [
@@ -566,9 +574,7 @@ final class Newspack_Listings_Core {
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'single'            => true,
 					'show_in_rest'      => true,
-					'auth_callback'     => function() {
-						return current_user_can( 'edit_posts' );
-					},
+					'auth_callback'     => [ __CLASS__, 'can_edit_posts' ],
 				],
 			],
 		];
@@ -586,6 +592,20 @@ final class Newspack_Listings_Core {
 		} else {
 			return array_keys( $matching_fields );
 		}
+	}
+
+	/**
+	 * Extension of current_user_can( 'edit_posts' ) to allow customer users to update post meta registered by this plugin.
+	 *
+	 * @return boolean True if current user can edit posts, or if they're a listings customer.
+	 */
+	public static function can_edit_posts() {
+		$products_enabled = defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED;
+		if ( $products_enabled && Products::is_listing_customer() ) {
+			return true;
+		}
+
+		return current_user_can( 'edit_posts' );
 	}
 
 	/**
@@ -809,7 +829,6 @@ final class Newspack_Listings_Core {
 
 	/**
 	 * Allows listing post types to be displayed in taxonomy term archive pages.
-	 * TODO: Enable re-sorting of query to show featured listings first (requires optimization).
 	 *
 	 * @param WP_Query $query Query.
 	 */
@@ -822,7 +841,9 @@ final class Newspack_Listings_Core {
 		}
 
 		if ( ! is_admin() && $query->is_main_query() ) {
-			if ( is_category() || is_tag() ) {
+			$archive_should_include_listings = is_category() || is_tag();
+
+			if ( apply_filters( 'newspack_listings_archive_types', $archive_should_include_listings ) ) {
 				$existing_post_types = $query->get( 'post_type' );
 
 				// Don't alter the query for templates.
@@ -862,6 +883,128 @@ final class Newspack_Listings_Core {
 			$post_types,
 			array_values( self::NEWSPACK_LISTINGS_POST_TYPES )
 		);
+	}
+
+	/**
+	 * Set up the cron job. Will run once daily and automatically unpublish listings
+	 * who have an expiration date set, and which has passed.
+	 */
+	public static function cron_init() {
+		register_deactivation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'cron_deactivate' ] );
+
+		if ( ! wp_next_scheduled( self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK ) ) {
+			wp_schedule_event( Utils\get_next_midnight(), 'daily', self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK );
+		}
+	}
+
+	/**
+	 * Clear the cron job when this plugin is deactivated.
+	 */
+	public static function cron_deactivate() {
+		wp_clear_scheduled_hook( self::NEWSPACK_LISTINGS_EXPIRE_CRON_HOOK );
+	}
+
+	/**
+	 * Get the set expiration date for the given or current post.
+	 *
+	 * @param int $post_id Post ID to fetch. If not given, will use the current post.
+	 *
+	 * @return DateTime|boolean A DateTime object representing the expiraiton date if set, or false if not.
+	 */
+	public static function get_expiration_date( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$expiration_date = get_post_meta( $post_id, 'newspack_listings_expiration_date', true );
+		if ( ! $expiration_date || ! Utils\is_valid_date_string( $expiration_date ) ) {
+			return false;
+		}
+
+		$timezone = get_option( 'timezone_string', 'UTC' );
+
+		// Guard against 'Unknown or bad timezone' PHP error.
+		if ( empty( trim( $timezone ) ) ) {
+			$timezone = 'UTC';
+		}
+
+		return new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
+	}
+
+	/**
+	 * Check whether the given or current post ID has a set expiration date that has already passed.
+	 *
+	 * @param int $post_id Post ID to fetch. If not given, will use the current post.
+	 *
+	 * @return boolean True if the set expiration date has passed, false if not or if the post doesn't have a set expiration date.
+	 */
+	public static function listing_has_expired( $post_id = null ) {
+		if ( null === $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$expiration_date = self::get_expiration_date( $post_id );
+		if ( $expiration_date ) {
+			// Listing should be expired if its expiration date has passed.
+			$is_expired = 0 > $expiration_date->getTimestamp() - time();
+			return $is_expired;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Given a post ID, check its expiration date and unpublish if the date has passed.
+	 *
+	 * @param int $post_id Post ID to check.
+	 */
+	public static function expire_single_listing( $post_id ) {
+		if ( null === $post_id ) {
+			return false;
+		}
+
+		if ( self::listing_has_expired( $post_id ) ) {
+			$updated = wp_update_post(
+				[
+					'ID'          => $post_id,
+					'post_status' => 'draft',
+				]
+			);
+
+			if ( ! $updated ) {
+				error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					sprintf(
+						// Translators: error message logged when we're unable to expire a listing via cron job.
+						__( 'Newspack Listings: Error expiring listing with ID %d.', 'newspack-listings' ),
+						$post_id
+					)
+				);
+			}
+		}
+	}
+
+	/**
+	 * Callback to run on daily cron job.
+	 * Query for published posts with expiration dates and expire those whose dates have passed.
+	 */
+	public static function expire_listings_with_expiration_date() {
+		$args = [
+			'post_status' => 'publish',
+			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'relation' => 'AND',
+				[
+					'key'     => 'newspack_listings_expiration_date',
+					'compare' => 'EXISTS',
+				],
+				[
+					'key'     => 'newspack_listings_expiration_date',
+					'compare' => '!=',
+					'value'   => '',
+				],
+			],
+		];
+
+		Utils\execute_callback_with_paged_query( $args, [ __CLASS__, 'expire_single_listing' ] );
 	}
 }
 

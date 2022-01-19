@@ -8,6 +8,7 @@
 namespace Newspack_Listings\Self_Serve_Block;
 
 use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Newspack_Listings_Products as Products;
 use \Newspack_Listings\Utils as Utils;
 
 /**
@@ -39,6 +40,11 @@ function register_block() {
 function render_block( $attributes ) {
 	// Only render if enabled.
 	if ( ! defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) || ! NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		return '';
+	}
+
+	// Only render if WooCommerce is active.
+	if ( ! Products::is_active() ) {
 		return '';
 	}
 
