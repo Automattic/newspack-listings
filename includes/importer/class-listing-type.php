@@ -1,6 +1,6 @@
 <?php
 /**
- * Class to encapsulate Post Type values.
+ * Class to encapsulate Listing Type values.
  *
  * @package Newspack_Listings;
  */
