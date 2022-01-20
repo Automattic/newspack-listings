@@ -15,6 +15,7 @@ use Newspack_Listings\File_Import_Factory;
 use Newspack_Listings\Importer_Mode;
 use Newspack_Listings\Listing_Type;
 use Newspack_Listings\Listings_Type_Mapper;
+use Newspack_Listings\Marketplace_Type;
 use Newspack_Listings\Newspack_Listings_Core as Core;
 use WP_CLI;
 use WP_Error;
@@ -57,6 +58,8 @@ class Newspack_Listings_Callable_Importer {
 	protected Importer_Mode_Interface $importer_mode;
 
 	/**
+	 * This interface will facilitate the mapping of Newspack Listings Type to custom listing types.
+	 *
 	 * @var Listings_Type_Mapper_Interface $listings_mapper Custom mapper for Newspack Listings Type and user defined types.
 	 */
 	protected Listings_Type_Mapper_Interface $listings_mapper;
@@ -69,26 +72,59 @@ class Newspack_Listings_Callable_Importer {
 	protected string $default_listing_type = Listing_Type::GENERIC;
 
 	/**
-	 * @var array $listing_param_to_type_map
+	 * List of Newspack Listing Type params.
+	 *
+	 * @var array $listing_params_map
 	 */
-	protected array $listing_param_to_type_map = [
-		'generic-listing-types'     => [
-			'name'        => Listing_Type::GENERIC,
-			'description' => 'Custom post types that should be mapped to the Generic Listing Type.',
+	protected array $listing_params_map = [
+		Listing_Type::GENERIC     => [
+			'template' => [
+				'handle'      => 'generic-listing-template',
+				'description' => 'HTML template used for Newspack Listing Type: ' . Listing_Type::GENERIC,
+			],
+			'mapper'   => [
+				'handle'      => 'generic-listing-types',
+				'description' => 'Custom post types that should be mapped to the Generic Listing Type.',
+			],
 		],
-		'event-listing-types'       => [
-			'name'        => Listing_Type::EVENT,
-			'description' => 'Custom post types that should be mapped to the Event Listing Type',
+		Listing_Type::EVENT       => [
+			'template' => [
+				'handle'      => 'event-listing-template',
+				'description' => 'HTML template used for Newspack Listing Type: ' . Listing_Type::EVENT,
+			],
+			'mapper'   => [
+				'handle'      => 'event-listing-types',
+				'description' => 'Custom post types that should be mapped to the Event Listing Type',
+			],
 		],
-		'marketplace-listing-types' => [
-			'name'        => Listing_Type::MARKETPLACE,
-			'description' => 'Custom post types that should be mapped to the Marketplace Listing Type.',
+		Listing_Type::MARKETPLACE => [
+			'template' => [
+				'handle'      => 'marketplace-listing-template',
+				'description' => 'HTML template used for Newspack Listing Type: ' . Listing_Type::MARKETPLACE,
+			],
+			'mapper'   => [
+				'handle'      => 'marketplace-listing-types',
+				'description' => 'Custom post types that should be mapped to the Marketplace Listing Type.',
+			],
 		],
-		'place-listing-types'       => [
-			'name'        => Listing_Type::PLACE,
-			'description' => 'Custom post types that should be mapped to the Place Listing Type.',
+		Listing_Type::PLACE       => [
+			'template' => [
+				'handle'      => 'place-listing-template',
+				'description' => 'HTML template used for Newspack Listing Type: ' . Listing_Type::PLACE,
+			],
+			'mapper'   => [
+				'handle'      => 'place-listing-types',
+				'description' => 'Custom post types that should be mapped to the Place Listing Type.',
+			],
 		],
 	];
+
+	/**
+	 * This array should contain Newspack Listing Type => HTML Template pair.
+	 *
+	 * @var array $template_override
+	 */
+	protected array $template_override = [];
 
 	/**
 	 * Return's singleton instance.
@@ -153,25 +189,44 @@ class Newspack_Listings_Callable_Importer {
 			],
 			[
 				'type'        => 'assoc',
+				'name'        => 'pre-create-callback',
+				'description' => 'Path to custom callback to be executed before Newspack Listing Post creation.',
+				'optional'    => true,
+				'repeating'   => false,
+			],
+			[
+				'type'        => 'assoc',
+				'name'        => 'post-create-callback',
+				'description' => 'Path to custom callback to be executed after Newspack Listing Post creation.',
+				'optional'    => true,
+				'repeating'   => false,
+			],
+			[
+				'type'        => 'assoc',
 				'name'        => 'default-listing-type',
 				'description' => 'The default listing type to use, if none found.',
 				'optional'    => true,
 				'default'     => Listing_Type::GENERIC,
-				'options'     => [
-					Listing_Type::GENERIC,
-					Listing_Type::EVENT,
-					Listing_Type::MARKETPLACE,
-					Listing_Type::PLACE,
-				],
+				'options'     => array_keys( self::$instance->listing_params_map ),
 			],
 		];
 
 		// Add Newspack Listing Types params.
-		foreach ( self::$instance->listing_param_to_type_map as $key => $values ) {
+		foreach ( self::$instance->listing_params_map as $values ) {
 			$synopsis[] = [
 				'type'        => 'assoc',
-				'name'        => $key,
-				'description' => $values['description'],
+				'name'        => $values['mapper']['handle'],
+				'description' => $values['mapper']['description'],
+				'optional'    => true,
+				'repeating'   => true,
+			];
+		}
+
+		foreach ( self::$instance->listing_params_map as $values ) {
+			$synopsis[] = [
+				'type'        => 'assoc',
+				'name'        => $values['template']['handle'],
+				'description' => $values['template']['description'],
 				'optional'    => true,
 				'repeating'   => true,
 			];
@@ -197,6 +252,10 @@ class Newspack_Listings_Callable_Importer {
 	 */
 	protected function set_callable_pre_create( $callable_pre_create ) {
 		if ( is_string( $callable_pre_create ) ) {
+			if ( str_contains( $callable_pre_create, '.php' ) ) {
+				$callable_pre_create = $this->include_class( $callable_pre_create );
+			}
+
 			$callable_pre_create = new $callable_pre_create();
 		}
 
@@ -226,6 +285,10 @@ class Newspack_Listings_Callable_Importer {
 	 */
 	protected function set_callable_post_create( $callable_post_create ) {
 		if ( is_string( $callable_post_create ) ) {
+			if ( str_ends_with( $callable_post_create, '.php' ) ) {
+				$callable_post_create = $this->include_class( $callable_post_create );
+			}
+
 			$callable_post_create = new $callable_post_create();
 		}
 
@@ -256,9 +319,13 @@ class Newspack_Listings_Callable_Importer {
 	public function handle_import_command( $args, $assoc_args ) {
 		// WP_CLI::log('Got here');
 
-		$this->set_callable_pre_create( new Custom_Callback_Pre_Create() );
+		if ( array_key_exists( 'pre-create-callback', $assoc_args ) ) {
+			$this->set_callable_pre_create( $assoc_args['pre-create-callback'] );
+		}
 
-		$this->set_callable_post_create( new Custom_Callback_Post_Create() );
+		if ( array_key_exists( 'post-create-callback', $assoc_args ) ) {
+			$this->set_callable_post_create( $assoc_args['post-create-callback'] );
+		}
 
 		$this->get_importer_mode()->set_mode( $assoc_args['mode'] ?? '' );
 
@@ -266,20 +333,32 @@ class Newspack_Listings_Callable_Importer {
 
 		$assoc_keys            = array_keys( $assoc_args );
 		$custom_listings_types = array_intersect(
-			array_keys( $this->listing_param_to_type_map ),
+			array_map( fn( $listing_param ) => $listing_param['mapper']['handle'], $this->listing_params_map ),
 			$assoc_keys
 		);
+
+		$listing_types_by_mapper_handle = [];
+
+		foreach ( $this->listing_params_map as $key => $values ) {
+			$listing_types_by_mapper_handle[ $values['mapper']['handle'] ] = $key;
+		}
 
 		if ( ! empty( $custom_listings_types ) ) {
 			$listings_type_mapper = new Listings_Type_Mapper();
 
 			foreach ( $custom_listings_types as $key ) {
 				$listings_type_mapper->set_types(
-					$this->listing_param_to_type_map[ $key ]['name'],
+					$listing_types_by_mapper_handle[ $key ],
 					explode( ',', trim( $assoc_args[ $key ] ) )
 				);
 
 				$this->set_listings_type_mapper( $listings_type_mapper );
+			}
+		}
+
+		foreach ( $this->listing_params_map as $key => $values ) {
+			if ( array_key_exists( $values['template']['handle'], $assoc_args ) ) {
+				$this->template_override[ $key ] = $assoc_args[ $values['template']['handle'] ];
 			}
 		}
 
@@ -326,6 +405,8 @@ class Newspack_Listings_Callable_Importer {
 	 * Import data rows.
 	 *
 	 * @param Iterator $iterator Cycle through rows.
+	 *
+	 * @throws Exception Throws exception if data row cannot be imported properly.
 	 */
 	protected function import( Iterator $iterator ) {
 		do {
@@ -349,6 +430,8 @@ class Newspack_Listings_Callable_Importer {
 	 * @param array $row Row representing data to be inserted.
 	 *
 	 * @return WP_Post
+	 *
+	 * @throws Exception Throws exception if a data row cannot be processed.
 	 */
 	protected function create_or_update_listing( array $row ): WP_Post {
 		$post_type     = $this->get_listing_type( $row );
@@ -511,23 +594,31 @@ class Newspack_Listings_Callable_Importer {
 	 * @return string
 	 */
 	protected function handle_post_content( string $listing_type, array $data, array $images = [] ): string {
+		if ( array_key_exists( $listing_type, $this->template_override ) ) {
+			$place_template = file_get_contents( $this->template_override[ $listing_type ] );
+
+			return strtr( $place_template, $data );
+		}
+
+		$featured_image = '';
+
+		if ( array_key_exists( 'featured_image', $images ) ) {
+			$featured_image = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/featured_image.html' );
+			$featured_image = strtr(
+				$featured_image,
+				[
+					'{id}'  => $images['featured_image']['id'],
+					'{url}' => $images['featured_image']['path'],
+				]
+			);
+		}
+
 		switch ( $listing_type ) {
 			case Listing_Type::PLACE:
-				$place          = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/places/place.html' );
-				$featured_image = '';
+				$place_template = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/place/place.html' );
 
-				if ( array_key_exists( 'featured_image', $images ) ) {
-					$featured_image = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/featured_image.html' );
-					$featured_image = strtr(
-						$featured_image,
-						[
-							'{id}'  => $images['featured_image']['id'],
-							'{url}' => $images['featured_image']['path'],
-						]
-					);
-				}
 				$content = strtr(
-					$place,
+					$place_template,
 					[
 						'{featured_image}' => $featured_image,
 						'{description}'    => $data['description'] ?? '',
@@ -542,14 +633,73 @@ class Newspack_Listings_Callable_Importer {
 				);
 				break;
 			case Listing_Type::MARKETPLACE:
-				$content = 'marketplace';
+				if ( Marketplace_Type::CLASSIFIED === strtolower( $data['marketplace_type'] ) ) {
+					$classified_template = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/marketplace/classified.html' );
+
+					$content = strtr(
+						$classified_template,
+						[
+							'{featured_image}' => $featured_image,
+							'{price}' => $data['price'] ?? '',
+							'{formatted_price}' => $data['formatted_price'] ?? '',
+							'{description}' => $data['description'] ?? '',
+						]
+					);
+				} else {
+					$marketplace_template = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/marketplace/real_estate.html' );
+
+					$content = strtr(
+						$marketplace_template,
+						[
+							'{featured_image}' => $featured_image,
+							'{email}' => $data['email'],
+							'{phone}' => $data['phone'],
+							'{phone_display}' => $data['phone_display'] ?? '',
+							'{address_street}' => $data['address_street'] ?? '',
+							'{address_city}'   => $data['address_city'] ?? '',
+							'{address_region}' => $data['address_region'] ?? '',
+							'{address_postal}' => $data['address_postal'] ?? '',
+							'{price}' => $data['price'] ?? '',
+							'{formatted_price}' => $data['formatted_price'] ?? '',
+							'{show_decimals}' => $data['show_decimals'] ?? '',
+							'{bedroom_count}' => $data['bedroom_count'] ?? '',
+							'{bathroom_count}' => $data['bathroom_count'] ?? '',
+							'{area}' => $data['area'] ?? '',
+							'{area_measurement}' => $data['area_measurement'] ?? '',
+							'{description}' => $data['description'] ?? '',
+							'{property_details}' => $data['property_details'] ?? '',
+							'{year_built}' => $data['year_built'] ?? '',
+							'{garage}' => $data['garage'] ?? '',
+							'{basement}' => $data['basement'] ?? '',
+							'{heating}' => $data['heating'] ?? '',
+							'{cooling}' => $data['cooling'] ?? '',
+							'{appliances}' => $data['appliances'] ?? '',
+						]
+					);
+				}
 				break;
 			case Listing_Type::EVENT:
-				$content = 'event';
+				$event_template = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/event/event.html' );
+
+				$content = strtr(
+					$event_template,
+					[
+						'{featured_image}' => $featured_image,
+						'{start_date}' => $data['start_date'] ?? '',
+					]
+				);
 				break;
 			case Listing_Type::GENERIC:
 			default:
-				$content = 'generic';
+				$generic_template = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/generic.html' );
+
+				$content = strtr(
+					$generic_template,
+					[
+						'{featured_image}' => $featured_image,
+						'{html}' => $data['html'] ?? '',
+					]
+				);
 		}
 
 		return $content;
@@ -561,7 +711,8 @@ class Newspack_Listings_Callable_Importer {
 	 * @param string[]|array $images Array of image paths or URL's.
 	 *
 	 * @return string[]
-	 * @throws Exception
+	 *
+	 * @throws Exception Random Int generation throws exception.
 	 */
 	protected function handle_post_images( array $images ): array {
 		$uploaded_images  = [];
@@ -593,8 +744,18 @@ class Newspack_Listings_Callable_Importer {
 				continue;
 			}
 
-			if ( file_exists( $image ) ) {
-				$image_data = file_get_contents( $image );
+			if ( $this->get_importer_mode()->is_dry_run() ) {
+				if ( is_string( $key ) ) {
+					$uploaded_images[ $key ] = $image;
+				} else {
+					if ( ! array_key_exists( 'featured_image', $uploaded_images ) ) {
+						$uploaded_images['featured_image'] = $image;
+					} else {
+						$uploaded_images[] = $image;
+					}
+				}
+			} else if ( file_exists( $image['path'] ) ) {
+				$image_data = file_get_contents( $image['path'] );
 				$image_type = wp_check_filetype( $image_name );
 
 				$file_path = "/$image_name";
@@ -628,20 +789,25 @@ class Newspack_Listings_Callable_Importer {
 					'id'   => $attachment_id,
 					'path' => $path,
 				];
-			} else if ( $this->get_importer_mode()->is_dry_run() ) {
-				if ( is_string( $key ) ) {
-					$uploaded_images[ $key ] = $image;
-				} else {
-					if ( ! array_key_exists( 'featured_image', $uploaded_images ) ) {
-						$uploaded_images['featured_image'] = $image;
-					} else {
-						$uploaded_images[] = $image;
-					}
-				}
 			}
 		}
 
 		return $uploaded_images;
+	}
+
+	/**
+	 * Includes the file at the given path, and returns the Class name.
+	 *
+	 * @param string $path Path to class/file.
+	 *
+	 * @return string
+	 */
+	private function include_class( string $path ): string {
+		[ $file_path, $class ] = explode( ',', $path );
+
+		require_once $file_path;
+
+		return $class;
 	}
 
 	/**
