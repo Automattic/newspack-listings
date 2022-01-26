@@ -193,7 +193,7 @@ export const getContrastRatio = backgroundColor => {
 /**
  * Get array of class names for Curated List, based on attributes.
  *
- * @param {string} className The base class name for the block.
+ * @param {string} className  The base class name for the block.
  * @param {Object} attributes Block attributes.
  * @return {Array} Array of class names for the block.
  */
@@ -265,7 +265,7 @@ export const capitalize = str => str[ 0 ].toUpperCase() + str.slice( 1 );
  * Map listing type icons to listing type slugs.
  *
  * @param {string} listingTypeSlug Slug of the listing type to get an icon for.
- *               One of: event, generic, marketplace, place
+ *                                 One of: event, generic, marketplace, place
  * @return {Function} SVG component for the matching icon.
  */
 export const getIcon = listingTypeSlug => {

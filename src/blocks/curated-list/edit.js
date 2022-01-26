@@ -306,7 +306,7 @@ const CuratedListEditorComponent = ( {
 	 * Render the results of the listing query.
 	 *
 	 * @param {Object} listing Post object for listing to show.
-	 * @param {number} index Index of the item in the array.
+	 * @param {number} index   Index of the item in the array.
 	 */
 	const renderQueriedListings = ( listing, index ) => (
 		<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
