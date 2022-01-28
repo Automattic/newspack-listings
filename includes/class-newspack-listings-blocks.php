@@ -193,7 +193,7 @@ final class Newspack_Listings_Blocks {
 			wp_enqueue_script(
 				'newspack-listings-curated-list',
 				NEWSPACK_LISTINGS_URL . 'dist/curated-list.js',
-				[],
+				[ 'mediaelement-core' ],
 				NEWSPACK_LISTINGS_VERSION,
 				true
 			);
