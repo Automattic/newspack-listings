@@ -549,3 +549,19 @@ function execute_callback_with_paged_query( $query_args = [], $callback = null )
 
 	return true;
 }
+
+/**
+ * Determine whether an archive page should include listing post types.
+ *
+ * @return boolean
+ */
+function archive_should_include_listings() {
+	$should_include_listings = is_category() || is_tag() || is_post_type_archive( array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ) );
+
+	/**
+	 * Filters the conditions where listings should be included in an archive query.
+	 *
+	 * @param boolean $should_include_listings True if the query should include listings, otherwise false.
+	 */
+	return apply_filters( 'newspack_listings_archive_types', $should_include_listings );
+}

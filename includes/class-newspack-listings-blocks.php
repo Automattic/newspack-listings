@@ -211,8 +211,7 @@ final class Newspack_Listings_Blocks {
 		$post_id = get_the_ID();
 
 		// Styles for listing archives.
-		$archive_should_include_listings = is_category() || is_tag();
-		if ( apply_filters( 'newspack_listings_archive_types', $archive_should_include_listings ) ) {
+		if ( Utils\archive_should_include_listings() ) {
 			wp_enqueue_style(
 				'newspack-listings-archives',
 				NEWSPACK_LISTINGS_URL . 'dist/archives.css',
