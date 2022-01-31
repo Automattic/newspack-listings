@@ -1,3 +1,6 @@
+import './curated-list.scss';
+import './listing.scss';
+
 /**
  * VIEW
  * JavaScript used on front of site.
