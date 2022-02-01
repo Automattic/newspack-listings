@@ -477,14 +477,16 @@ class Newspack_Listings_Callable_Importer {
 	 */
 	protected function import( Iterator $iterator ) {
 		do {
+			$row = $iterator->current();
+
 			if ( ! is_null( $this->get_callable_pre_create() ) ) {
-				$this->get_callable_pre_create()( $iterator->current(), $this->get_importer_mode() );
+				$this->get_callable_pre_create()( $row, $this->get_importer_mode() );
 			}
 
-			$listing = $this->create_or_update_listing( $iterator->current() );
+			$listing = $this->create_or_update_listing( $row );
 
 			if ( isset( $this->callable_post_create ) ) {
-				$this->get_callable_post_create()( $listing, $this->get_importer_mode(), $iterator->current() );
+				$this->get_callable_post_create()( $listing, $this->get_importer_mode(), $row );
 			}
 
 			$iterator->next();
