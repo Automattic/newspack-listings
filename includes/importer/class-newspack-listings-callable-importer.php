@@ -65,6 +65,13 @@ class Newspack_Listings_Callable_Importer {
 	protected Listings_Type_Mapper_Interface $listings_mapper;
 
 	/**
+	 * This will be the category ID that all listings will be imported under.
+	 *
+	 * @var ?int $category_id Main category for imported listings.
+	 */
+	protected ?int $category_id = null;
+
+	/**
 	 * If a listing type is not found, will default to the below. Can be set during execution.
 	 *
 	 * @var string $default_listing_type Default Listing Post Type.
@@ -202,12 +209,26 @@ class Newspack_Listings_Callable_Importer {
 				'repeating'   => false,
 			],
 			[
+				'type'        => 'flag',
+				'name'        => 'use-parent-category',
+				'description' => 'This flag determines whether the listings should be imported under a specific category.',
+				'optional'    => true,
+			],
+			[
+				'type'        => 'assoc',
+				'name'        => 'parent-category',
+				'description' => 'Specify the main category name to use.',
+				'optional'    => true,
+				'repeating'   => false,
+			],
+			[
 				'type'        => 'assoc',
 				'name'        => 'default-listing-type',
 				'description' => 'The default listing type to use, if none found.',
 				'optional'    => true,
 				'default'     => Listing_Type::GENERIC,
 				'options'     => array_keys( self::$instance->listing_params_map ),
+				'repeating'   => false,
 			],
 		];
 
@@ -309,6 +330,42 @@ class Newspack_Listings_Callable_Importer {
 	}
 
 	/**
+	 * Setting this variable will cause a category to be created and be associated with all imported listings.
+	 *
+	 * @param string $category Main category used for imported listings.
+	 */
+	protected function set_category_id( string $category ) {
+		if ( category_exists( $category ) ) {
+			WP_CLI::confirm( "Category: '$category' already exists. Are you sure you want to proceed?" );
+
+			global $wpdb;
+
+			$category_sql = "SELECT * FROM $wpdb->terms t 
+    			LEFT JOIN $wpdb->term_taxonomy tt ON t.term_id = tt.term_id 
+				WHERE t.name = '$category'
+				AND tt.taxonomy = 'category'";
+
+			$result = $wpdb->get_results( $category_sql );
+			$result = array_shift( $result );
+
+			$this->category_id = $result->term_id;
+		} else {
+			if ( $this->get_importer_mode()->is_update() || $this->get_importer_mode()->is_skip() ) {
+				$this->category_id = wp_create_category( $category );
+			}
+		}
+	}
+
+	/**
+	 * Returns the Category ID set by the import.
+	 *
+	 * @return int|null
+	 */
+	protected function get_category_id(): ?int {
+		return $this->category_id;
+	}
+
+	/**
 	 * Handler for WP CLI execution.
 	 *
 	 * @param array $args Positional CLI arguments.
@@ -325,6 +382,16 @@ class Newspack_Listings_Callable_Importer {
 
 		if ( array_key_exists( 'post-create-callback', $assoc_args ) ) {
 			$this->set_callable_post_create( $assoc_args['post-create-callback'] );
+		}
+
+		if ( array_key_exists( 'use-parent-category', $assoc_args ) ) {
+			if ( $assoc_args['use-parent-category'] ) {
+				if ( ! array_key_exists( 'category', $assoc_args ) ) {
+					WP_CLI::error( 'The `--use-parent-category` flag was set, but no category was provided.' );
+				}
+
+				$this->set_category_id( $assoc_args['parent-category'] );
+			}
 		}
 
 		$this->get_importer_mode()->set_mode( $assoc_args['mode'] ?? '' );
@@ -508,6 +575,11 @@ class Newspack_Listings_Callable_Importer {
 		if ( $this->get_importer_mode()->is_skip() ) {
 			$post_exists = $existing_post ? 'exists' : 'does not exist';
 			WP_CLI::line( "Post '{$incoming_post_data['post_title']}' $post_exists" );
+
+			if ( $existing_post ) {
+				$this->handle_category( $other_data, $existing_post->ID );
+				$this->handle_tag( $other_data, $existing_post->ID );
+			}
 		}
 
 		if ( $this->get_importer_mode()->is_update() ) {
@@ -519,6 +591,9 @@ class Newspack_Listings_Callable_Importer {
 			} else {
 				$post_id = wp_insert_post( $incoming_post_data, true );
 			}
+
+			$this->handle_category( $other_data, $post_id );
+			$this->handle_tag( $other_data, $post_id );
 
 			if ( $post_id instanceof WP_Error ) {
 				WP_CLI::error( $post_id->get_error_message() );
@@ -796,6 +871,134 @@ class Newspack_Listings_Callable_Importer {
 	}
 
 	/**
+	 * Convenience function to handle the import of categories or category. All categories will
+	 * be imported under a parent category if it's provided.
+	 *
+	 * @param array $data Incoming data from import file.
+	 * @param int   $post_id The ID of the post to associate with the category.
+	 */
+	protected function handle_category( array $data, int $post_id ) {
+		var_dump(
+			[
+				$data['category'] ?? '',
+				$data['categories'] ?? '',
+			]
+		);
+		if ( array_key_exists( 'categories', $data ) && ! array_key_exists( 'category', $data ) ) {
+			foreach ( $data['categories'] as $category ) {
+				if ( ! is_array( $category ) ) {
+					$category = [ 'category' => $category ];
+				}
+
+				$this->handle_category_creation_or_update( $category, $post_id );
+			}
+		} elseif ( array_key_exists( 'category', $data ) && ! array_key_exists( 'categories', $data ) ) {
+			$this->handle_category_creation_or_update( $data, $post_id );
+		} else {
+			WP_CLI::warning( 'Something wrong with categories.' );
+		}
+	}
+
+	/**
+	 * This function will handle the creation of a category record if necessary or the update.
+	 *
+	 * @param array $data Incoming data from import file.
+	 * @param int   $post_id The ID of the post to associate with the category.
+	 */
+	protected function handle_category_creation_or_update( array $data, int $post_id ) {
+		$category = $data['category'];
+
+		global $wpdb;
+
+		$constraint = '';
+
+		if ( is_string( $category ) ) {
+			$constraint = "name = '$category'";
+		} elseif ( is_int( $category ) ) {
+			$constraint = "term_id = $category";
+		}
+
+		$category_sql = "SELECT t.term_id, t.name, tt.taxonomy, tt.parent as parent_term_id FROM $wpdb->terms as t
+			LEFT JOIN $wpdb->term_taxonomy tt ON t.term_id = tt.term_id
+			WHERE $constraint AND tt.taxonomy = 'category'";
+		$result       = $wpdb->get_results( $category_sql );
+
+		if ( ! empty( $result ) ) {
+			$category = array_shift( $result );
+			var_dump(
+				[
+					'CATEGORY' => $category,
+				]
+			);
+
+			if ( $this->get_category_id() !== $category->parent_term_id && $this->can_touch_database() ) {
+				$wpdb->update(
+					$wpdb->term_taxonomy,
+					[
+						'parent' => $this->get_category_id(),
+					],
+					[
+						'term_id'  => $category->term_id,
+						'taxonomy' => 'category',
+					]
+				);
+
+				$this->add_category_to_post( $post_id, $category->term_id );
+			}
+		} else {
+			$parent = $this->get_category_id() ?? 0;
+
+			if ( $this->can_touch_database() ) {
+				$category_id = wp_create_category( $category, $parent );
+
+				$this->add_category_to_post( $post_id, $category_id );
+			}
+		}
+	}
+
+	/**
+	 * Convenience function to handle the importation of a single or multiple tags.
+	 *
+	 * @param array $data Incoming data from import file.
+	 * @param int   $post_id The ID of the post to associate with tag.
+	 */
+	protected function handle_tag( array $data, int $post_id ) {
+		if ( array_key_exists( 'tags', $data ) && ! array_key_exists( 'tag', $data ) ) {
+			foreach ( $data['tags'] as $tag ) {
+				if ( ! is_array( $tag ) ) {
+					$tag = [ 'tag' => $tag ];
+				}
+
+				$this->handle_tag_creation_or_update( $tag, $post_id );
+			}
+		} elseif ( array_key_exists( 'tag', $data ) && ! array_key_exists( 'tags', $data ) ) {
+			$this->handle_tag_creation_or_update( $data, $post_id );
+		} else {
+			WP_CLI::warning( 'Something wrong with tags.' );
+		}
+	}
+
+	/**
+	 * This function will handle the creation or update of tags.
+	 *
+	 * @param array $data Incoming data from import file.
+	 * @param int   $post_id The ID of the post to associate with tag.
+	 */
+	protected function handle_tag_creation_or_update( array $data, int $post_id ) {
+		if ( tag_exists( $data['tag'] ) ) {
+			if ( $this->can_touch_database() ) {
+				wp_add_post_tags( $post_id, $data['tag'] );
+			}
+		} else {
+			if ( $this->can_touch_database() ) {
+				$tag = wp_create_tag( $data['tag'] );
+
+				wp_add_post_tags( $post_id, $tag );
+			}
+		}
+	}
+
+	/**
 	 * Includes the file at the given path, and returns the Class name.
 	 *
 	 * @param string $path Path to class/file.
@@ -827,6 +1030,44 @@ class Newspack_Listings_Callable_Importer {
 		$post->post_type = $post_type;
 
 		return $post;
+	}
+
+	/**
+	 * Convenience function to easily associate a category and a post.
+	 *
+	 * @param int $post_id The post to associate the category to.
+	 * @param int $category_id AKA term_id. The category to be associated with a post.
+	 */
+	private function add_category_to_post( int $post_id, int $category_id ) {
+		global $wpdb;
+
+		$associated_check_sql = "SELECT * FROM $wpdb->term_relationships tr 
+			INNER JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+			WHERE tt.term_id = $category_id AND tt.taxonomy = 'category' AND tr.object_id = $post_id";
+		$result               = $wpdb->get_results( $associated_check_sql );
+
+		if ( empty( $result ) && $this->can_touch_database() ) {
+			$term_taxonomy_sql = "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE term_id = $category_id AND taxonomy = 'category'";
+			$result            = $wpdb->get_results( $term_taxonomy_sql );
+			var_dump( [ 'INSIDE' => $result ] );
+			$result = array_shift( $result );
+			$wpdb->insert(
+				$wpdb->term_relationships,
+				[
+					'object_id'        => $post_id,
+					'term_taxonomy_id' => $result->term_taxonomy_id,
+				]
+			);
+		}
+	}
+
+	/**
+	 * Determines whether the import script is running in a mode that allows DB insertion or update.
+	 *
+	 * @return bool
+	 */
+	private function can_touch_database(): bool {
+		return $this->get_importer_mode()->is_update() || $this->get_importer_mode()->is_skip();
 	}
 }
 
