@@ -374,8 +374,6 @@ class Newspack_Listings_Callable_Importer {
 	 * @throws Exception Thrown if file is not on system.
 	 */
 	public function handle_import_command( $args, $assoc_args ) {
-		// WP_CLI::log('Got here');
-
 		if ( array_key_exists( 'pre-create-callback', $assoc_args ) ) {
 			$this->set_callable_pre_create( $assoc_args['pre-create-callback'] );
 		}
@@ -716,10 +714,10 @@ class Newspack_Listings_Callable_Importer {
 					$content = strtr(
 						$classified_template,
 						[
-							'{featured_image}' => $featured_image,
-							'{price}' => $data['price'] ?? '',
+							'{featured_image}'  => $featured_image,
+							'{price}'           => $data['price'] ?? '',
 							'{formatted_price}' => $data['formatted_price'] ?? '',
-							'{description}' => $data['description'] ?? '',
+							'{description}'     => $data['description'] ?? '',
 						]
 					);
 				} else {
@@ -728,29 +726,29 @@ class Newspack_Listings_Callable_Importer {
 					$content = strtr(
 						$marketplace_template,
 						[
-							'{featured_image}' => $featured_image,
-							'{email}' => $data['email'],
-							'{phone}' => $data['phone'],
-							'{phone_display}' => $data['phone_display'] ?? '',
-							'{address_street}' => $data['address_street'] ?? '',
-							'{address_city}'   => $data['address_city'] ?? '',
-							'{address_region}' => $data['address_region'] ?? '',
-							'{address_postal}' => $data['address_postal'] ?? '',
-							'{price}' => $data['price'] ?? '',
-							'{formatted_price}' => $data['formatted_price'] ?? '',
-							'{show_decimals}' => $data['show_decimals'] ?? '',
-							'{bedroom_count}' => $data['bedroom_count'] ?? '',
-							'{bathroom_count}' => $data['bathroom_count'] ?? '',
-							'{area}' => $data['area'] ?? '',
+							'{featured_image}'   => $featured_image,
+							'{email}'            => $data['email'],
+							'{phone}'            => $data['phone'],
+							'{phone_display}'    => $data['phone_display'] ?? '',
+							'{address_street}'   => $data['address_street'] ?? '',
+							'{address_city}'     => $data['address_city'] ?? '',
+							'{address_region}'   => $data['address_region'] ?? '',
+							'{address_postal}'   => $data['address_postal'] ?? '',
+							'{price}'            => $data['price'] ?? '',
+							'{formatted_price}'  => $data['formatted_price'] ?? '',
+							'{show_decimals}'    => $data['show_decimals'] ?? '',
+							'{bedroom_count}'    => $data['bedroom_count'] ?? '',
+							'{bathroom_count}'   => $data['bathroom_count'] ?? '',
+							'{area}'             => $data['area'] ?? '',
 							'{area_measurement}' => $data['area_measurement'] ?? '',
-							'{description}' => $data['description'] ?? '',
+							'{description}'      => $data['description'] ?? '',
 							'{property_details}' => $data['property_details'] ?? '',
-							'{year_built}' => $data['year_built'] ?? '',
-							'{garage}' => $data['garage'] ?? '',
-							'{basement}' => $data['basement'] ?? '',
-							'{heating}' => $data['heating'] ?? '',
-							'{cooling}' => $data['cooling'] ?? '',
-							'{appliances}' => $data['appliances'] ?? '',
+							'{year_built}'       => $data['year_built'] ?? '',
+							'{garage}'           => $data['garage'] ?? '',
+							'{basement}'         => $data['basement'] ?? '',
+							'{heating}'          => $data['heating'] ?? '',
+							'{cooling}'          => $data['cooling'] ?? '',
+							'{appliances}'       => $data['appliances'] ?? '',
 						]
 					);
 				}
@@ -762,7 +760,7 @@ class Newspack_Listings_Callable_Importer {
 					$event_template,
 					[
 						'{featured_image}' => $featured_image,
-						'{start_date}' => $data['start_date'] ?? '',
+						'{start_date}'     => $data['start_date'] ?? '',
 					]
 				);
 				break;
@@ -774,7 +772,7 @@ class Newspack_Listings_Callable_Importer {
 					$generic_template,
 					[
 						'{featured_image}' => $featured_image,
-						'{html}' => $data['html'] ?? '',
+						'{html}'           => $data['html'] ?? '',
 					]
 				);
 		}
@@ -831,7 +829,7 @@ class Newspack_Listings_Callable_Importer {
 						$uploaded_images[] = $image;
 					}
 				}
-			} else if ( file_exists( $image['path'] ) ) {
+			} elseif ( file_exists( $image['path'] ) ) {
 				$image_data = file_get_contents( $image['path'] );
 				$image_type = wp_check_filetype( $image_name );
 
