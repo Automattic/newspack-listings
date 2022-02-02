@@ -542,6 +542,19 @@ class Newspack_Listings_Callable_Importer {
 		$images = [];
 
 		if ( array_key_exists( 'images', $row ) ) {
+			if ( is_string( $row['images'] ) ) {
+				if ( str_contains( $row['images'], ',' ) ) {
+					$paths = explode( ',', $row['images'] );
+					$array_of_paths = [];
+					foreach ( $paths as $path ) {
+						$array_of_paths[] = [ 'path' => $path ];
+					}
+					$row['images'] = $array_of_paths;
+				} else {
+					$row['images'] = [ [ 'path' => $row['images'] ] ];
+				}
+			}
+
 			$images = $this->handle_post_images( $row['images'] );
 		}
 
