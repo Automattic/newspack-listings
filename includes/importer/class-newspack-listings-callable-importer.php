@@ -254,7 +254,7 @@ class Newspack_Listings_Callable_Importer {
 		}
 
 		WP_CLI::add_command(
-			'newspack-listings new-import',
+			'newspack-listings import',
 			[ self::$instance, 'handle_import_command' ],
 			[
 				'shortdesc' => 'Import listings data.',

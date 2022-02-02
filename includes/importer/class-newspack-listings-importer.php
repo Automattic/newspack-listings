@@ -129,7 +129,7 @@ final class Newspack_Listings_Importer {
 		);
 
 		WP_CLI::add_command(
-			'newspack-listings import',
+			'newspack-listings old-import',
 			[ __CLASS__, 'run_cli_command' ],
 			[
 				'shortdesc' => 'Import listings data from a CSV file.',
