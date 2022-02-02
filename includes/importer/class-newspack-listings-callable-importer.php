@@ -837,7 +837,7 @@ class Newspack_Listings_Callable_Importer {
 						$uploaded_images[] = $image;
 					}
 				}
-			} elseif ( file_exists( $image['path'] ) ) {
+			} elseif ( file_exists( $image['path'] ) || filter_var( $image['path'], FILTER_VALIDATE_URL ) ) {
 				$image_data = file_get_contents( $image['path'] );
 				$image_type = wp_check_filetype( $image_name );
 
