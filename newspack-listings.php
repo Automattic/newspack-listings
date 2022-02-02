@@ -39,8 +39,26 @@ if ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF
 }
 
 // CLI importer files.
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-importer-mode.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-listings-type-mapper.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/newspack-listings-importer-utils.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-import-mode.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-importer-mode.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-marketplace-type.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-listing-type.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-listings-type-mapper.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-newspack-listings-importer.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-newspack-listings-callable-importer.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-file.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-iterable-file.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-csv-file.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-abstract-callable-pre-create.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-abstract-callable-post-create.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-abstract-file.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-abstract-iterable-file.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-json-file.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-csv-file.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-file-import-factory.php';
 
 // Migration utilities.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/migration/class-newspack-listings-migration.php';
