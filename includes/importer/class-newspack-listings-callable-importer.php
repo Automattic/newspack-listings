@@ -868,10 +868,20 @@ class Newspack_Listings_Callable_Importer {
 					$path = $attachment_data['file'];
 				}
 
-				$uploaded_images[] = [
+				$uploaded_image = [
 					'id'   => $attachment_id,
 					'path' => $path,
 				];
+
+				if ( is_string( $key ) ) {
+					$uploaded_images[ $key ] = $uploaded_image;
+				} else {
+					if ( ! array_key_exists( 'featured_image', $uploaded_images ) ) {
+						$uploaded_images['featured_image'] = $uploaded_image;
+					} else {
+						$uploaded_images[] = $uploaded_image;
+					}
+				}
 			}
 		}
 
