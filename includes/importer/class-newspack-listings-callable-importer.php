@@ -533,6 +533,8 @@ class Newspack_Listings_Callable_Importer {
 			'newspack_featured_image_position' => 'hidden', // Featured image is shown in listing content.
 		];
 
+		WP_CLI::log($incoming_post_data['post_title']);
+
 		if ( is_string( $incoming_post_data['post_author'] ) ) {
 			$incoming_post_data['post_author'] = $this->handle_post_author( $incoming_post_data['post_author'] );
 		}
@@ -708,6 +710,12 @@ class Newspack_Listings_Callable_Importer {
 				);
 				break;
 			case Listing_Type::MARKETPLACE:
+				if ( ! array_key_exists( 'marketplace_type', $data ) ) {
+					WP_CLI::warning( 'Listing Type is ' . Listing_Type::MARKETPLACE . " but no 'marketplace_type' param found." );
+					$content = '';
+					break;
+				}
+
 				if ( Marketplace_Type::CLASSIFIED === strtolower( $data['marketplace_type'] ) ) {
 					$classified_template = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/marketplace/classified.html' );
 
@@ -878,12 +886,6 @@ class Newspack_Listings_Callable_Importer {
 	 * @param int   $post_id The ID of the post to associate with the category.
 	 */
 	protected function handle_category( array $data, int $post_id ) {
-		var_dump(
-			[
-				$data['category'] ?? '',
-				$data['categories'] ?? '',
-			]
-		);
 		if ( array_key_exists( 'categories', $data ) && ! array_key_exists( 'category', $data ) ) {
 			foreach ( $data['categories'] as $category ) {
 				if ( ! is_array( $category ) ) {
@@ -895,7 +897,7 @@ class Newspack_Listings_Callable_Importer {
 		} elseif ( array_key_exists( 'category', $data ) && ! array_key_exists( 'categories', $data ) ) {
 			$this->handle_category_creation_or_update( $data, $post_id );
 		} else {
-			WP_CLI::warning( 'Something wrong with categories.' );
+			WP_CLI::warning( 'Either no categories provided, or something wrong with categories.' );
 		}
 	}
 
@@ -974,7 +976,7 @@ class Newspack_Listings_Callable_Importer {
 		} elseif ( array_key_exists( 'tag', $data ) && ! array_key_exists( 'tags', $data ) ) {
 			$this->handle_tag_creation_or_update( $data, $post_id );
 		} else {
-			WP_CLI::warning( 'Something wrong with tags.' );
+			WP_CLI::warning( 'Either no tags provided, or something wrong with tags.' );
 		}
 	}
 
