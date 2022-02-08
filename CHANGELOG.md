@@ -1,3 +1,11 @@
+## [2.9.1-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.9.0...v2.9.1-alpha.1) (2022-01-27)
+
+
+### Bug Fixes
+
+* prevent showing 0 for listings with no categories ([#199](https://github.com/Automattic/newspack-listings/issues/199)) ([ae52e60](https://github.com/Automattic/newspack-listings/commit/ae52e605aa58c0afc2b66c64e1408d8a6dcbea9a))
+* require postcss explicitly ([#212](https://github.com/Automattic/newspack-listings/issues/212)) ([0b46eb3](https://github.com/Automattic/newspack-listings/commit/0b46eb3c98dd2bd141ca6de15569ff040cdb9760))
+
 # [2.9.0](https://github.com/Automattic/newspack-listings/compare/v2.8.0...v2.9.0) (2022-01-19)
 
 

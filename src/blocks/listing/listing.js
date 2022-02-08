@@ -57,7 +57,7 @@ export const Listing = ( { attributes, error, post } ) => {
 							<span className="flag">{ sponsors[ 0 ].sponsor_flag }</span>
 						</span>
 					) }
-					{ showCategory && category.length && ! sponsors && (
+					{ showCategory && 0 < category.length && ! sponsors && (
 						<div className="cat-links">
 							{ category.map( ( _category, index ) => (
 								<Fragment key="index">
