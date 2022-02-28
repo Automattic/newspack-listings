@@ -1,3 +1,10 @@
+## [2.9.2-hotfix.1](https://github.com/Automattic/newspack-listings/compare/v2.9.1...v2.9.2-hotfix.1) (2022-02-28)
+
+
+### Bug Fixes
+
+* **curated-list:** when sorting by event date, treat date strings as plain strings ([93adf06](https://github.com/Automattic/newspack-listings/commit/93adf06c54e188ae1715378a7e6a85647f76383a))
+
 ## [2.9.1](https://github.com/Automattic/newspack-listings/compare/v2.9.0...v2.9.1) (2022-02-08)
 
 
