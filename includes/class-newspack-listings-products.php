@@ -1446,6 +1446,29 @@ final class Newspack_Listings_Products {
 	}
 
 	/**
+	 * Given a user ID and post ID, check whether the user owns (is the author of) the post.
+	 *
+	 * @param int|null $user_id ID of the user to check. If not given, will check the current user.
+	 * @param int      $post_id ID of the post to check. Must be a listing post type.
+	 *
+	 * @return boolean True if the user owns the post, false if not.
+	 */
+	public static function does_customer_own_listing( $user_id = null, $post_id = null ) {
+		global $user_ID;
+
+		if ( ! $user_id ) {
+			$user_id = $user_ID;
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post || ! Core::is_listing( $post->post_type ) ) {
+			return false;
+		}
+
+		return (int) $post->post_author === (int) $user_id;
+	}
+
+	/**
 	 * When a subscription product is removed from a listing subscription, also unpublish the primary listing, if published.
 	 * WHen an upgrade product is removed from a premium subscription, unset the Featured status of the primary listing.
 	 * Also disallow creation of new related Marketplace listings.
@@ -1550,9 +1573,10 @@ final class Newspack_Listings_Products {
 	 * @return bool[] Filtered array of allowed/disallowed capabilities.
 	 */
 	public static function allow_customers_to_edit_own_posts( $allcaps, $caps, $args ) {
-		$capabilities        = [ 'edit_posts', 'edit_published_posts', 'publish_posts' ];
+		$capabilities        = [ 'edit_post', 'edit_posts', 'edit_published_posts', 'publish_posts' ];
 		$capability          = $args[0];
 		$user_id             = $args[1];
+		$post_id             = isset( $args[2] ) ? $args[2] : null;
 		$is_listing_customer = false;
 
 		if ( in_array( $capability, $capabilities ) && $user_id ) {
@@ -1564,7 +1588,8 @@ final class Newspack_Listings_Products {
 			$is_published   = 'publish' === get_post_status( get_the_ID() );
 			$actions        = [ 'edit', 'editposts' ];
 			$action         = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( sanitize_text_field( $_REQUEST['action'] ) ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$is_edit_screen = $action && in_array( $action, $actions );
+			$context        = isset( $_REQUEST['context'] ) ? sanitize_text_field( wp_unslash( sanitize_text_field( $_REQUEST['context'] ) ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$is_edit_screen = ( $action && in_array( $action, $actions, true ) ) || ( $context && in_array( $context, $actions, true ) );
 
 			// If not an edit screen, if the post ID isn't set or isn't in the user's allowed post IDs,
 			// or the user is trying to access an admin page other than the post editor, disallow.
@@ -1575,6 +1600,11 @@ final class Newspack_Listings_Products {
 			// If on the edit screen for a post that has already been published, allow the user to update their published post.
 			if ( 'publish_posts' === $capability ) {
 				$allcaps[ $capability ] = $is_published ? 1 : 0;
+			}
+
+			// As of WP 5.9, some capabilities in the block editor are checked via REST API. e.g. reusable blocks and featured images.
+			if ( 'edit_posts' === $capability && $is_edit_screen ) {
+				$allcaps[ $capability ] = 1;
 			}
 		}
 
