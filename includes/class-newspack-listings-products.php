@@ -692,20 +692,28 @@ final class Newspack_Listings_Products {
 		if ( $order ) {
 			$customer_id = $order->get_customer_id();
 			if ( $customer_id ) {
+				// Get info on purchased products.
+				$products        = self::get_products();
+				$purchased_items = array_values(
+					array_map(
+						function( $item ) {
+							return $item->get_product_id();
+						},
+						$order->get_items()
+					)
+				);
+
+				// If none of the purchased items is a listing product, no need to proceed.
+				if ( 0 === count( array_intersect( array_values( $products ), $purchased_items ) ) ) {
+					return;
+				}
+
+				// If the order does include listing products, the purchaser is a customer.
 				update_user_meta( $customer_id, self::CUSTOMER_META_KEYS['is_listings_customer'], 1 );
 				$customer = new \WP_User( $customer_id );
 				$customer->add_cap( 'edit_posts' ); // Let this customer edit their own posts.
 				$customer->add_cap( 'edit_published_posts' ); // Let this customer edit their own posts even after they're published.
 				$customer->add_cap( 'upload_files' ); // Let this customer upload media for featured and inline images.
-
-				// Get info on purchased products.
-				$products        = self::get_products();
-				$purchased_items = array_map(
-					function( $item ) {
-						return $item->get_product_id();
-					},
-					$order->get_items()
-				);
 
 				$purchase_type    = isset( $params['purchase-type'] ) ? $params['purchase-type'] : 'single';
 				$is_subscription  = 'subscription' === $purchase_type && in_array( $products[ self::PRODUCT_META_KEYS['subscription'] ], $purchased_items );
