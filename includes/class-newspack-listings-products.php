@@ -1453,7 +1453,7 @@ final class Newspack_Listings_Products {
 	 *
 	 * @return boolean True if the user owns the post, false if not.
 	 */
-	public static function does_customer_own_listing( $user_id = null, $post_id = null ) {
+	public static function does_user_own_listing( $user_id = null, $post_id = null ) {
 		global $user_ID;
 
 		if ( ! $user_id ) {
