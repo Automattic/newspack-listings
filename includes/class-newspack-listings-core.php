@@ -725,7 +725,7 @@ final class Newspack_Listings_Core {
 		$listing_post_types = array_values( self::NEWSPACK_LISTINGS_POST_TYPES );
 
 		// If an archive.
-		if ( is_post_type_archive( $listing_post_types ) || is_category() || is_tag() ) {
+		if ( is_archive() ) {
 			$is_all_listings = Utils\all_posts_are_type( $listing_post_types );
 			if ( $is_all_listings ) {
 				$classes[] = 'newspack-listings';
@@ -841,9 +841,7 @@ final class Newspack_Listings_Core {
 		}
 
 		if ( ! is_admin() && $query->is_main_query() ) {
-			$archive_should_include_listings = is_category() || is_tag();
-
-			if ( apply_filters( 'newspack_listings_archive_types', $archive_should_include_listings ) ) {
+			if ( Utils\archive_should_include_listings() && ! is_post_type_archive() ) {
 				$existing_post_types = $query->get( 'post_type' );
 
 				// Don't alter the query for templates.
