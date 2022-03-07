@@ -75,6 +75,14 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
+	 * Check whether featured listings should be active on this site.
+	 * Requires the `NEWSPACK_LISTINGS_SELF_SERVE_ENABLED` environment constant.
+	 */
+	public static function is_active() {
+		return defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED;
+	}
+
+	/**
 	 * Get events table name.
 	 */
 	public static function get_table_name() {

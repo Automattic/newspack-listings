@@ -600,8 +600,7 @@ final class Newspack_Listings_Core {
 	 * @return boolean True if current user can edit posts, or if they're a listings customer.
 	 */
 	public static function can_edit_posts() {
-		$products_enabled = defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED;
-		if ( $products_enabled && Products::is_listing_customer() ) {
+		if ( Products::is_active() && Products::is_listing_customer() ) {
 			return true;
 		}
 

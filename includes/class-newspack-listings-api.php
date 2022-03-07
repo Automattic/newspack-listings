@@ -197,7 +197,7 @@ final class Newspack_Listings_Api {
 		);
 
 		// Get and set listing priority level.
-		if ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		if ( Featured::is_active() ) {
 			register_rest_route(
 				self::$namespace,
 				'priority',
@@ -205,7 +205,7 @@ final class Newspack_Listings_Api {
 					[
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => [ __CLASS__, 'get_priority' ],
-						'permission_callback' => '__return_true',
+						'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
 					],
 				]
 			);

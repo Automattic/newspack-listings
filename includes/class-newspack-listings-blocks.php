@@ -104,10 +104,10 @@ final class Newspack_Listings_Blocks {
 			'time_format'        => get_option( 'time_format' ),
 
 			// Self-serve listings features are gated behind an environment variable.
-			'self_serve_enabled' => defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED,
+			'self_serve_enabled' => Products::is_active(),
 		];
 
-		if ( $localized_data['self_serve_enabled'] ) {
+		if ( Products::is_active() ) {
 			$localized_data['self_serve_listing_types']      = Products::get_listing_types();
 			$localized_data['self_serve_listing_expiration'] = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
 

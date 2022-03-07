@@ -38,11 +38,6 @@ function register_block() {
  * @return string $content content.
  */
 function render_block( $attributes ) {
-	// Only render if enabled.
-	if ( ! defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) || ! NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
-		return '';
-	}
-
 	// Only render if self-serve listings features are active.
 	if ( ! Products::is_active() ) {
 		return '';

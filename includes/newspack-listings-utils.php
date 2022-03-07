@@ -411,7 +411,7 @@ function get_term_classes( $post_id = null ) {
 	);
 
 	// If the item is featured, append class names for its featured status and priority level.
-	if ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+	if ( Featured::is_active() ) {
 		$base_classes = Featured::add_featured_classes( $base_classes );
 	}
 

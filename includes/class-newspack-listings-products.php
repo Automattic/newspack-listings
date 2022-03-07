@@ -304,6 +304,36 @@ class Newspack_Listings_Products {
 	}
 
 	/**
+	 * Valid single listing types that can be purchased.
+	 *
+	 * @return array Array of listing types.
+	 */
+	public static function get_listing_types() {
+		return [
+			[
+				'slug' => 'blank',
+				'name' => __( 'Blank listing (start from scratch)', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'event',
+				'name' => __( 'Event', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'classified',
+				'name' => __( 'Classified Ad', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'job',
+				'name' => __( 'Job Listing', 'newspack-listings' ),
+			],
+			[
+				'slug' => 'real-estate',
+				'name' => __( 'Real Estate Listing', 'newspack-listings' ),
+			],
+		];
+	}
+
+	/**
 	 * Given a WC order ID, find the listing associated with that order.
 	 *
 	 * @param int $order_id ID of the WooCommerce order.
