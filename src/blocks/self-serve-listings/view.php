@@ -43,7 +43,7 @@ function render_block( $attributes ) {
 		return '';
 	}
 
-	// Only render if WooCommerce is active.
+	// Only render if self-serve listings features are active.
 	if ( ! Products::is_active() ) {
 		return '';
 	}

@@ -74,7 +74,7 @@ final class Newspack_Listings_Products_Purchase extends Newspack_Listings_Produc
 	 */
 	public function clear_cart() {
 		$products = self::get_products();
-		if ( ! $products || ! self::$wc_is_active ) {
+		if ( ! $products ) {
 			return;
 		}
 
@@ -94,11 +94,6 @@ final class Newspack_Listings_Products_Purchase extends Newspack_Listings_Produc
 	 */
 	public function handle_purchase_form() {
 		$purchase_type = filter_input( INPUT_GET, 'listing-purchase-type', FILTER_SANITIZE_STRING );
-
-		// Only if WC is active.
-		if ( ! self::$wc_is_active ) {
-			return;
-		}
 
 		// Only if coming from a non-checkout page.
 		if ( is_checkout() ) {
@@ -189,7 +184,7 @@ final class Newspack_Listings_Products_Purchase extends Newspack_Listings_Produc
 	 */
 	public function force_require_account_for_listings( $value ) {
 		$products = self::get_products();
-		if ( ! $products || ! self::$wc_is_active ) {
+		if ( ! $products ) {
 			return $value;
 		}
 
@@ -217,7 +212,7 @@ final class Newspack_Listings_Products_Purchase extends Newspack_Listings_Produc
 	 */
 	public function force_account_creation_and_login_for_listings( $value ) {
 		$products = self::get_products();
-		if ( ! $products || ! self::$wc_is_active ) {
+		if ( ! $products ) {
 			return $value;
 		}
 

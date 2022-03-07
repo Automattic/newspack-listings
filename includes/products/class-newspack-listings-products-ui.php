@@ -534,11 +534,6 @@ final class Newspack_Listings_Products_Ui extends Newspack_Listings_Products {
 		$delete_post     = filter_input( INPUT_GET, 'delete', FILTER_SANITIZE_NUMBER_INT );
 		$redirect_uri    = urldecode( filter_input( INPUT_GET, 'redirect_uri', FILTER_SANITIZE_STRING ) );
 
-		// Only if WC is active.
-		if ( ! self::$wc_is_active ) {
-			return;
-		}
-
 		// Only if we have all of the required query args.
 		if ( ! $customer_id || ! $subscription_id || ( ! $delete_post && 'event' !== $post_type_slug && 'marketplace' !== $post_type_slug ) ) {
 			return;

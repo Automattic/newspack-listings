@@ -14,10 +14,10 @@ use \Newspack_Listings\Utils as Utils;
 
 defined( 'ABSPATH' ) || exit;
 
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/products/class-newspack-listings-products-purchase.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/products/class-newspack-listings-products-ui.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/products/class-newspack-listings-products-user.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/products/class-newspack-listings-products-cron.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-purchase.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-ui.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-user.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-cron.php';
 
 /**
  * Products class.
@@ -75,38 +75,11 @@ class Newspack_Listings_Products {
 	];
 
 	/**
-	 * The single instance of the class.
-	 *
-	 * @var Newspack_Listings_Products
+	 * Initialize self-serve listings features.
 	 */
-	protected static $instance = null;
-
-	/**
-	 * Is WooCommerce active? If not, we can't use any of its functionality.
-	 *
-	 * @var $wc_is_active
-	 */
-	protected static $wc_is_active = false;
-
-	/**
-	 * Main Newspack_Listings_Products instance.
-	 * Ensures only one instance of Newspack_Listings_Products is loaded or can be loaded.
-	 *
-	 * @return Newspack_Listings_Products - Main instance.
-	 */
-	public static function instance() {
-		if ( is_null( self::$instance ) ) {
-			self::$instance = new self();
-		}
-		return self::$instance;
-	}
-
-	/**
-	 * Constructor.
-	 */
-	public function __construct() {
+	public static function init() {
 		// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
-		add_action( 'init', [ __CLASS__, 'init' ] );
+		add_action( 'init', [ __CLASS__, 'setup' ] );
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
 		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
@@ -114,33 +87,32 @@ class Newspack_Listings_Products {
 	}
 
 	/**
-	 * After WP init.
+	 * Check whether self-serve listings should be active on this site.
+	 * Self-serve listings require WooCommerce, WooCommerce Subscriptions,
+	 * and the `NEWSPACK_LISTINGS_SELF_SERVE_ENABLED` environment constant.
 	 */
-	public static function init() {
-		// Check whether WooCommerce is active and available.
-		if ( class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions_Product' ) ) {
-			self::$wc_is_active = true;
-			self::create_products();
-		}
+	public static function is_active() {
+		return class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions_Product' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED;
 	}
 
 	/**
-	 * Check whether the required plugins are active, for use outside of the class.
-	 *
-	 * @return boolean
+	 * Init subclasses and create base products.
 	 */
-	public static function is_active() {
-		return self::$wc_is_active;
+	public static function setup() {
+		if ( self::is_active() ) {
+			self::create_products();
+
+			new Newspack_Listings_Products_Purchase();
+			new Newspack_Listings_Products_Ui();
+			new Newspack_Listings_Products_User();
+			new Newspack_Listings_Products_Cron();
+		}
 	}
 
 	/**
 	 * Create the WooCommerce products for self-serve listings.
 	 */
 	public static function create_products() {
-		if ( ! self::$wc_is_active ) {
-			return false;
-		}
-
 		$products = self::get_products();
 
 		if ( ! $products ) {
@@ -230,10 +202,6 @@ class Newspack_Listings_Products {
 	 * @param mixed  $new_value The new option value.
 	 */
 	public static function update_products( $option, $old_value, $new_value ) {
-		if ( ! self::$wc_is_active ) {
-			return false;
-		}
-
 		// Only if the updated option is a Newspack Listing setting.
 		$settings = Settings::get_settings();
 		if ( ! in_array( $option, array_keys( $settings ) ) ) {
@@ -303,10 +271,6 @@ class Newspack_Listings_Products {
 	 *                       False if none created or if WC is inactive.
 	 */
 	public static function get_products() {
-		if ( ! self::$wc_is_active ) {
-			return false;
-		}
-
 		$product_id = get_option( self::PRODUCT_OPTION, false );
 
 		// If missing a product option, the products need to be created.
@@ -411,4 +375,4 @@ class Newspack_Listings_Products {
 	}
 }
 
-Newspack_Listings_Products::instance();
+Newspack_Listings_Products::init();
