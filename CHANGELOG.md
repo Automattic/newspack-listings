@@ -1,3 +1,17 @@
+## [2.9.2](https://github.com/Automattic/newspack-listings/compare/v2.9.1...v2.9.2) (2022-03-08)
+
+
+### Bug Fixes
+
+* allow customers to access block editor components ([#228](https://github.com/Automattic/newspack-listings/issues/228)) ([d481e64](https://github.com/Automattic/newspack-listings/commit/d481e6464e337dc5cfc320ad138b6889b1f55aac))
+* **curated-list:** when sorting by event date, treat date strings as plain strings ([#227](https://github.com/Automattic/newspack-listings/issues/227)) ([f3deb92](https://github.com/Automattic/newspack-listings/commit/f3deb9261b4575c9f28d7bd5c0a9bf5c9f9b0b6f))
+* implement a failsafe check before flagging an order as a listing purchase ([#229](https://github.com/Automattic/newspack-listings/issues/229)) ([152bc3e](https://github.com/Automattic/newspack-listings/commit/152bc3edca68894678fe0561e65520b0639f33f1))
+
+
+### Performance Improvements
+
+* enqueue front-end assets only when necessary ([#198](https://github.com/Automattic/newspack-listings/issues/198)) ([89c66c6](https://github.com/Automattic/newspack-listings/commit/89c66c6bf522455798b47731d74ddb6cf74af8b3))
+
 ## [2.9.2-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.9.1...v2.9.2-alpha.1) (2022-03-04)
 
 
