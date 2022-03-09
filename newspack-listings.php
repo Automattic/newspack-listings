@@ -24,21 +24,21 @@ if ( ! defined( 'NEWSPACK_LISTINGS_PLUGIN_FILE' ) ) {
 
 // Include plugin resources.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/vendor/autoload.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/newspack-listings-utils.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-settings.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-core.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-blocks.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-block-patterns.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-taxonomies.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-api.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/utils.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-settings.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-core.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-blocks.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-block-patterns.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-taxonomies.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-api.php';
 
 // Enable experimental/in-progress self-serve listings functionality.
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-featured.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-products.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-featured.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-products.php';
 
 // CLI importer files.
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/newspack-listings-importer-utils.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-newspack-listings-importer.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/importer-utils.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-importer.php';
 
 // Migration utilities.
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/migration/class-newspack-listings-migration.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/migration/class-migration.php';

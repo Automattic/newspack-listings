@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Products class.
  * Sets up WooCommerce products for listings.
  */
-final class Newspack_Listings_Products_User extends Newspack_Listings_Products {
+final class Products_User extends Products {
 	/**
 	 * Constructor.
 	 */

@@ -8,8 +8,8 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Settings as Settings;
-use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Settings;
+use \Newspack_Listings\Core;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * Products class.
  * Sets up WooCommerce products for listings.
  */
-final class Newspack_Listings_Products_Cron extends Newspack_Listings_Products {
+final class Products_Cron extends Products {
 	/**
 	 * Constructor.
 	 */

@@ -9,9 +9,9 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Settings as Settings;
-use \Newspack_Listings\Newspack_Listings_Products as Products;
-use \Newspack_Listings\Utils as Utils;
+use \Newspack_Listings\Settings;
+use \Newspack_Listings\Products;
+use \Newspack_Listings\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * Main Core class.
  * Sets up CPTs for listings.
  */
-final class Newspack_Listings_Core {
+final class Core {
 
 	/**
 	 * Custom post type slugs for Newspack Listings.
@@ -51,7 +51,7 @@ final class Newspack_Listings_Core {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Listings_Core
+	 * @var Core
 	 */
 	protected static $instance = null;
 
@@ -59,7 +59,7 @@ final class Newspack_Listings_Core {
 	 * Main Newspack_Listings instance.
 	 * Ensures only one instance of Newspack_Listings is loaded or can be loaded.
 	 *
-	 * @return Newspack_Listings_Core - Main instance.
+	 * @return Core - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -1005,4 +1005,4 @@ final class Newspack_Listings_Core {
 	}
 }
 
-Newspack_Listings_Core::instance();
+Core::instance();

@@ -7,23 +7,23 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Settings as Settings;
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Featured as Featured;
-use \Newspack_Listings\Utils as Utils;
+use \Newspack_Listings\Settings;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Featured;
+use \Newspack_Listings\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-purchase.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-ui.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-user.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-newspack-listings-products-cron.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-products-purchase.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-products-ui.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-products-user.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/products/class-products-cron.php';
 
 /**
  * Products class.
  * Sets up WooCommerce products for listings.
  */
-class Newspack_Listings_Products {
+class Products {
 	/**
 	 * The option name for the product ID.
 	 */
@@ -102,10 +102,10 @@ class Newspack_Listings_Products {
 		if ( self::is_active() ) {
 			self::create_products();
 
-			new Newspack_Listings_Products_Purchase();
-			new Newspack_Listings_Products_Ui();
-			new Newspack_Listings_Products_User();
-			new Newspack_Listings_Products_Cron();
+			new Products_Purchase();
+			new Products_Ui();
+			new Products_User();
+			new Products_Cron();
 		}
 	}
 
@@ -405,4 +405,4 @@ class Newspack_Listings_Products {
 	}
 }
 
-Newspack_Listings_Products::init();
+Products::init();

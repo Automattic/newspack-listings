@@ -9,10 +9,10 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Products as Products;
-use \Newspack_Listings\Newspack_Listings_Settings as Settings;
-use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Products;
+use \Newspack_Listings\Settings;
+use \Newspack_Listings\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,19 +20,19 @@ defined( 'ABSPATH' ) || exit;
  * Blocks class.
  * Sets up custom blocks for listings.
  */
-final class Newspack_Listings_Blocks {
+final class Blocks {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Listings_Blocks
+	 * @var Blocks
 	 */
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings_Blocks instance.
-	 * Ensures only one instance of Newspack_Listings_Blocks is loaded or can be loaded.
+	 * Main Blocks instance.
+	 * Ensures only one instance of Blocks is loaded or can be loaded.
 	 *
-	 * @return Newspack_Listings_Blocks - Main instance.
+	 * @return Blocks - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -265,4 +265,4 @@ final class Newspack_Listings_Blocks {
 	}
 }
 
-Newspack_Listings_Blocks::instance();
+Blocks::instance();

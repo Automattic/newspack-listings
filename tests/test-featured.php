@@ -5,9 +5,9 @@
  * @package Newspack_Listings
  */
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Featured as Featured;
-use \Newspack_Listings\Utils as Utils;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Featured as Featured;
+use \Newspack_Listings\Utils;
 
 /**
  * Featured listing test case.
