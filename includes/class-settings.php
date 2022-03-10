@@ -7,15 +7,15 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Products as Products;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Products;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Manages Settings page.
  */
-final class Newspack_Listings_Settings {
+final class Settings {
 	/**
 	 * Set up hooks.
 	 */
@@ -47,7 +47,7 @@ final class Newspack_Listings_Settings {
 		];
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions_Product' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		if ( Products::is_active() ) {
 			$sections['product'] = [
 				'slug'  => 'newspack_listings_product_settings',
 				'title' => __( 'Self-Serve Settings', 'newspack-listings' ),
@@ -185,7 +185,7 @@ final class Newspack_Listings_Settings {
 		}
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions_Product' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		if ( Products::is_active() ) {
 			$product_settings = [
 				[
 					'description' => __( 'The base price for a single listing (no subscription).', 'newspack-listings' ),
@@ -409,5 +409,5 @@ final class Newspack_Listings_Settings {
 }
 
 if ( is_admin() ) {
-	Newspack_Listings_Settings::init();
+	Settings::init();
 }
