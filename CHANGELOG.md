@@ -1,3 +1,17 @@
+## [2.9.3](https://github.com/Automattic/newspack-listings/compare/v2.9.2...v2.9.3) (2022-03-22)
+
+
+### Bug Fixes
+
+* force alpha release ([08fec0c](https://github.com/Automattic/newspack-listings/commit/08fec0c655792f72386393d4cd86754244581a01))
+
+## [2.9.3-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.9.2...v2.9.3-alpha.1) (2022-03-21)
+
+
+### Bug Fixes
+
+* force alpha release ([08fec0c](https://github.com/Automattic/newspack-listings/commit/08fec0c655792f72386393d4cd86754244581a01))
+
 ## [2.9.2](https://github.com/Automattic/newspack-listings/compare/v2.9.1...v2.9.2) (2022-03-08)
 
 
