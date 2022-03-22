@@ -7,8 +7,8 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Utils as Utils;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  * Products class.
  * Sets up WooCommerce products for listings.
  */
-final class Newspack_Listings_Featured {
+final class Featured {
 	/**
 	 * The meta keys for featured listing meta.
 	 */
@@ -48,10 +48,10 @@ final class Newspack_Listings_Featured {
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings_Featured instance.
-	 * Ensures only one instance of Newspack_Listings_Featured is loaded or can be loaded.
+	 * Main Featured instance.
+	 * Ensures only one instance of Featured is loaded or can be loaded.
 	 *
-	 * @return Newspack_Listings_Featured - Main instance.
+	 * @return Featured - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -64,6 +64,10 @@ final class Newspack_Listings_Featured {
 	 * Constructor.
 	 */
 	public function __construct() {
+		if ( ! self::is_active() ) {
+			return;
+		}
+
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'create_custom_table' ] );
 		add_action( 'plugins_loaded', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
@@ -72,6 +76,14 @@ final class Newspack_Listings_Featured {
 		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
+	}
+
+	/**
+	 * Check whether featured listings should be active on this site.
+	 * Requires the `NEWSPACK_LISTINGS_SELF_SERVE_ENABLED` environment constant.
+	 */
+	public static function is_active() {
+		return defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED;
 	}
 
 	/**
@@ -482,4 +494,4 @@ final class Newspack_Listings_Featured {
 	}
 }
 
-Newspack_Listings_Featured::instance();
+Featured::instance();
