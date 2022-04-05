@@ -1,6 +1,6 @@
 {
   "name": "newspack-listings",
-  "version": "2.9.3",
+  "version": "2.9.4-hotfix.1",
   "description": "",
   "scripts": {
     "cm": "newspack-scripts commit",
