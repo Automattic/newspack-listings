@@ -39,7 +39,7 @@
     "newspack-components": "^2.0.3"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.1.1",
+    "@rushstack/eslint-patch": "^1.1.2",
     "eslint": "^7.32.0",
     "lint-staged": "^12.3.7",
     "newspack-scripts": "^3.1.1",
