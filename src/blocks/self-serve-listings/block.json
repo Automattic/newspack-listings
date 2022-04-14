@@ -27,9 +27,9 @@
 				}
 			]
 		},
-		"allowSubscription": {
-			"type": "boolean",
-			"default": true
+		"allowedPurchases": {
+			"type": "string",
+			"default": "both"
 		},
 		"buttonText": {
 			"type": "string",
