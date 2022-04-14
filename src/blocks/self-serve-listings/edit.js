@@ -31,6 +31,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 	const [ error, setError ] = useState( null );
 	const {
 		allowedSingleListingTypes,
+		allowSubscription, // Legacy attribute superseded by allowedPurchases.
 		allowedPurchases,
 		buttonText,
 		singleDescription,
@@ -148,7 +149,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 			<div className={ classNames.join( ' ' ) }>
 				<form>
 					<div className="frequencies">
-						{ 'subscription-only' !== allowedPurchases && (
+						{ ( 'subscription-only' !== allowedPurchases || false === allowSubscription ) && (
 							<div className="newspack-listings__form-tabs frequency">
 								<input
 									name="listing-purchase-type"
@@ -156,7 +157,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									id={ `listing-single-${ clientId }` }
 									type="radio"
 									value="listing-single"
-									checked={ 'single' === selectedType || 'single-only' === allowedPurchases }
+									checked={ 'single' === selectedType || 'single-only' === allowedPurchases || false === allowSubscription }
 									onClick={ () => setSelectedType( 'single' ) }
 								/>
 								<label
@@ -226,7 +227,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								</div>
 							</div>
 						) }
-						{ 'single-only' !== allowedPurchases && (
+						{ ( 'single-only' !== allowedPurchases && false !== allowSubscription ) && (
 							<div className="newspack-listings__form-tabs frequency">
 								<input
 									name="listing-purchase-type"

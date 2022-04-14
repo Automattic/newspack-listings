@@ -14,6 +14,7 @@ call_user_func(
 	function( $data ) {
 		$attributes               = $data['attributes'];
 		$allowed_listing_types    = $attributes['allowedSingleListingTypes'];
+		$allow_subscription       = $attributes['allowSubscription']; // Legacy attribute superseded by allowedPurchases.
 		$allowed_purchases        = $attributes['allowedPurchases'];
 		$button_text              = $attributes['buttonText'];
 		$single_description       = $attributes['singleDescription'];
@@ -24,8 +25,8 @@ call_user_func(
 		$class_names   = [ 'newspack-listings__self-serve-form', 'wpbnbd' ];
 		$class_names[] = $allowed_purchases;
 
-		$allow_single       = 'subscription-only' !== $allowed_purchases;
-		$allow_subscription = 'single-only' !== $allowed_purchases;
+		$allow_single       = 'subscription-only' !== $allowed_purchases || empty( $allow_subscription );
+		$allow_subscription = 'single-only' !== $allowed_purchases && ! empty( $allow_subscription );
 
 		if ( empty( $attributes ) ) {
 			return;
@@ -36,7 +37,7 @@ call_user_func(
 		<div class="frequencies">
 			<?php if ( $allow_single ) : ?>
 				<div class="newspack-listings__form-tabs frequency">
-					<?php if ( 'single-only' !== $allowed_purchases ) : ?>
+					<?php if ( 'single-only' !== $allowed_purchases || empty( $allow_subscription ) ) : ?>
 						<input
 							name="listing-purchase-type"
 							class="newspack-listings__tab-input"
