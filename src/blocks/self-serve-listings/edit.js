@@ -12,7 +12,6 @@ import {
 	PanelBody,
 	PanelRow,
 	SelectControl,
-	ToggleControl,
 } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 
@@ -42,7 +41,14 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 		setAttributes( { clientId } );
 	}, [ clientId ] );
 
+	useEffect( () => {
+		if ( false === allowSubscription ) {
+			setAttributes( { allowedPurchases: 'single-only' } );
+		}
+	}, [ allowSubscription ] );
+
 	const classNames = [ 'newspack-listings__self-serve-form', 'wpbnbd', allowedPurchases ];
+
 	const getPurchaseTypeLabel = () => {
 		switch (allowedPurchases) {
 			case 'both':
@@ -65,7 +71,8 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								__( 'Allow readers to purchase %s.', 'newspack-listings' ),
 								getPurchaseTypeLabel()
 							) }
-							onChange={ value => setAttributes( { allowedPurchases: value } ) }
+							onChange={ value => setAttributes( { allowedPurchases: value, allowSubscription: true } ) }
+							value={ false === allowSubscription ? 'single-only' : allowedPurchases }
 							options={ [
 								{
 									label: __( 'Single listings and subscriptions', 'newspack-listings' ),

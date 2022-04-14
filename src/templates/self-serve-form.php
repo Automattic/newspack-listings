@@ -25,6 +25,10 @@ call_user_func(
 		$class_names   = [ 'newspack-listings__self-serve-form', 'wpbnbd' ];
 		$class_names[] = $allowed_purchases;
 
+		if ( empty( $allow_subscription ) ) {
+			$class_names[] = 'single-only';
+		}
+
 		$allow_single       = 'subscription-only' !== $allowed_purchases || empty( $allow_subscription );
 		$allow_subscription = 'single-only' !== $allowed_purchases && ! empty( $allow_subscription );
 
