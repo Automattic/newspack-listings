@@ -69,7 +69,7 @@ final class Featured {
 		}
 
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'create_custom_table' ] );
-		add_action( 'admin_init', [ __CLASS__, 'check_update_version' ] );
+		add_action( 'init', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
 		add_action( 'save_post', [ __CLASS__, 'update_featured_status_on_save' ], 10, 2 );
