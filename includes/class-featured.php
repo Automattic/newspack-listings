@@ -408,7 +408,7 @@ final class Featured {
 	 * @param WP_Post $post WP_Post object being saved.
 	 */
 	public static function update_featured_status_on_save( $post_id, $post ) {
-		if ( ! Core::is_listing( $post->post_type ) ) {
+		if ( ! Core::is_listing( $post->post_type ) || ! self::is_active() ) {
 			return;
 		}
 
