@@ -41,22 +41,20 @@ call_user_func(
 		<div class="frequencies">
 			<?php if ( $allow_single ) : ?>
 				<div class="newspack-listings__form-tabs frequency">
-					<?php if ( 'single-only' !== $allowed_purchases || empty( $allow_subscription ) ) : ?>
-						<input
-							name="listing-purchase-type"
-							class="newspack-listings__tab-input"
-							id="listing-single-<?php echo esc_attr( $client_id ); ?>"
-							type="radio"
-							checked
-							value="single"
-						/>
-						<label
-							class="freq-label listing-single"
-							for="listing-single-<?php echo esc_attr( $client_id ); ?>"
-						>
-							<?php echo esc_html( __( 'Single Listing' ) ); ?>
-						</label>
-					<?php endif; ?>
+					<input
+						name="listing-purchase-type"
+						class="newspack-listings__tab-input"
+						id="listing-single-<?php echo esc_attr( $client_id ); ?>"
+						type="radio"
+						checked
+						value="single"
+					/>
+					<label
+						class="freq-label listing-single"
+						for="listing-single-<?php echo esc_attr( $client_id ); ?>"
+					>
+						<?php echo esc_html( __( 'Single Listing' ) ); ?>
+					</label>
 					<div class="input-container listing-details">
 						<p><?php echo wp_kses_post( $single_description ); ?></p>
 						<?php if ( 0 < $single_expiration_period ) : ?>
@@ -130,24 +128,22 @@ call_user_func(
 			<?php endif; ?>
 			<?php if ( $allow_subscription ) : ?>
 				<div class="newspack-listings__form-tabs frequency">
-					<?php if ( 'subscription-only' !== $allowed_purchases ) : ?>
-						<input
-							name="listing-purchase-type"
-							class="newspack-listings__tab-input"
-							id="listing-subscription-<?php echo esc_attr( $client_id ); ?>"
-							type="radio"
-							value="subscription"
-							<?php if ( 'subscription-only' === $allowed_purchases ) : ?>
-								checked
-							<?php endif; ?>
-						/>
-						<label
-							class="freq-label listing-subscription"
-							for="listing-subscription-<?php echo esc_attr( $client_id ); ?>"
-						>
-							<?php echo esc_html( __( 'Listing Subscription' ) ); ?>
-						</label>
-					<?php endif; ?>
+					<input
+						name="listing-purchase-type"
+						class="newspack-listings__tab-input"
+						id="listing-subscription-<?php echo esc_attr( $client_id ); ?>"
+						type="radio"
+						value="subscription"
+						<?php if ( 'subscription-only' === $allowed_purchases ) : ?>
+							checked
+						<?php endif; ?>
+					/>
+					<label
+						class="freq-label listing-subscription"
+						for="listing-subscription-<?php echo esc_attr( $client_id ); ?>"
+					>
+						<?php echo esc_html( __( 'Listing Subscription' ) ); ?>
+					</label>
 					<div class="input-container listing-details">
 						<p><?php echo wp_kses_post( $subscription_description ); ?></p>
 						<p class="newspack-listings__help">
