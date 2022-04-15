@@ -1,3 +1,10 @@
+## [2.9.4-hotfix.1](https://github.com/Automattic/newspack-listings/compare/v2.9.3...v2.9.4-hotfix.1) (2022-04-15)
+
+
+### Bug Fixes
+
+* **self-serve:** patterns class name after refactor ([d53f2d3](https://github.com/Automattic/newspack-listings/commit/d53f2d31ec7bcac9729841a4a924941d05f78055))
+
 ## [2.9.3](https://github.com/Automattic/newspack-listings/compare/v2.9.2...v2.9.3) (2022-03-22)
 
 
