@@ -389,16 +389,16 @@ final class Products_Purchase extends Products {
 
 				if ( $is_subscription ) {
 					$post_type     = Core::NEWSPACK_LISTINGS_POST_TYPES['place'];
-					$block_pattern = Patterns::get_block_patterns( 'business_1' );
+					$block_pattern = Block_Patterns::get_block_patterns( 'business_1' );
 				} else {
 					if ( 'event' === $listing_type ) {
 						$post_type = Core::NEWSPACK_LISTINGS_POST_TYPES['event'];
 					}
 					if ( 'classified' === $listing_type ) {
-						$block_pattern = Patterns::get_block_patterns( 'classified_1' );
+						$block_pattern = Block_Patterns::get_block_patterns( 'classified_1' );
 					}
 					if ( 'real-estate' === $listing_type ) {
-						$block_pattern = Patterns::get_block_patterns( 'real_estate_1' );
+						$block_pattern = Block_Patterns::get_block_patterns( 'real_estate_1' );
 					}
 				}
 
