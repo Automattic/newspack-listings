@@ -33,7 +33,7 @@ final class Featured {
 	/**
 	 * Installed version number of the custom table.
 	 */
-	const TABLE_VERSION = '1.0';
+	const TABLE_VERSION = '1.1';
 
 	/**
 	 * Option name for the installed version number of the custom table.
@@ -69,7 +69,7 @@ final class Featured {
 		}
 
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'create_custom_table' ] );
-		add_action( 'plugins_loaded', [ __CLASS__, 'check_update_version' ] );
+		add_action( 'admin_init', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
 		add_action( 'save_post', [ __CLASS__, 'update_featured_status_on_save' ], 10, 2 );
