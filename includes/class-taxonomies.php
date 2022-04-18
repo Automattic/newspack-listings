@@ -7,8 +7,8 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Utils as Utils;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  * Taxonomies class.
  * Sets up shadow taxonomies for listings.
  */
-final class Newspack_Listings_Taxonomies {
+final class Taxonomies {
 	const NEWSPACK_LISTINGS_TAXONOMIES = [
 		'event'       => 'newspack_lstngs_evt',
 		'generic'     => 'newspack_lstngs_gen',
@@ -27,15 +27,15 @@ final class Newspack_Listings_Taxonomies {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Listings_Taxonomies
+	 * @var Taxonomies
 	 */
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings_Taxonomies instance.
-	 * Ensures only one instance of Newspack_Listings_Taxonomies is loaded or can be loaded.
+	 * Main Taxonomies instance.
+	 * Ensures only one instance of Taxonomies is loaded or can be loaded.
 	 *
-	 * @return Newspack_Listings_Taxonomies - Main instance.
+	 * @return Taxonomies - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -633,4 +633,4 @@ final class Newspack_Listings_Taxonomies {
 	}
 }
 
-Newspack_Listings_Taxonomies::instance();
+Taxonomies::instance();

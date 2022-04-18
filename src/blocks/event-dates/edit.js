@@ -39,6 +39,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 						<ToggleControl
 							className="newspack-listings__event-time-toggle"
 							label={ sprintf(
+								// Translators: End date/time help message.
 								__( 'Show End %s', 'newspack-listings' ),
 								showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 							) }
@@ -57,7 +58,8 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 					<BaseControl
 						id={ `event-start-date-${ clientId }` }
 						label={ sprintf(
-							__( 'Event %s %s', 'newspack-listings' ),
+							// Translators: Help message for Event start date/time.
+							__( 'Event %1$s %2$s', 'newspack-listings' ),
 							showEnd ? __( 'Start', 'newspack-listings' ) : '',
 							showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 						) }
@@ -95,6 +97,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 						<BaseControl
 							id={ `event-end-date-${ clientId }` }
 							label={ sprintf(
+								// Translators: Help message for Event end date/time.
 								__( 'Event End %s', 'newspack-listings' ),
 								showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 							) }

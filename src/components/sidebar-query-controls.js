@@ -38,7 +38,7 @@ class QueryControls extends Component {
 				per_page: 20,
 				_fields: 'id,name',
 			} ),
-		} ).then( function( users ) {
+		} ).then( function ( users ) {
 			return users.map( user => ( {
 				value: user.id,
 				label: decodeEntities( user.name ) || __( '(no name)', 'newspack-listings' ),
@@ -52,7 +52,7 @@ class QueryControls extends Component {
 				include: userIDs.join( ',' ),
 				_fields: 'id,name',
 			} ),
-		} ).then( function( users ) {
+		} ).then( function ( users ) {
 			return users.map( user => ( {
 				value: user.id,
 				label: decodeEntities( user.name ) || __( '(no name)', 'newspack-listings' ),
@@ -74,7 +74,7 @@ class QueryControls extends Component {
 				order: 'desc',
 				taxonomy: 'category',
 			} ),
-		} ).then( function( categories ) {
+		} ).then( function ( categories ) {
 			return categories.map( category => ( {
 				value: category.id,
 				label: decodeEntities( category.name ) || __( '(no title)', 'newspack-listings' ),
@@ -89,7 +89,7 @@ class QueryControls extends Component {
 				include: categoryIDs.join( ',' ),
 				taxonomy: 'category',
 			} ),
-		} ).then( function( categories ) {
+		} ).then( function ( categories ) {
 			return categories.map( category => ( {
 				value: category.id,
 				label: decodeEntities( category.name ) || __( '(no title)', 'newspack-listings' ),
@@ -111,7 +111,7 @@ class QueryControls extends Component {
 				order: 'desc',
 				taxonomy: 'post_tag',
 			} ),
-		} ).then( function( tags ) {
+		} ).then( function ( tags ) {
 			return tags.map( tag => ( {
 				value: tag.id,
 				label: decodeEntities( tag.name ) || __( '(no title)', 'newspack-listings' ),
@@ -126,7 +126,7 @@ class QueryControls extends Component {
 				include: tagIDs.join( ',' ),
 				taxonomy: 'post_tag',
 			} ),
-		} ).then( function( tags ) {
+		} ).then( function ( tags ) {
 			return tags.map( tag => ( {
 				value: tag.id,
 				label: decodeEntities( tag.name ) || __( '(no title)', 'newspack-listings' ),

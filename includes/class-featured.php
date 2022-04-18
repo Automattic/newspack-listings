@@ -7,7 +7,8 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  * Products class.
  * Sets up WooCommerce products for listings.
  */
-final class Newspack_Listings_Featured {
+final class Featured {
 	/**
 	 * The meta keys for featured listing meta.
 	 */
@@ -47,10 +48,10 @@ final class Newspack_Listings_Featured {
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings_Featured instance.
-	 * Ensures only one instance of Newspack_Listings_Featured is loaded or can be loaded.
+	 * Main Featured instance.
+	 * Ensures only one instance of Featured is loaded or can be loaded.
 	 *
-	 * @return Newspack_Listings_Featured - Main instance.
+	 * @return Featured - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -63,14 +64,26 @@ final class Newspack_Listings_Featured {
 	 * Constructor.
 	 */
 	public function __construct() {
+		if ( ! self::is_active() ) {
+			return;
+		}
+
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'create_custom_table' ] );
 		add_action( 'plugins_loaded', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
-		add_action( self::CRON_HOOK, [ $this, 'check_expired_featured_items' ] );
+		add_action( self::CRON_HOOK, [ __CLASS__, 'check_expired_featured_items' ] );
 		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ] );
+	}
+
+	/**
+	 * Check whether featured listings should be active on this site.
+	 * Requires the `NEWSPACK_LISTINGS_SELF_SERVE_ENABLED` environment constant.
+	 */
+	public static function is_active() {
+		return defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED;
 	}
 
 	/**
@@ -92,6 +105,7 @@ final class Newspack_Listings_Featured {
 		if ( self::TABLE_VERSION !== $current_version ) {
 			self::create_custom_table();
 			self::populate_custom_table();
+			update_option( self::TABLE_VERSION_OPTION, self::TABLE_VERSION );
 		}
 	}
 
@@ -117,8 +131,6 @@ final class Newspack_Listings_Featured {
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.dbDelta_dbdelta
-
-			update_option( self::TABLE_VERSION_OPTION, self::TABLE_VERSION );
 		}
 	}
 
@@ -148,7 +160,13 @@ final class Newspack_Listings_Featured {
 		$default_priority = 5;
 
 		foreach ( $results->posts as $featured_listing ) {
-			self::update_priority( $featured_listing->ID, $default_priority );
+			$priority = get_post_meta( $featured_listing->ID, 'newspack_listings_featured_priority', true );
+
+			if ( ! $priority ) {
+				$priority = $default_priority;
+			}
+
+			self::update_priority( $featured_listing->ID, $priority );
 		}
 
 		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
@@ -159,7 +177,13 @@ final class Newspack_Listings_Featured {
 				$results       = new \WP_Query( $args );
 
 				foreach ( $results->posts as $featured_listing ) {
-					self::update_priority( $featured_listing->ID, $default_priority );
+					$priority = get_post_meta( $featured_listing->ID, 'newspack_listings_featured_priority', true );
+
+					if ( ! $priority ) {
+						$priority = $default_priority;
+					}
+
+					self::update_priority( $featured_listing->ID, $priority );
 				}
 			}
 		}
@@ -239,9 +263,7 @@ final class Newspack_Listings_Featured {
 	public static function register_featured_meta() {
 		$meta_config = [
 			'featured' => [
-				'auth_callback'     => function() {
-					return current_user_can( 'edit_posts' );
-				},
+				'auth_callback'     => [ 'Core', 'can_edit_posts' ],
 				'default'           => false,
 				'description'       => __( 'Is this listing a featured listing?', 'newspack-listings' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
@@ -250,9 +272,7 @@ final class Newspack_Listings_Featured {
 				'type'              => 'boolean',
 			],
 			'expires'  => [
-				'auth_callback'     => function() {
-					return current_user_can( 'edit_posts' );
-				},
+				'auth_callback'     => [ 'Core', 'can_edit_posts' ],
 				'default'           => '',
 				'description'       => __( 'When should the listing’s featured status expire?', 'newspack-listings' ),
 				'sanitize_callback' => 'sanitize_text_field',
@@ -367,7 +387,7 @@ final class Newspack_Listings_Featured {
 		register_deactivation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'cron_deactivate' ] );
 
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
-			wp_schedule_event( self::get_start_time(), 'daily', self::CRON_HOOK );
+			wp_schedule_event( Utils\get_next_midnight(), 'daily', self::CRON_HOOK );
 		}
 	}
 
@@ -379,30 +399,63 @@ final class Newspack_Listings_Featured {
 	}
 
 	/**
-	 * Unset featured status for the given post. Also delete the query priority meta key.
+	 * Set featured status, priority, and expiration date for the given post.
 	 *
-	 * @param int $post_id Post ID to update.
+	 * @param int    $post_id Post ID to update.
+	 * @param int    $priority Priority level (1-9) to set. If not given, will default to 5.
+	 * @param string $expires Date string for the expiration date, in YYYY-MM-DDT00:00:00 format. Will not set if none given.
 	 *
-	 * @return boolean True if the post was featured and updated to unfeatured; false if the post wasn't updated or doesn't exist.
+	 * @return boolean True if the post updated to featured; false if the post wasn't updated or doesn't exist.
 	 */
-	public static function unset_featured_status( $post_id = null ) {
+	public static function set_featured_status( $post_id = null, $priority = 5, $expires = null ) {
 		if ( null === $post_id ) {
 			return false;
 		}
 
-		$expiration_date = self::get_featured_expiration( $post_id );
-		$timezone        = get_option( 'timezone_string', 'UTC' );
+		// Set featured status.
+		update_post_meta( $post_id, self::META_KEYS['featured'], true );
 
-		// Guard against 'Unknown or bad timezone' PHP error.
-		if ( empty( trim( $timezone ) ) ) {
-			$timezone = 'UTC';
+		// Set feature priority.
+		self::update_priority( $post_id, $priority );
+
+		// Set expiration, if given and a valid time string.
+		if ( $expires && Utils\is_valid_date_string( $expires ) ) {
+			update_post_meta( $post_id, self::META_KEYS['expires'], $expires );
+		}
+	}
+
+	/**
+	 * Unset featured status for the given post. Also delete the query priority meta key.
+	 *
+	 * @param int     $post_id Post ID to update.
+	 * @param boolean $ignore_expiration If passed true, skip checking the expiration date and immediately unset featured status.
+	 *
+	 * @return boolean True if the post was featured and updated to unfeatured; false if the post wasn't updated or doesn't exist.
+	 */
+	public static function unset_featured_status( $post_id = null, $ignore_expiration = false ) {
+		if ( null === $post_id ) {
+			return false;
 		}
 
-		$parsed_date     = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
-		$date_has_passed = 0 > $parsed_date->getTimestamp() - time();
+		$unset_featured = false;
+
+		if ( $ignore_expiration ) {
+			$unset_featured = true;
+		} else {
+			$expiration_date = self::get_featured_expiration( $post_id );
+			$timezone        = get_option( 'timezone_string', 'UTC' );
+
+			// Guard against 'Unknown or bad timezone' PHP error.
+			if ( empty( trim( $timezone ) ) ) {
+				$timezone = 'UTC';
+			}
+
+			$parsed_date    = new \DateTime( $expiration_date, new \DateTimeZone( $timezone ) );
+			$unset_featured = 0 > $parsed_date->getTimestamp() - time();
+		}
 
 		// If the expiration date has already passed, remove the featured status and query priority.
-		if ( $date_has_passed ) {
+		if ( $unset_featured ) {
 			update_post_meta( $post_id, self::META_KEYS['featured'], false );
 			self::update_priority( $post_id, 0 );
 			return true;
@@ -417,14 +470,9 @@ final class Newspack_Listings_Featured {
 	 * fetch results in batches of 100 and iterate through the batches so all results are processed.
 	 */
 	public static function check_expired_featured_items() {
-		// Start with first page of 100 results, then we'll see if there are more pages to iterate through.
-		$current_page = 1;
-		$args         = [
-			'post_type'      => array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ),
-			'post_status'    => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
-			'posts_per_page' => 100,
-			'paged'          => $current_page,
-			'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		$args = [
+			'post_status' => [ 'draft', 'future', 'pending', 'private', 'publish', 'trash' ],
+			'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'relation' => 'AND',
 				[
 					'key'   => self::META_KEYS['featured'],
@@ -442,42 +490,8 @@ final class Newspack_Listings_Featured {
 			],
 		];
 
-		// Get featured listings with an expiration date.
-		$results         = new \WP_Query( $args );
-		$number_of_pages = $results->max_num_pages;
-
-		foreach ( $results->posts as $featured_listing ) {
-			self::unset_featured_status( $featured_listing->ID );
-		}
-
-		// If there were more than 1 page of results, repeat with subsequent pages until all posts are processed.
-		if ( 1 < $number_of_pages ) {
-			while ( $current_page < $number_of_pages ) {
-				$current_page  ++;
-				$args['paged'] = $current_page;
-				$results       = new \WP_Query( $args );
-
-				foreach ( $results->posts as $featured_listing ) {
-					self::unset_featured_status( $featured_listing->ID );
-				}
-			}
-		}
-	}
-
-	/**
-	 * Get the UNIX timestamp for the next occurrence of midnight in the site's local timezone.
-	 */
-	public static function get_start_time() {
-		$timezone = get_option( 'timezone_string', 'UTC' );
-
-		// Guard against 'Unknown or bad timezone' PHP error.
-		if ( empty( trim( $timezone ) ) ) {
-			$timezone = 'UTC';
-		}
-
-		$next_midnight = new \DateTime( 'tomorrow', new \DateTimeZone( $timezone ) );
-		return $next_midnight->getTimestamp();
+		Utils\execute_callback_with_paged_query( $args, [ __CLASS__, 'unset_featured_status' ] );
 	}
 }
 
-Newspack_Listings_Featured::instance();
+Featured::instance();

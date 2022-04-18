@@ -7,9 +7,9 @@
 
 namespace Newspack_Listings;
 
-use \WP_CLI as WP_CLI;
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
+use \WP_CLI;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,26 +17,26 @@ defined( 'ABSPATH' ) || exit;
  * Importer class.
  * Sets up CLI-based importer for listings.
  */
-final class Newspack_Listings_Migration {
+final class Migration {
 	/**
 	 * Whether the script is running as a dry-run.
 	 *
-	 * @var Newspack_Listings_Migration
+	 * @var Migration
 	 */
 	public static $is_dry_run = false;
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Listings_Migration
+	 * @var Migration
 	 */
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings_Migration instance.
-	 * Ensures only one instance of Newspack_Listings_Migration is loaded or can be loaded.
+	 * Main Migration instance.
+	 * Ensures only one instance of Migration is loaded or can be loaded.
 	 *
-	 * @return Newspack_Listings_Migration - Main instance.
+	 * @return Migration - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -412,4 +412,4 @@ final class Newspack_Listings_Migration {
 	}
 }
 
-Newspack_Listings_Migration::instance();
+Migration::instance();

@@ -5,8 +5,8 @@
  * @package Newspack_Listings
  */
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Utils as Utils;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Utils;
 
 /**
  * Blocks test case.

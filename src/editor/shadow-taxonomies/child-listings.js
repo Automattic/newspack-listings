@@ -49,7 +49,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 	const canHaveChildren = 0 < filteredChildPostTypes.length && isListing();
 
 	// Fetch suggestions for suggestions list on component mount.
-	useEffect(() => {
+	useEffect( () => {
 		if ( canHaveChildren ) {
 			setMessage( null );
 			apiFetch( {
@@ -77,7 +77,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 					} );
 				} );
 		}
-	}, []);
+	}, [] );
 
 	// Bail early if the post type can't have child listings.
 	if ( ! canHaveChildren ) {
@@ -166,6 +166,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 	const getLabel = () => {
 		if ( selectedPostType ) {
 			return sprintf(
+				// Translators: Search help message.
 				__( 'Search %ss', 'newspack-listings' ),
 				getPostTypeLabel( selectedPostType )
 			);
@@ -251,7 +252,7 @@ const ChildListingsComponent = ( { hideChildren, postId, updateMetaValue } ) => 
 						>
 							<>
 								{ isUpdating
-									? __( 'Saving...', 'newspack-listings' )
+									? __( 'Saving…', 'newspack-listings' )
 									: __( 'Save', 'newspack-listings' ) }
 							</>
 						</Button>

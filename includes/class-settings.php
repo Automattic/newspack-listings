@@ -7,14 +7,15 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Products;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Manages Settings page.
  */
-final class Newspack_Listings_Settings {
+final class Settings {
 	/**
 	 * Set up hooks.
 	 */
@@ -46,7 +47,7 @@ final class Newspack_Listings_Settings {
 		];
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		if ( Products::is_active() ) {
 			$sections['product'] = [
 				'slug'  => 'newspack_listings_product_settings',
 				'title' => __( 'Self-Serve Settings', 'newspack-listings' ),
@@ -184,43 +185,44 @@ final class Newspack_Listings_Settings {
 		}
 
 		// Product settings are only relevant if WooCommerce is available.
-		if ( class_exists( 'WooCommerce' ) && defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
+		if ( Products::is_active() ) {
 			$product_settings = [
 				[
-					'description' => __( 'If turned off, any user-generated listings that were previously published will no longer be publicly visible.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_self_service_enabled',
-					'label'       => __( 'Enable self-serve listings', 'newpack-listings' ),
-					'type'        => 'checkbox',
-					'value'       => false,
-					'section'     => $sections['product']['slug'],
-				],
-				[
-					'description' => __( 'The base price for a single listing (no subscription). Single listings expire after 30 days.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_single_price',
+					'description' => __( 'The base price for a single listing (no subscription).', 'newspack-listings' ),
+					'key'         => Products::PRODUCT_META_KEYS['single'],
 					'label'       => __( 'Single listing price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 25,
 					'section'     => $sections['product']['slug'],
 				],
 				[
+					'description' => __( 'The upgrade price to make a single-purchase listing "featured."', 'newspack-listings' ),
+					'key'         => Products::PRODUCT_META_KEYS['featured'],
+					'label'       => __( 'Upgrade: Featured listing price', 'newpack-listings' ),
+					'type'        => 'number',
+					'value'       => 75,
+					'section'     => $sections['product']['slug'],
+				],
+				// TODO: update all copy to be able to handle just 1 day in addition to multiple.
+				[
+					'description' => __( 'The number of days a single listing purchase remains live after being published. Set this value to 0 to allow purchased listings to remain live indefinitely.', 'newspack-listings' ),
+					'key'         => 'newspack_listings_single_purchase_expiration',
+					'label'       => __( 'Single listing expiration period', 'newpack-listings' ),
+					'type'        => 'number',
+					'value'       => 30,
+					'section'     => $sections['product']['slug'],
+				],
+				[
 					'description' => __( 'The base monthly subscription price. This fee is charged monthly.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_subscription_price',
+					'key'         => Products::PRODUCT_META_KEYS['subscription'],
 					'label'       => __( 'Monthly subscription listing price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 50,
 					'section'     => $sections['product']['slug'],
 				],
 				[
-					'description' => __( 'The upgrade price to make the primary listing "featured." For subscription listings, this fee is charged monthly.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_featured_add_on',
-					'label'       => __( 'Upgrade: Featured listing price', 'newpack-listings' ),
-					'type'        => 'number',
-					'value'       => 75,
-					'section'     => $sections['product']['slug'],
-				],
-				[
-					'description' => __( 'The upgrade price for a premium subscription, which allows subscribers to create up to 5 featured listings linked to the primary listing per month. This fee is charged monthly.', 'newspack-listings' ),
-					'key'         => 'newspack_listings_premium_subscription_add_on',
+					'description' => __( 'The upgrade price for a premium subscription, which allows subscribers to create up to 10 additional Marketplace or Event listings. This fee is charged monthly.', 'newspack-listings' ),
+					'key'         => Products::PRODUCT_META_KEYS['premium'],
 					'label'       => __( 'Upgrade: Premium subscription price', 'newpack-listings' ),
 					'type'        => 'number',
 					'value'       => 100,
@@ -349,7 +351,7 @@ final class Newspack_Listings_Settings {
 				wp_kses_post( $setting['description'] )
 			);
 		} elseif ( 'number' === $type ) {
-			if ( empty( $value ) && empty( $setting['allow_empty'] ) ) {
+			if ( '' === $value && empty( $setting['allow_empty'] ) ) {
 				$value = $setting['value'];
 			}
 			printf(
@@ -407,5 +409,5 @@ final class Newspack_Listings_Settings {
 }
 
 if ( is_admin() ) {
-	Newspack_Listings_Settings::init();
+	Settings::init();
 }

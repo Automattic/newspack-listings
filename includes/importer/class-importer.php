@@ -9,9 +9,9 @@
 
 namespace Newspack_Listings;
 
-use \WP_CLI as WP_CLI;
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Importer_Utils as Importer_Utils;
+use \WP_CLI;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Importer_Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * Importer class.
  * Sets up CLI-based importer for listings.
  */
-final class Newspack_Listings_Importer {
+final class Importer {
 	/**
 	 * The current row number of the CSV being processed.
 	 *
@@ -892,4 +892,4 @@ final class Newspack_Listings_Importer {
 	}
 }
 
-Newspack_Listings_Importer::instance();
+Importer::instance();

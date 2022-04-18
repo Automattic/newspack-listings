@@ -4,6 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import {
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalBlockVariationPicker as BlockVariationPicker,
 	InnerBlocks,
 	InspectorControls,
@@ -136,7 +137,7 @@ const CuratedListEditorComponent = ( {
 	/**
 	 * If changing query options, fetch listing posts that match the query.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		if ( initialRender ) {
 			fetchPosts( queryOptions );
 		} else {
@@ -146,19 +147,19 @@ const CuratedListEditorComponent = ( {
 				fetchPosts( queryOptions );
 			}, 500 );
 		}
-	}, [ JSON.stringify( queryOptions ), queryMode ]);
+	}, [ JSON.stringify( queryOptions ), queryMode ] );
 
 	/**
 	 * Set isSelected attribute so child blocks know selected state.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		setAttributes( { isSelected } );
-	}, [ isSelected ]);
+	}, [ isSelected ] );
 
 	/**
 	 * Update locations in component state. This lets us keep the map block in sync with listing items.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		if ( ! canUseMapBlock ) {
 			return;
 		}
@@ -198,12 +199,12 @@ const CuratedListEditorComponent = ( {
 		}
 
 		setLocations( newLocations );
-	}, [ list, JSON.stringify( queriedListings ), queryMode ]);
+	}, [ list, JSON.stringify( queriedListings ), queryMode ] );
 
 	/**
 	 * Keep track of post IDs of all nested listings in specific listings mode.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		if ( ! queryMode && list ) {
 			const newListingIds = list.innerBlocks.map( innerBlock =>
 				parseInt( innerBlock.attributes.listing )
@@ -211,12 +212,12 @@ const CuratedListEditorComponent = ( {
 
 			setAttributes( { listingIds: newListingIds } );
 		}
-	}, [ list ]);
+	}, [ list ] );
 
 	/**
 	 * Create, update, or remove map when showMap attribute or locations change.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		// Don't run on the initial render.
 		if ( initialRender ) {
 			return;
@@ -249,34 +250,34 @@ const CuratedListEditorComponent = ( {
 			// If disabling the showMap toggle, remove the existing map.
 			removeBlocks( [ hasMap.clientId ] );
 		}
-	}, [ showMap, JSON.stringify( locations ) ]);
+	}, [ showMap, JSON.stringify( locations ) ] );
 
 	/**
 	 * Guard against accidentally deleting the list container block.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		if ( ! queryMode && ! list ) {
 			// Create a new map at the bottom of the list.
 			const newBlock = createBlock( 'newspack-listings/list-container' );
 
 			insertBlocks( [ newBlock ], null, clientId );
 		}
-	}, [ list ]);
+	}, [ list ] );
 
 	/**
 	 * Prevent focusing of "invisible" List Container wrapper block.
 	 * Passes the focusing of List Container to this parent Curated List block.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		if ( list && selectedBlock === list.clientId ) {
 			selectBlock( clientId );
 		}
-	}, [ selectedBlock ]);
+	}, [ selectedBlock ] );
 
 	/**
 	 * Determine if the background color is dark or light.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		if ( backgroundColor ) {
 			const contrastRatio = getContrastRatio( backgroundColor );
 
@@ -286,12 +287,12 @@ const CuratedListEditorComponent = ( {
 		}
 
 		setAttributes( { hasDarkBackground: false } );
-	}, [ backgroundColor ]);
+	}, [ backgroundColor ] );
 
 	/**
 	 * Sync parent attributes to inner blocks.
 	 */
-	useEffect(() => {
+	useEffect( () => {
 		if ( list ) {
 			updateBlockAttributes(
 				[ list.clientId ].concat( list.innerBlocks.map( innerBlock => innerBlock.clientId ) ), // Array of client IDs for both list container and individual listings.
@@ -299,13 +300,13 @@ const CuratedListEditorComponent = ( {
 				false
 			);
 		}
-	}, [ JSON.stringify( attributes ) ]);
+	}, [ JSON.stringify( attributes ) ] );
 
 	/**
 	 * Render the results of the listing query.
 	 *
 	 * @param {Object} listing Post object for listing to show.
-	 * @param {number} index Index of the item in the array.
+	 * @param {number} index   Index of the item in the array.
 	 */
 	const renderQueriedListings = ( listing, index ) => (
 		<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
@@ -453,6 +454,7 @@ const CuratedListEditorComponent = ( {
 							<ToggleControl
 								label={ __( 'Show map', 'newspack-listings' ) }
 								help={ sprintf(
+									// Translators: Help message for map behavior.
 									__(
 										'The map will display locations for up to %d items in the list, regardless of the current number of items shown.',
 										'newspack-listings'
@@ -627,14 +629,18 @@ const CuratedListEditorComponent = ( {
 						templateInsertUpdatesSelection={ false }
 						renderAppender={ () => null } // We want to discourage editors from adding blocks in this top-level wrapper, but we can't lock the template because we still need to be able to programmatically add or remove map blocks.
 					/>
-					{ // If in query mode and while fetching posts.
-					isFetching && queryMode && (
-						<Placeholder>
-							<Spinner />
-						</Placeholder>
-					) }
-					{ // If in query mode, show the queried listings.
-					! isFetching && queryMode && queriedListings.map( renderQueriedListings ) }
+					{
+						// If in query mode and while fetching posts.
+						isFetching && queryMode && (
+							<Placeholder>
+								<Spinner />
+							</Placeholder>
+						)
+					}
+					{
+						// If in query mode, show the queried listings.
+						! isFetching && queryMode && queriedListings.map( renderQueriedListings )
+					}
 					{ ! isFetching &&
 						queryMode &&
 						showLoadMore &&

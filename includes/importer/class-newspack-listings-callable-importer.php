@@ -16,7 +16,7 @@ use Newspack_Listings\Importer_Mode;
 use Newspack_Listings\Listing_Type;
 use Newspack_Listings\Listings_Type_Mapper;
 use Newspack_Listings\Marketplace_Type;
-use Newspack_Listings\Newspack_Listings_Core as Core;
+use Newspack_Listings\Core;
 use WP_CLI;
 use WP_Error;
 use WP_Post;
@@ -340,8 +340,8 @@ class Newspack_Listings_Callable_Importer {
 
 			global $wpdb;
 
-			$category_sql = "SELECT * FROM $wpdb->terms t 
-    			LEFT JOIN $wpdb->term_taxonomy tt ON t.term_id = tt.term_id 
+			$category_sql = "SELECT * FROM $wpdb->terms t
+    			LEFT JOIN $wpdb->term_taxonomy tt ON t.term_id = tt.term_id
 				WHERE t.name = '$category'
 				AND tt.taxonomy = 'category'";
 
@@ -533,7 +533,7 @@ class Newspack_Listings_Callable_Importer {
 			'newspack_featured_image_position' => 'hidden', // Featured image is shown in listing content.
 		];
 
-		WP_CLI::log($incoming_post_data['post_title']);
+		WP_CLI::log( $incoming_post_data['post_title'] );
 
 		if ( is_string( $incoming_post_data['post_author'] ) ) {
 			$incoming_post_data['post_author'] = $this->handle_post_author( $incoming_post_data['post_author'] );
@@ -544,7 +544,7 @@ class Newspack_Listings_Callable_Importer {
 		if ( array_key_exists( 'images', $row ) ) {
 			if ( is_string( $row['images'] ) ) {
 				if ( str_contains( $row['images'], ',' ) ) {
-					$paths = explode( ',', $row['images'] );
+					$paths          = explode( ',', $row['images'] );
 					$array_of_paths = [];
 					foreach ( $paths as $path ) {
 						$array_of_paths[] = [ 'path' => $path ];
@@ -1066,7 +1066,7 @@ class Newspack_Listings_Callable_Importer {
 	private function add_category_to_post( int $post_id, int $category_id ) {
 		global $wpdb;
 
-		$associated_check_sql = "SELECT * FROM $wpdb->term_relationships tr 
+		$associated_check_sql = "SELECT * FROM $wpdb->term_relationships tr
 			INNER JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
 			WHERE tt.term_id = $category_id AND tt.taxonomy = 'category' AND tr.object_id = $post_id";
 		$result               = $wpdb->get_results( $associated_check_sql );

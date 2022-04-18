@@ -9,8 +9,10 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Newspack_Listings_Taxonomies as Taxonomies;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Products;
+use \Newspack_Listings\Settings;
+use \Newspack_Listings\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,19 +20,19 @@ defined( 'ABSPATH' ) || exit;
  * Blocks class.
  * Sets up custom blocks for listings.
  */
-final class Newspack_Listings_Blocks {
+final class Blocks {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Newspack_Listings_Blocks
+	 * @var Blocks
 	 */
 	protected static $instance = null;
 
 	/**
-	 * Main Newspack_Listings_Blocks instance.
-	 * Ensures only one instance of Newspack_Listings_Blocks is loaded or can be loaded.
+	 * Main Blocks instance.
+	 * Ensures only one instance of Blocks is loaded or can be loaded.
 	 *
-	 * @return Newspack_Listings_Blocks - Main instance.
+	 * @return Blocks - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -87,26 +89,38 @@ final class Newspack_Listings_Blocks {
 			];
 		}
 
+		$localized_data = [
+			'post_type_label'    => $post_type_label,
+			'post_type'          => $post_type,
+			'post_type_slug'     => array_search( $post_type, Core::NEWSPACK_LISTINGS_POST_TYPES ),
+			'post_types'         => $post_types,
+			'taxonomies'         => $taxonomies,
+			'currency'           => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
+			'currencies'         => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
+
+			// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
+			'no_listings'        => 0 === $total_count,
+			'date_format'        => get_option( 'date_format' ),
+			'time_format'        => get_option( 'time_format' ),
+
+			// Self-serve listings features are gated behind an environment variable.
+			'self_serve_enabled' => Products::is_active(),
+			'featured_enabled'   => Featured::is_active(),
+		];
+
+		if ( Products::is_active() ) {
+			$localized_data['self_serve_listing_types']      = Products::get_listing_types();
+			$localized_data['self_serve_listing_expiration'] = Settings::get_settings( 'newspack_listings_single_purchase_expiration' );
+
+			if ( Products::is_listing_customer() ) {
+				$localized_data['is_listing_customer'] = true;
+			}
+		}
+
 		wp_localize_script(
 			'newspack-listings-editor',
 			'newspack_listings_data',
-			[
-				'post_type_label'    => $post_type_label,
-				'post_type'          => $post_type,
-				'post_type_slug'     => array_search( $post_type, Core::NEWSPACK_LISTINGS_POST_TYPES ),
-				'post_types'         => $post_types,
-				'taxonomies'         => $taxonomies,
-				'currency'           => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
-				'currencies'         => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
-
-				// If we don't have ANY listings that can be added to a list yet, alert the editor so we can show messaging.
-				'no_listings'        => 0 === $total_count,
-				'date_format'        => get_option( 'date_format' ),
-				'time_format'        => get_option( 'time_format' ),
-
-				// Self-serve listings features are gated behind an environment variable.
-				'self_serve_enabled' => defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED,
-			]
+			$localized_data
 		);
 
 		wp_register_style(
@@ -176,16 +190,14 @@ final class Newspack_Listings_Blocks {
 	 * Enqueue custom scripts for Newspack Listings front-end components.
 	 */
 	public static function custom_scripts() {
-		if ( ! Utils\is_amp() ) {
-			wp_register_script(
-				'newspack-listings',
-				NEWSPACK_LISTINGS_URL . 'dist/assets.js',
-				[],
+		if ( ! Utils\is_amp() && has_block( 'newspack-listings/curated-list', get_the_ID() ) ) {
+			wp_enqueue_script(
+				'newspack-listings-curated-list',
+				NEWSPACK_LISTINGS_URL . 'dist/curated-list.js',
+				[ 'mediaelement-core' ],
 				NEWSPACK_LISTINGS_VERSION,
 				true
 			);
-
-			wp_enqueue_script( 'newspack-listings' );
 		}
 	}
 
@@ -193,17 +205,65 @@ final class Newspack_Listings_Blocks {
 	 * Enqueue custom styles for Newspack Listings front-end components.
 	 */
 	public static function custom_styles() {
-		if ( ! is_admin() ) {
-			wp_register_style(
-				'newspack-listings-styles',
-				NEWSPACK_LISTINGS_URL . 'dist/assets.css',
+		if ( is_admin() ) {
+			return;
+		}
+
+		$post_id = get_the_ID();
+
+		// Styles for listing archives.
+		if ( Utils\archive_should_include_listings() ) {
+			wp_enqueue_style(
+				'newspack-listings-archives',
+				NEWSPACK_LISTINGS_URL . 'dist/archives.css',
 				[],
 				NEWSPACK_LISTINGS_VERSION
 			);
+		}
 
-			wp_enqueue_style( 'newspack-listings-styles' );
+		// Styles for Curated List block.
+		if ( is_singular() && has_block( 'newspack-listings/curated-list', $post_id ) ) {
+			wp_enqueue_style(
+				'newspack-listings-curated-list',
+				NEWSPACK_LISTINGS_URL . 'dist/curated-list.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+		}
+
+		// Styles for any singular listing type.
+		if ( is_singular( array_values( Core::NEWSPACK_LISTINGS_POST_TYPES ) ) ) {
+			wp_enqueue_style(
+				'newspack-listings-patterns',
+				NEWSPACK_LISTINGS_URL . 'dist/patterns.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+		}
+
+		// Styles for singular event listings.
+		if ( is_singular( Core::NEWSPACK_LISTINGS_POST_TYPES['event'] ) ) {
+			wp_enqueue_style(
+				'newspack-listings-event',
+				NEWSPACK_LISTINGS_URL . 'dist/event.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
+		}
+
+		// Styles for Self-Serve Listings admin UI.
+		if (
+			( is_singular() && has_block( 'newspack-listings/self-serve-listings', $post_id ) ) ||
+			( function_exists( 'is_account_page' ) && is_account_page() )
+		) {
+			wp_enqueue_style(
+				'newspack-listings-self-serve-listings',
+				NEWSPACK_LISTINGS_URL . 'dist/self-serve-listings.css',
+				[],
+				NEWSPACK_LISTINGS_VERSION
+			);
 		}
 	}
 }
 
-Newspack_Listings_Blocks::instance();
+Blocks::instance();

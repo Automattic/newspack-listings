@@ -174,11 +174,18 @@
 		}
 	}
 
-	&.single-only .frequencies {
-		padding-top: 0;
+	&.single-only,
+	&.subscription-only {
+		.frequencies {
+			padding-top: 0;
 
-		.freq-label {
-			display: none;
+			.freq-label {
+				display: none;
+			}
+		}
+
+		.input-container {
+			display: block;
 		}
 	}
 }

@@ -9,8 +9,8 @@
 
 namespace Newspack_Listings;
 
-use \Newspack_Listings\Newspack_Listings_Core as Core;
-use \Newspack_Listings\Utils as Utils;
+use \Newspack_Listings\Core;
+use \Newspack_Listings\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * Blocks class.
  * Sets up custom blocks for listings.
  */
-final class Newspack_Listings_Block_Patterns {
+final class Block_Patterns {
 	/**
 	 * Slug for the block pattern category.
 	 */
@@ -63,10 +63,13 @@ final class Newspack_Listings_Block_Patterns {
 	}
 
 	/**
-	 * Register custom block patterns for Newspack Listings.
-	 * These patterns should only be available for certain CPTs.
+	 * Get block patterns. If given a slug, return only the matching pattern.
+	 *
+	 * @param string $slug Optional. If given, return only the pattern that matches.
+	 *
+	 * @return array Array of block patterns, or the single block pattern config matching $slug.
 	 */
-	public static function register_block_patterns() {
+	public static function get_block_patterns( $slug = null ) {
 		// Block pattern config.
 		$block_patterns = [
 			'business_1'    => [
@@ -202,6 +205,20 @@ final class Newspack_Listings_Block_Patterns {
 			],
 		];
 
+		// If $slug matches a block pattern config, return just that one.
+		if ( $slug && isset( $block_patterns[ $slug ] ) ) {
+			return $block_patterns[ $slug ];
+		}
+
+		return $block_patterns;
+	}
+
+	/**
+	 * Register custom block patterns for Newspack Listings.
+	 * These patterns should only be available for certain CPTs.
+	 */
+	public static function register_block_patterns() {
+		$block_patterns    = self::get_block_patterns();
 		$current_post_type = Utils\get_post_type();
 
 		foreach ( $block_patterns as $pattern_name => $config ) {
@@ -215,4 +232,4 @@ final class Newspack_Listings_Block_Patterns {
 	}
 }
 
-Newspack_Listings_Block_Patterns::instance();
+Block_Patterns::instance();

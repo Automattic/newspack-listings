@@ -1,3 +1,6 @@
+import './curated-list.scss';
+import './listing.scss';
+
 /**
  * VIEW
  * JavaScript used on front of site.
@@ -220,7 +223,7 @@ function buildSortHandler( blockWrapperEl ) {
  * occurs.
  *
  * @param {Object} options XMLHttpRequest options
- * @param {number} n retry count before throwing
+ * @param {number} n       retry count before throwing
  */
 function fetchWithRetry( options, n ) {
 	const xhr = new XMLHttpRequest();
@@ -289,7 +292,7 @@ function isPostsDataValid( data ) {
 /**
  * Checks if object has own property.
  *
- * @param {Object} obj Object
+ * @param {Object} obj  Object
  * @param {string} prop Property to check
  */
 function hasOwnProp( obj, prop ) {

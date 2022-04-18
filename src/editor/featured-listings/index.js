@@ -40,17 +40,17 @@ const FeaturedListingsComponent = ( {
 	const { newspack_listings_featured, newspack_listings_featured_expires } = meta;
 
 	// Show error messages thrown by API requests.
-	useEffect(() => {
+	useEffect( () => {
 		if ( error ) {
 			createNotice( 'error', error, {
 				id: 'newspack-listings__featured-error',
 				isDismissible: true,
 			} );
 		}
-	}, [ error ]);
+	}, [ error ] );
 
 	// On post save, also update the listing's priority level.
-	useEffect(() => {
+	useEffect( () => {
 		if ( isSavingPost ) {
 			const priorityToSet = newspack_listings_featured ? priority : 0;
 			apiFetch( {
@@ -80,10 +80,10 @@ const FeaturedListingsComponent = ( {
 					);
 				} );
 		}
-	}, [ isSavingPost ]);
+	}, [ isSavingPost ] );
 
 	// If the item is featured, get priority level.
-	useEffect(() => {
+	useEffect( () => {
 		setError( null );
 
 		if ( newspack_listings_featured && ! priority ) {
@@ -108,7 +108,7 @@ const FeaturedListingsComponent = ( {
 					);
 				} );
 		}
-	}, [ newspack_listings_featured ]);
+	}, [ newspack_listings_featured ] );
 
 	return (
 		<PluginDocumentSettingPanel
@@ -121,6 +121,7 @@ const FeaturedListingsComponent = ( {
 					className={ 'newspack-listings__toggle-control' }
 					label={ __( 'Featured Listing', 'newspack-listings' ) }
 					help={ sprintf(
+						// Translators: Feature status help message.
 						__( 'This listing is %sfeatured.', 'newspack-listings' ),
 						newspack_listings_featured
 							? __( '', 'newspack-listings' )

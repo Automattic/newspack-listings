@@ -7,7 +7,7 @@
  * Author URI:      https://newspack.pub
  * Text Domain:     newspack-listings
  * Domain Path:     /languages
- * Version:         0.0.0
+ * Version:         2.9.4
  *
  * @package         Newspack_Listings
  */
@@ -24,19 +24,17 @@ if ( ! defined( 'NEWSPACK_LISTINGS_PLUGIN_FILE' ) ) {
 
 // Include plugin resources.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/vendor/autoload.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/newspack-listings-utils.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-settings.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-core.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-blocks.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-block-patterns.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-taxonomies.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-api.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/utils.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-settings.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-core.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-blocks.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-block-patterns.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-taxonomies.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-api.php';
 
 // Enable experimental/in-progress self-serve listings functionality.
-if ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) {
-	require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-featured.php';
-	require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-newspack-listings-products.php';
-}
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-featured.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-products.php';
 
 // CLI importer files.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-importer-mode.php';
@@ -61,4 +59,4 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-csv-file.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-file-import-factory.php';
 
 // Migration utilities.
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/migration/class-newspack-listings-migration.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/migration/class-migration.php';
