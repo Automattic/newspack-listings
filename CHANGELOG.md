@@ -1,3 +1,19 @@
+## [2.9.4](https://github.com/Automattic/newspack-listings/compare/v2.9.3...v2.9.4) (2022-04-18)
+
+
+### Bug Fixes
+
+* force build ([a8881cc](https://github.com/Automattic/newspack-listings/commit/a8881ccb8fa390ec23c7ff836b80d219dee0cc68))
+* **self-serve:** patterns class name after refactor ([#245](https://github.com/Automattic/newspack-listings/issues/245)) ([a8bad4e](https://github.com/Automattic/newspack-listings/commit/a8bad4ee3bd6ca9bbf770fe1b61b43017bf70de7))
+* separate checks for self-serve vs. featured listings ([#242](https://github.com/Automattic/newspack-listings/issues/242)) ([d9f5d5a](https://github.com/Automattic/newspack-listings/commit/d9f5d5a0b4397e21841cbb39936ed27fe028863f))
+
+## [2.9.4-hotfix.1](https://github.com/Automattic/newspack-listings/compare/v2.9.3...v2.9.4-hotfix.1) (2022-04-15)
+
+### Bug Fixes
+
+* **self-serve:** patterns class name after refactor ([d53f2d3](https://github.com/Automattic/newspack-listings/commit/d53f2d31ec7bcac9729841a4a924941d05f78055))
+* separate checks for self-serve vs. featured listings ([dc20e96](https://github.com/Automattic/newspack-listings/commit/dc20e9672fa59e89b82978a36dd16f153c280913))
+
 ## [2.9.3](https://github.com/Automattic/newspack-listings/compare/v2.9.2...v2.9.3) (2022-03-22)
 
 

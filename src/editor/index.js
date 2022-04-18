@@ -32,6 +32,7 @@ const {
 	post_types: postTypes,
 	is_listing_customer: isListingCustomer = false,
 	self_serve_enabled: selfServeEnabled,
+	featured_enabled: featuredEnabled,
 } = window?.newspack_listings_data;
 
 /**
@@ -49,7 +50,7 @@ if ( isListing() ) {
 
 		// Register featured listing sidebar.
 		// We don't want to show the Featured Listing UI to customers, otherwise anyone could just make their listings featured.
-		if ( selfServeEnabled && ! isListingCustomer ) {
+		if ( featuredEnabled && ! isListingCustomer ) {
 			registerPlugin( 'newspack-listings-featured', {
 				render: FeaturedListings,
 				icon: null,
