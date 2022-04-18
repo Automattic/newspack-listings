@@ -45,7 +45,7 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-importer-
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-marketplace-type.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-listing-type.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-listings-type-mapper.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-newspack-listings-importer.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-importer.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-newspack-listings-callable-importer.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-file.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-iterable-file.php';
