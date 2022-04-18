@@ -39,7 +39,7 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-products.php';
 // CLI importer files.
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-importer-mode.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/contracts/contract-listings-type-mapper.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/newspack-listings-importer-utils.php';
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/importer-utils.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-import-mode.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-importer-mode.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/importer/class-marketplace-type.php';
