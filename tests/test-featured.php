@@ -6,7 +6,7 @@
  */
 
 use \Newspack_Listings\Core;
-use \Newspack_Listings\Featured as Featured;
+use \Newspack_Listings\Featured;
 use \Newspack_Listings\Utils;
 
 /**
