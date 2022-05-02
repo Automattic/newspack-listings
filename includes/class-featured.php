@@ -33,7 +33,7 @@ final class Featured {
 	/**
 	 * Installed version number of the custom table.
 	 */
-	const TABLE_VERSION = '1.0';
+	const TABLE_VERSION = '1.1';
 
 	/**
 	 * Option name for the installed version number of the custom table.
@@ -69,9 +69,10 @@ final class Featured {
 		}
 
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'create_custom_table' ] );
-		add_action( 'plugins_loaded', [ __CLASS__, 'check_update_version' ] );
+		add_action( 'init', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
 		add_action( 'init', [ __CLASS__, 'cron_init' ] );
+		add_action( 'save_post', [ __CLASS__, 'update_featured_status_on_save' ], 10, 2 );
 		add_action( self::CRON_HOOK, [ __CLASS__, 'check_expired_featured_items' ] );
 		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
@@ -399,6 +400,33 @@ final class Featured {
 	}
 
 	/**
+	 * Feature priority is updated on the fly via the block editor.
+	 * However, if you never touch the default priority control, it won't be updated in the custom table.
+	 * This ensures that the feature priority is set on save if the post is featured but has no priority.
+	 *
+	 * @param int     $post_id Post ID being saved.
+	 * @param WP_Post $post WP_Post object being saved.
+	 */
+	public static function update_featured_status_on_save( $post_id, $post ) {
+		if ( ! Core::is_listing( $post->post_type ) || ! self::is_active() ) {
+			return;
+		}
+
+		$is_featured      = get_post_meta( $post_id, self::META_KEYS['featured'], true );
+		$feature_priority = self::get_priority( $post_id );
+
+		// If the post is set to be featured but has no priority, set the default.
+		if ( $is_featured && 0 === $feature_priority ) {
+			self::update_priority( $post_id, 5 );
+		}
+
+		// If the post is set to not be featured, delete any priority values.
+		if ( ! $is_featured ) {
+			self::update_priority( $post_id, 0 );
+		}
+	}
+
+	/**
 	 * Set featured status, priority, and expiration date for the given post.
 	 *
 	 * @param int    $post_id Post ID to update.
@@ -411,7 +439,6 @@ final class Featured {
 		if ( null === $post_id ) {
 			return false;
 		}
-
 		// Set featured status.
 		update_post_meta( $post_id, self::META_KEYS['featured'], true );
 
