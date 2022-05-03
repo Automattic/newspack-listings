@@ -1,3 +1,27 @@
+# [2.10.0](https://github.com/Automattic/newspack-listings/compare/v2.9.4...v2.10.0) (2022-05-03)
+
+
+### Bug Fixes
+
+* **featured:** set or unset featured status on manual post save ([#246](https://github.com/Automattic/newspack-listings/issues/246)) ([b3a1fa0](https://github.com/Automattic/newspack-listings/commit/b3a1fa03dcf034c2745cb418238c587be8bd3f6c))
+
+
+### Features
+
+* **self-serve:** enable subscription-only self-serve purchase forms ([#244](https://github.com/Automattic/newspack-listings/issues/244)) ([4ca3428](https://github.com/Automattic/newspack-listings/commit/4ca3428f79422188db05097c4b2657cb9c793ab8))
+
+# [2.10.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.9.4...v2.10.0-alpha.1) (2022-05-02)
+
+
+### Bug Fixes
+
+* **featured:** set or unset featured status on manual post save ([#246](https://github.com/Automattic/newspack-listings/issues/246)) ([b3a1fa0](https://github.com/Automattic/newspack-listings/commit/b3a1fa03dcf034c2745cb418238c587be8bd3f6c))
+
+
+### Features
+
+* **self-serve:** enable subscription-only self-serve purchase forms ([#244](https://github.com/Automattic/newspack-listings/issues/244)) ([4ca3428](https://github.com/Automattic/newspack-listings/commit/4ca3428f79422188db05097c4b2657cb9c793ab8))
+
 ## [2.9.4](https://github.com/Automattic/newspack-listings/compare/v2.9.3...v2.9.4) (2022-04-18)
 
 
