@@ -28,5 +28,10 @@
 				"cat $1 | ./node_modules/.bin/newspack-scripts commitlint"
 			]
 		}
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	}
 }
