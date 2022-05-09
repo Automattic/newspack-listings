@@ -22,7 +22,6 @@ import {
 	registerSelfServeListingsBlock,
 	setCustomCategory,
 } from '../blocks';
-import { ShadowTaxonomies } from './shadow-taxonomies';
 import { FeaturedListings } from './featured-listings';
 import { isListing } from './utils';
 import './style.scss';
@@ -140,14 +139,5 @@ if ( isListingCustomer ) {
 				observer.observe( editor, { childList: true, subtree: true } );
 			}
 		}, 1000 );
-	} );
-}
-
-// If we don't have a post type, we're probably not in a post editor, so we don't need to register the post taxonomy sidebars.
-if ( postType ) {
-	// Register plugin editor settings.
-	registerPlugin( 'newspack-listings-shadow-taxonomies', {
-		render: ShadowTaxonomies,
-		icon: null,
 	} );
 }
