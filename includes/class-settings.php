@@ -154,22 +154,6 @@ final class Settings {
 				'value'       => false,
 				'section'     => $sections['meta']['slug'],
 			],
-			[
-				'description' => __( 'This setting can be overridden per listing, post, or page.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_hide_parents',
-				'label'       => __( 'Hide parent listings by default', 'newpack-listings' ),
-				'type'        => 'checkbox',
-				'value'       => false,
-				'section'     => $sections['related']['slug'],
-			],
-			[
-				'description' => __( 'This setting can be overridden per listing, post, or page.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_hide_children',
-				'label'       => __( 'Hide child listings by default', 'newpack-listings' ),
-				'type'        => 'checkbox',
-				'value'       => false,
-				'section'     => $sections['related']['slug'],
-			],
 		];
 
 		// If Related Posts is on, show the setting to hide it.
