@@ -29,7 +29,6 @@ require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-settings.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-core.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-blocks.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-block-patterns.php';
-require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-taxonomies.php';
 require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-api.php';
 
 // Enable experimental/in-progress self-serve listings functionality.

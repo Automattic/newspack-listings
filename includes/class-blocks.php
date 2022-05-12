@@ -12,7 +12,6 @@ namespace Newspack_Listings;
 use \Newspack_Listings\Core;
 use \Newspack_Listings\Products;
 use \Newspack_Listings\Settings;
-use \Newspack_Listings\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
