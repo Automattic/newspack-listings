@@ -9,7 +9,6 @@ namespace Newspack_Listings;
 
 use \WP_CLI;
 use \Newspack_Listings\Core;
-use \Newspack_Listings\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
