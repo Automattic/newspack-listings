@@ -82,6 +82,8 @@ final class Core {
 		add_filter( 'newspack_sponsors_post_types', [ __CLASS__, 'support_newspack_sponsors' ] );
 		add_filter( 'jetpack_relatedposts_filter_options', [ __CLASS__, 'disable_jetpack_related_posts' ] );
 		add_filter( 'jetpack_related_posts_customize_options', [ __CLASS__, 'disable_jetpack_related_posts_customizer' ] );
+		add_filter( 'sharing_enqueue_scripts', [ __CLASS__, 'enable_jetpack_social_share_buttons' ] );
+		add_filter( 'sharing_show', [ __CLASS__, 'enable_jetpack_social_share_buttons' ] );
 		add_filter( 'wpseo_primary_term_taxonomies', [ __CLASS__, 'disable_yoast_primary_categories' ], 10, 2 );
 		add_action( 'pre_get_posts', [ __CLASS__, 'enable_listing_category_archives' ], 11 );
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'activation_hook' ] );
@@ -807,6 +809,21 @@ final class Core {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * If social share buttons are enabled in Jetpack, allow them to appear on listings.
+	 *
+	 * @param bool $show True if the sharing buttons should be displayed.
+	 *
+	 * @return bool The filtered value.
+	 */
+	public static function enable_jetpack_social_share_buttons( $show ) {
+		if ( is_singular( array_values( self::NEWSPACK_LISTINGS_POST_TYPES ) ) ) {
+			return true;
+		}
+
+		return $show;
 	}
 
 	/**
