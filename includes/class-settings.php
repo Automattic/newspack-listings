@@ -40,10 +40,6 @@ final class Settings {
 				'slug'  => 'newspack_listings_meta_settings',
 				'title' => __( 'Post Meta Settings', 'newspack-listings' ),
 			],
-			'related'   => [
-				'slug'  => 'newspack_listings_related_settings',
-				'title' => __( 'Related Content Settings', 'newspack-listings' ),
-			],
 		];
 
 		// Product settings are only relevant if WooCommerce is available.
@@ -153,22 +149,6 @@ final class Settings {
 				'type'        => 'checkbox',
 				'value'       => false,
 				'section'     => $sections['meta']['slug'],
-			],
-			[
-				'description' => __( 'This setting can be overridden per listing, post, or page.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_hide_parents',
-				'label'       => __( 'Hide parent listings by default', 'newpack-listings' ),
-				'type'        => 'checkbox',
-				'value'       => false,
-				'section'     => $sections['related']['slug'],
-			],
-			[
-				'description' => __( 'This setting can be overridden per listing, post, or page.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_hide_children',
-				'label'       => __( 'Hide child listings by default', 'newpack-listings' ),
-				'type'        => 'checkbox',
-				'value'       => false,
-				'section'     => $sections['related']['slug'],
 			],
 		];
 
