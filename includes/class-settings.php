@@ -50,6 +50,14 @@ final class Settings {
 			];
 		}
 
+		// If Related Posts is on, add a section for it.
+		if ( class_exists( 'Jetpack_RelatedPosts' ) ) {
+			$sections['related'] = [
+				'slug'  => 'newspack_listings_related_settings',
+				'title' => __( 'Related Content Settings', 'newspack-listings' ),
+			];
+		}
+
 		return $sections;
 	}
 
