@@ -12,7 +12,6 @@ namespace Newspack_Listings;
 use \Newspack_Listings\Core;
 use \Newspack_Listings\Products;
 use \Newspack_Listings\Settings;
-use \Newspack_Listings\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,7 +66,6 @@ final class Blocks {
 		$post_type       = get_post_type();
 		$post_types      = [];
 		$post_type_label = ! empty( $post_type ) ? get_post_type_object( $post_type )->labels->singular_name : 'Post';
-		$taxonomies      = [];
 
 		foreach ( Core::NEWSPACK_LISTINGS_POST_TYPES as $slug => $name ) {
 			$post_count          = wp_count_posts( $name )->publish;
@@ -79,22 +77,11 @@ final class Blocks {
 			];
 		}
 
-		$shadow_taxonomy_config = Taxonomies::get_shadow_taxonomy_config();
-
-		foreach ( Taxonomies::NEWSPACK_LISTINGS_TAXONOMIES as $slug => $name ) {
-			$taxonomies[ $slug ] = [
-				'name'       => $name,
-				'label'      => get_post_type_object( Core::NEWSPACK_LISTINGS_POST_TYPES[ $slug ] )->labels->singular_name,
-				'post_types' => $shadow_taxonomy_config[ $slug ]['post_types'],
-			];
-		}
-
 		$localized_data = [
 			'post_type_label'    => $post_type_label,
 			'post_type'          => $post_type,
 			'post_type_slug'     => array_search( $post_type, Core::NEWSPACK_LISTINGS_POST_TYPES ),
 			'post_types'         => $post_types,
-			'taxonomies'         => $taxonomies,
 			'currency'           => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : __( 'USD', 'newspack-listings' ),
 			'currencies'         => function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [ 'USD' => __( 'United States (US) dollar', 'newspack-listings' ) ],
 
