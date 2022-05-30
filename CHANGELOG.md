@@ -1,3 +1,24 @@
+# [2.11.0](https://github.com/Automattic/newspack-listings/compare/v2.10.0...v2.11.0) (2022-05-30)
+
+
+### Bug Fixes
+
+* restore Related Content settings section, but only if Jetpack Related Posts is on ([#263](https://github.com/Automattic/newspack-listings/issues/263)) ([877b71b](https://github.com/Automattic/newspack-listings/commit/877b71b9fc2a4067920766e22086a8078c562e10))
+
+
+### Features
+
+* enable jetpack share buttons on listings ([#257](https://github.com/Automattic/newspack-listings/issues/257)) ([0dac9fb](https://github.com/Automattic/newspack-listings/commit/0dac9fb482b577de74e886900a7cf85eed2bd571))
+* remove related listings functionality ([#256](https://github.com/Automattic/newspack-listings/issues/256)) ([25f4be8](https://github.com/Automattic/newspack-listings/commit/25f4be8dd216b00ee73cc952dd2e9f93728def03))
+
+# [2.11.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.10.0...v2.11.0-alpha.1) (2022-05-25)
+
+
+### Features
+
+* enable jetpack share buttons on listings ([#257](https://github.com/Automattic/newspack-listings/issues/257)) ([0dac9fb](https://github.com/Automattic/newspack-listings/commit/0dac9fb482b577de74e886900a7cf85eed2bd571))
+* remove related listings functionality ([#256](https://github.com/Automattic/newspack-listings/issues/256)) ([25f4be8](https://github.com/Automattic/newspack-listings/commit/25f4be8dd216b00ee73cc952dd2e9f93728def03))
+
 # [2.10.0](https://github.com/Automattic/newspack-listings/compare/v2.9.4...v2.10.0) (2022-05-03)
 
 
