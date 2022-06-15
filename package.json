@@ -1,6 +1,6 @@
 {
   "name": "newspack-listings",
-  "version": "2.11.0",
+  "version": "2.11.1-hotfix.1",
   "description": "",
   "scripts": {
     "cm": "newspack-scripts commit",
