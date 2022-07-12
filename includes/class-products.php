@@ -171,6 +171,9 @@ class Products {
 	 * Create the WooCommerce products for self-serve listings.
 	 */
 	public static function create_products() {
+		// First, clean up any potential leftover dupes.
+		self::delete_products();
+
 		$settings     = Settings::get_settings();
 		$product_name = __( 'Self-Serve Listings', 'newspack-listings' );
 
