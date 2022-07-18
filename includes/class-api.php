@@ -307,10 +307,11 @@ final class Api {
 
 		// Query args.
 		$args = [
-			'post_type'      => $post_types,
-			'post_status'    => 'publish',
-			'posts_per_page' => $per_page,
-			'paged'          => $page,
+			'is_curated_list' => 1,
+			'post_type'       => $post_types,
+			'post_status'     => 'publish',
+			'posts_per_page'  => $per_page,
+			'paged'           => $page,
 		];
 
 		// Look up by title only if provided with a search term and not an ID or query terms.
@@ -399,11 +400,14 @@ final class Api {
 						$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
 					}
 
-					$item['test'] = 'Brody';
-
 					// If $fields includes sponsors include sponsors info.
 					if ( in_array( 'sponsors', $fields ) ) {
 						$item['sponsors'] = Utils\get_sponsors( $post->ID, 'native' );
+					}
+
+					// If the item is featured, append class names for its featured status and priority level.
+					if ( in_array( 'classes', $fields ) && Featured::is_active() ) {
+						$item['classes'] = Featured::add_featured_classes( [], [], $post->ID );
 					}
 
 					return $item;

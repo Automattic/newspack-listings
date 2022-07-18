@@ -118,7 +118,7 @@ const CuratedListEditorComponent = ( {
 			const posts = await apiFetch( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					query: { maxItems: MAX_EDITOR_ITEMS, ...query }, // Get up to MAX_EDITOR_ITEMS listings in the editor so we can show all locations.
-					_fields: 'id,title,author,category,tags,excerpt,media,meta,type,sponsors',
+					_fields: 'id,title,author,category,tags,excerpt,media,meta,type,sponsors,classes',
 				} ),
 			} );
 			setAttributes( { listingIds: posts.map( post => post.id ) } );

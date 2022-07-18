@@ -186,5 +186,8 @@ export const getTermClasses = post => {
 	( post.category || [] ).forEach( category => classes.push( `category-${ category.slug }` ) );
 	( post.tags || [] ).forEach( tag => classes.push( `tag-${ tag.slug }` ) );
 
-	return classes;
+	// Add any extra classes.
+	const extraClasses = post.classes && Array.isArray( post.classes ) ? post.classes : [];
+
+	return classes.concat( extraClasses );
 };
