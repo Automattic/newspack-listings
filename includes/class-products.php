@@ -106,6 +106,9 @@ class Products {
 			new Products_Ui();
 			new Products_User();
 			new Products_Cron();
+
+			// Filter the WC "My Account" pages disabled by the Newspack plugin.
+			add_filter( 'newspack_my_account_disabled_pages', [ __CLASS__, 'my_account_disabled_pages' ] );
 		}
 	}
 
@@ -402,6 +405,20 @@ class Products {
 		}
 
 		return (int) $post->post_author === (int) $user_id;
+	}
+
+	/**
+	 * Filter "My Account" disabled pages.
+	 *
+	 * @param string[] $pages Array of page slugs.
+	 */
+	public static function my_account_disabled_pages( $pages ) {
+		foreach ( $pages as $key => $slug ) {
+			if ( in_array( $slug, [ 'orders', 'subscriptions' ] ) ) {
+				unset( $pages[ $key ] );
+			}
+		}
+		return $pages;
 	}
 }
 
