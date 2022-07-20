@@ -190,9 +190,8 @@ const FeaturedListingsComponent = ( {
 };
 
 const mapStateToProps = select => {
-	const { getCurrentPostId, getEditedPostAttribute, isAutosavingPost, isSavingPost } = select(
-		'core/editor'
-	);
+	const { getCurrentPostId, getEditedPostAttribute, isAutosavingPost, isSavingPost } =
+		select( 'core/editor' );
 
 	return {
 		isSavingPost: isSavingPost() && ! isAutosavingPost(),

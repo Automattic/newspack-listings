@@ -669,9 +669,8 @@ const mapStateToProps = ( select, ownProps ) => {
 };
 
 const mapDispatchToProps = dispatch => {
-	const { insertBlocks, removeBlocks, selectBlock, updateBlockAttributes } = dispatch(
-		'core/block-editor'
-	);
+	const { insertBlocks, removeBlocks, selectBlock, updateBlockAttributes } =
+		dispatch( 'core/block-editor' );
 
 	return {
 		insertBlocks,
