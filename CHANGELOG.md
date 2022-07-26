@@ -1,3 +1,10 @@
+## [2.11.2-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.11.1...v2.11.2-alpha.1) (2022-07-14)
+
+
+### Bug Fixes
+
+* allow featured listings features to be enabled independently of self-serve ([#269](https://github.com/Automattic/newspack-listings/issues/269)) ([157e816](https://github.com/Automattic/newspack-listings/commit/157e816b0edccc654fdc6536de88f22adc92e2cd))
+
 ## [2.11.1](https://github.com/Automattic/newspack-listings/compare/v2.11.0...v2.11.1) (2022-06-15)
 
 
