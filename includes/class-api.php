@@ -199,10 +199,11 @@ final class Api {
 	 */
 	public static function build_listings_query( $query, $args = [] ) {
 		$default_args = [
-			'post_type'      => [],
-			'post_status'    => 'publish',
-			'posts_per_page' => 10,
-			'paged'          => 1,
+			'is_curated_list' => 1,
+			'post_type'       => [],
+			'post_status'     => 'publish',
+			'posts_per_page'  => 10,
+			'paged'           => 1,
 		];
 
 		$args = wp_parse_args( $args, $default_args );
@@ -307,11 +308,10 @@ final class Api {
 
 		// Query args.
 		$args = [
-			'is_curated_list' => 1,
-			'post_type'       => $post_types,
-			'post_status'     => 'publish',
-			'posts_per_page'  => $per_page,
-			'paged'           => $page,
+			'post_type'      => $post_types,
+			'post_status'    => 'publish',
+			'posts_per_page' => $per_page,
+			'paged'          => $page,
 		];
 
 		// Look up by title only if provided with a search term and not an ID or query terms.
