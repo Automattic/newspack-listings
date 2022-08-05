@@ -135,14 +135,8 @@ class QueryControls extends Component {
 	};
 
 	render = () => {
-		const {
-			disabled,
-			loadMoreText,
-			queryOptions,
-			setAttributes,
-			showAuthor,
-			showLoadMore,
-		} = this.props;
+		const { disabled, loadMoreText, queryOptions, setAttributes, showAuthor, showLoadMore } =
+			this.props;
 
 		if ( ! queryOptions || ! setAttributes ) {
 			return null;

@@ -1,10 +1,10 @@
-@import './variables.scss';
+@use 'variables.scss';
 
 .newspack-listings {
 	&__listing-post {
 		display: block;
 
-		@media only screen and ( min-width: $tablet_width ) {
+		@media only screen and ( min-width: variables.$tablet_width ) {
 			.media-position-left &,
 			.media-position-right & {
 				display: flex;

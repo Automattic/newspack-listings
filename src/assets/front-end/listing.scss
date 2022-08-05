@@ -1,9 +1,9 @@
-@import '../shared/listing';
+@use '../shared/listing';
 
 .entry-content {
 	a.newspack-listings__listing-link,
 	a:visited.newspack-listings__listing-link {
-		color: currentColor;
+		color: currentcolor;
 		text-decoration: none;
 	}
 
