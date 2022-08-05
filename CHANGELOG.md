@@ -1,3 +1,10 @@
+# [2.12.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.11.2...v2.12.0-alpha.1) (2022-08-05)
+
+
+### Features
+
+* add featured listing support to curated lists ([#285](https://github.com/Automattic/newspack-listings/issues/285)) ([3ea027d](https://github.com/Automattic/newspack-listings/commit/3ea027d98bfb85bc65585c6e04bc03085daef7d6))
+
 ## [2.11.2](https://github.com/Automattic/newspack-listings/compare/v2.11.1...v2.11.2) (2022-07-26)
 
 
