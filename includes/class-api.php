@@ -199,10 +199,11 @@ final class Api {
 	 */
 	public static function build_listings_query( $query, $args = [] ) {
 		$default_args = [
-			'post_type'      => [],
-			'post_status'    => 'publish',
-			'posts_per_page' => 10,
-			'paged'          => 1,
+			'is_curated_list' => 1,
+			'post_type'       => [],
+			'post_status'     => 'publish',
+			'posts_per_page'  => 10,
+			'paged'           => 1,
 		];
 
 		$args = wp_parse_args( $args, $default_args );
@@ -399,11 +400,14 @@ final class Api {
 						$item['author'] = get_the_author_meta( 'display_name', $post->post_author );
 					}
 
-					$item['test'] = 'Brody';
-
 					// If $fields includes sponsors include sponsors info.
 					if ( in_array( 'sponsors', $fields ) ) {
 						$item['sponsors'] = Utils\get_sponsors( $post->ID, 'native' );
+					}
+
+					// If the item is featured, append class names for its featured status and priority level.
+					if ( in_array( 'classes', $fields ) && Featured::is_active() ) {
+						$item['classes'] = Featured::add_featured_classes( [], [], $post->ID );
 					}
 
 					return $item;

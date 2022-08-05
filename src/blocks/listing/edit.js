@@ -69,7 +69,7 @@ const ListingEditorComponent = ( {
 				path: addQueryArgs( '/newspack-listings/v1/listings', {
 					per_page: 100,
 					id: listingId,
-					_fields: 'id,title,author,category,tags,excerpt,media,meta,sponsors',
+					_fields: 'id,title,author,category,tags,excerpt,media,meta,type,sponsors,classes',
 				} ),
 			} );
 
