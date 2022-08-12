@@ -117,39 +117,37 @@ final class Api {
 		);
 
 		// Get and set listing priority level.
-		if ( Featured::is_active() ) {
-			register_rest_route(
-				self::$namespace,
-				'priority',
+		register_rest_route(
+			self::$namespace,
+			'priority',
+			[
 				[
-					[
-						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => [ __CLASS__, 'get_priority' ],
-						'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
-					],
-				]
-			);
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ __CLASS__, 'get_priority' ],
+					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
+				],
+			]
+		);
 
-			register_rest_route(
-				self::$namespace,
-				'priority',
+		register_rest_route(
+			self::$namespace,
+			'priority',
+			[
 				[
-					[
-						'methods'             => \WP_REST_Server::EDITABLE,
-						'callback'            => [ __CLASS__, 'set_priority' ],
-						'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
-						'args'                => [
-							'post_id'  => [
-								'sanitize_callback' => 'absint',
-							],
-							'priority' => [
-								'sanitize_callback' => 'absint',
-							],
+					'methods'             => \WP_REST_Server::EDITABLE,
+					'callback'            => [ __CLASS__, 'set_priority' ],
+					'permission_callback' => [ __CLASS__, 'api_permissions_check' ],
+					'args'                => [
+						'post_id'  => [
+							'sanitize_callback' => 'absint',
+						],
+						'priority' => [
+							'sanitize_callback' => 'absint',
 						],
 					],
-				]
-			);
-		}
+				],
+			]
+		);
 	}
 
 	/**
@@ -406,7 +404,7 @@ final class Api {
 					}
 
 					// If the item is featured, append class names for its featured status and priority level.
-					if ( in_array( 'classes', $fields ) && Featured::is_active() ) {
+					if ( in_array( 'classes', $fields ) ) {
 						$item['classes'] = Featured::add_featured_classes( [], [], $post->ID );
 					}
 

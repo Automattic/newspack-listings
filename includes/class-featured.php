@@ -64,10 +64,6 @@ final class Featured {
 	 * Constructor.
 	 */
 	public function __construct() {
-		if ( ! self::is_active() ) {
-			return;
-		}
-
 		register_activation_hook( NEWSPACK_LISTINGS_FILE, [ __CLASS__, 'create_custom_table' ] );
 		add_action( 'init', [ __CLASS__, 'check_update_version' ] );
 		add_action( 'init', [ __CLASS__, 'register_featured_meta' ] );
@@ -77,15 +73,6 @@ final class Featured {
 		add_filter( 'posts_clauses', [ __CLASS__, 'sort_featured_listings' ], 10, 2 );
 		add_filter( 'post_class', [ __CLASS__, 'add_featured_classes' ] );
 		add_filter( 'newspack_blocks_term_classes', [ __CLASS__, 'add_featured_classes' ], 10, 3 );
-	}
-
-	/**
-	 * Check whether featured listings should be active on this site.
-	 * Requires either the `NEWSPACK_LISTINGS_SELF_SERVE_ENABLED` or
-	 * `NEWSPACK_LISTINGS_FEATURED_ENABLED` environment constants.
-	 */
-	public static function is_active() {
-		return ( defined( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED' ) && NEWSPACK_LISTINGS_SELF_SERVE_ENABLED ) || ( defined( 'NEWSPACK_LISTINGS_FEATURED_ENABLED' ) && NEWSPACK_LISTINGS_FEATURED_ENABLED );
 	}
 
 	/**
@@ -415,7 +402,7 @@ final class Featured {
 	 * @param WP_Post $post WP_Post object being saved.
 	 */
 	public static function update_featured_status_on_save( $post_id, $post ) {
-		if ( ! Core::is_listing( $post->post_type ) || ! self::is_active() ) {
+		if ( ! Core::is_listing( $post->post_type ) ) {
 			return;
 		}
 
