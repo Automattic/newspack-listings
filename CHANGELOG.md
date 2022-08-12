@@ -1,3 +1,10 @@
+# [2.12.0-alpha.2](https://github.com/Automattic/newspack-listings/compare/v2.12.0-alpha.1...v2.12.0-alpha.2) (2022-08-12)
+
+
+### Bug Fixes
+
+* force alpha build ([775af78](https://github.com/Automattic/newspack-listings/commit/775af7881697a139dd6bad211655a0398e7112ff))
+
 # [2.12.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.11.2...v2.12.0-alpha.1) (2022-08-05)
 
 
