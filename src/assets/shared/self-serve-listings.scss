@@ -1,4 +1,4 @@
-@import './variables.scss';
+@use 'variables.scss';
 
 .newspack-listings__self-serve-form.wpbnbd {
 	border: 1px solid var( --newspack-listings--border );
@@ -9,7 +9,7 @@
 		padding-top: calc( 3 * ( 0.76rem + 1.6em + 1px ) );
 		position: relative;
 
-		@media only screen and ( min-width: $tablet_width ) {
+		@media only screen and ( min-width: variables.$tablet_width ) {
 			padding-top: 2.55em;
 			padding-top: calc( 0.76rem + 1.6em + 1px );
 		}
@@ -45,7 +45,7 @@
 			}
 
 			&::before {
-				border: 2px solid currentColor;
+				border: 2px solid currentcolor;
 				border-radius: 100%;
 				content: '';
 				display: block;
@@ -59,14 +59,14 @@
 				left: 50%;
 				top: calc( 0.76rem + 1.6em + 1px );
 
-				@media only screen and ( min-width: $tablet_width ) {
+				@media only screen and ( min-width: variables.$tablet_width ) {
 					border-left-width: 1px;
 					top: 0;
 				}
 			}
 		}
 
-		@media only screen and ( min-width: $tablet_width ) {
+		@media only screen and ( min-width: variables.$tablet_width ) {
 			.freq-label {
 				justify-content: center;
 				width: 50%;
@@ -87,7 +87,7 @@
 				background-clip: content-box;
 			}
 
-			@media only screen and ( min-width: $tablet_width ) {
+			@media only screen and ( min-width: variables.$tablet_width ) {
 				border-bottom-color: transparent;
 			}
 
@@ -111,7 +111,7 @@
 		display: none;
 		margin: 0.76rem;
 
-		@media only screen and ( min-width: $tablet_width ) {
+		@media only screen and ( min-width: variables.$tablet_width ) {
 			margin: 1.5rem 1.5rem 0.76rem;
 		}
 	}
