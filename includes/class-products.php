@@ -91,7 +91,7 @@ class Products {
 	public static function init() {
 		// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
 		add_action( 'init', [ __CLASS__, 'setup' ] );
-		add_action( 'wp_loaded', [ __CLASS__, 'perform_action' ], 99 );
+		add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_listing_products' ], 99 );
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
 		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
@@ -146,19 +146,14 @@ class Products {
 	/**
 	 * Create or delete self-serve listing products.
 	 */
-	public static function perform_action() {
+	public static function create_or_delete_listing_products() {
 		$action = filter_input( INPUT_GET, 'newspack-listings-products', FILTER_SANITIZE_STRING );
 		$nonce  = filter_input( INPUT_GET, '_wpnonce', FILTER_SANITIZE_STRING );
 
 		if ( wp_verify_nonce( $nonce, self::ACTION_NONCE ) && in_array( $action, self::ACTIONS, true ) ) {
-			$create = self::ACTIONS['create'] === $action;
-			$delete = self::ACTIONS['delete'] === $action;
-
-			if ( $create ) {
+			if ( self::ACTIONS['create'] === $action ) {
 				self::create_products();
-			}
-
-			if ( $delete ) {
+			} elseif ( self::ACTIONS['delete'] === $action ) {
 				self::delete_products();
 			}
 
