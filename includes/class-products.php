@@ -90,7 +90,7 @@ class Products {
 	 */
 	public static function init() {
 		// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
-		add_action( 'init', [ __CLASS__, 'setup' ] );
+		add_action( 'woocommerce_after_register_post_type', [ __CLASS__, 'setup' ] );
 		add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_listing_products' ], 99 );
 
 		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.

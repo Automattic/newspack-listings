@@ -83,10 +83,11 @@ final class Settings {
 		echo wp_kses_post(
 			sprintf(
 				// Translators: instructions on how to fix missing self-serve products.
-				__( 'Self-serve listing features are %1$s. <a href="%2$s">Click here to %3$s self-serve listings features on this site</a>.', 'newspack-listings' ),
+				__( 'Self-serve listing features are %1$s. <a href="%2$s">Click here to %3$s self-serve listings features on this site</a>.%4$s', 'newspack-listings' ),
 				$is_valid ? __( 'active', 'newspack-listings' ) : __( 'not active', 'newspack-listings' ),
 				$redirect,
-				$is_valid ? __( 'disable', 'newspack-listings' ) : __( 'enable', 'newspack-listings' )
+				$is_valid ? __( 'disable', 'newspack-listings' ) : __( 'enable', 'newspack-listings' ),
+				$is_valid ? __( ' <b>Warning:</b> Disabling will cancel all existing self-serve listing subscriptions.', 'newspack-listings' ) : ''
 			)
 		);
 	}
