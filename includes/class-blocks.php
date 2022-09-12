@@ -91,8 +91,7 @@ final class Blocks {
 			'time_format'        => get_option( 'time_format' ),
 
 			// Self-serve listings features are gated behind an environment variable.
-			'self_serve_enabled' => Products::is_active() && Products::validate_products(),
-			'featured_enabled'   => Featured::is_active(),
+			'self_serve_enabled' => Products::is_active(),
 		];
 
 		if ( Products::is_active() ) {
