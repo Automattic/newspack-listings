@@ -1,3 +1,10 @@
+## [2.12.1](https://github.com/Automattic/newspack-listings/compare/v2.12.0...v2.12.1) (2022-09-14)
+
+
+### Bug Fixes
+
+* add custom CSS classes to the Curated List block ([#297](https://github.com/Automattic/newspack-listings/issues/297)) ([6594fce](https://github.com/Automattic/newspack-listings/commit/6594fce3ab5a4788ca74c2d29a66a001832a9ff1))
+
 ## [2.12.1-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.12.0...v2.12.1-alpha.1) (2022-08-26)
 
 
