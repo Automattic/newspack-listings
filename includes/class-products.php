@@ -113,17 +113,28 @@ class Products {
 	 * @return boolean True if valid.
 	 */
 	public static function validate_products() {
-		$valid    = true;
-		$products = self::get_products();
+		$parent = \get_option( self::PRODUCT_OPTION, false );
 
-		// Ensure that the products are published and valid.
-		if ( false === $products || is_wp_error( $products ) ) {
+		// If missing a product option.
+		if ( ! $parent ) {
 			return false;
 		}
 
-		// Ensure that all parent and child product keys exist.
-		foreach ( self::PRODUCT_META_KEYS as $meta_key ) {
-			if ( ! isset( $products[ $meta_key ] ) ) {
+		$children = \get_post_meta( $parent, '_children', true );
+
+		// If missing children.
+		if ( ! $children || ! is_array( $children ) ) {
+			return false;
+		}
+
+		// Ensure that the products are published and valid.
+		foreach ( array_merge( [ $parent ], $children ) as $product_id ) {
+			// If not a product, or not published.
+			if ( 'product' !== \get_post_type( $product_id ) || 'publish' !== \get_post_status( $product_id ) ) {
+				return false;
+			}
+
+			if ( $product_id !== $parent && ! \metadata_exists( 'post', $product_id, '_newspack_listings_product_slug' ) ) {
 				return false;
 			}
 		}
