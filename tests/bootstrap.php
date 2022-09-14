@@ -44,5 +44,8 @@ tests_add_filter( 'init', '_update_required_options' );
 define( 'IS_TEST_ENV', 1 );
 define( 'NEWSPACK_LISTINGS_SELF_SERVE_ENABLED', true );
 
+// Load the composer autoloader.
+require_once __DIR__ . '/../vendor/autoload.php';
+
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
