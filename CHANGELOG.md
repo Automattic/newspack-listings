@@ -1,3 +1,11 @@
+## [2.12.2](https://github.com/Automattic/newspack-listings/compare/v2.12.1...v2.12.2) (2022-09-27)
+
+
+### Bug Fixes
+
+* prevent dupes of self-serve products; manual creation and deletion ([#281](https://github.com/Automattic/newspack-listings/issues/281)) ([2739cf3](https://github.com/Automattic/newspack-listings/commit/2739cf398cf48d458809b79248d5c3492c0bec70))
+* remove content check before loading Curated List styles ([#298](https://github.com/Automattic/newspack-listings/issues/298)) ([62a9422](https://github.com/Automattic/newspack-listings/commit/62a9422ed9aca00b9fdb12e873bb29e22309044d))
+
 ## [2.12.2-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.12.1...v2.12.2-alpha.1) (2022-09-26)
 
 
