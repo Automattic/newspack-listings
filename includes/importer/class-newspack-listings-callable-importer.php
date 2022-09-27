@@ -182,7 +182,7 @@ class Newspack_Listings_Callable_Importer {
 			[
 				'type'        => 'assoc',
 				'name'        => 'end',
-				'description' => 'Row number to start at.',
+				'description' => 'Row number to end at.',
 				'optional'    => true,
 				'repeating'   => false,
 			],
@@ -473,7 +473,7 @@ class Newspack_Listings_Callable_Importer {
 	 *
 	 * @throws Exception Throws exception if data row cannot be imported properly.
 	 */
-	protected function import( Iterator $iterator ) {
+	public function import( Iterator $iterator ) {
 		do {
 			$row = $iterator->current();
 
@@ -523,15 +523,14 @@ class Newspack_Listings_Callable_Importer {
 		$date_format                        = 'Y-m-d H:i:s';
 		$incoming_post_data['post_type']    = $post_type;
 		$incoming_post_data['post_date']    = isset( $incoming_post_data['post_date'] ) ?
-			gmdate( $date_format, $incoming_post_data['post_date'] ) :
+			gmdate( $date_format, strtotime( $incoming_post_data['post_date'] ) ) :
 			gmdate( $date_format, time() );
 		$incoming_post_data['post_excerpt'] = $incoming_post_data['post_excerpt'] ?? '';
 		$incoming_post_data['post_title']   = $incoming_post_data['post_title'] ?? __( '(no title)', 'newspack-listing' );
 		$incoming_post_data['post_status']  = 'publish';
-		$incoming_post_data['meta_input']   = [
-			'_wp_page_template'                => 'single-wide.php',
-			'newspack_featured_image_position' => 'hidden', // Featured image is shown in listing content.
-		];
+		$incoming_post_data['meta_input']['_wp_page_template'] = $incoming_post_data['meta_input']['_wp_page_template'] ?? 'single-wide.php';
+		// Keep featured image position if set, otherwise, featured image is shown in listing content.
+		$incoming_post_data['meta_input']['newspack_featured_image_position'] = $incoming_post_data['meta_input']['newspack_featured_image_position'] ?? 'hidden';
 
 		WP_CLI::log( $incoming_post_data['post_title'] );
 
@@ -607,14 +606,14 @@ class Newspack_Listings_Callable_Importer {
 				$post_id = wp_insert_post( $incoming_post_data, true );
 			}
 
-			$this->handle_category( $other_data, $post_id );
-			$this->handle_tag( $other_data, $post_id );
-
 			if ( $post_id instanceof WP_Error ) {
 				WP_CLI::error( $post_id->get_error_message() );
 			} else {
 				$existing_post = get_post( $post_id );
 			}
+
+			$this->handle_category( $other_data, $post_id );
+			$this->handle_tag( $other_data, $post_id );
 		}
 
 		return $existing_post ?? new WP_Post( (object) $incoming_post_data );
@@ -646,7 +645,7 @@ class Newspack_Listings_Callable_Importer {
 	 * @return string
 	 */
 	protected function get_listing_type( array $row ): string {
-		if ( ! is_null( $this->listings_mapper ) ) {
+		if ( $this->listings_mapper->has_mapped_types() ) {
 			try {
 				return $this->listings_mapper->get_listing_type( $row['wp_post.post_type'] );
 			} catch ( Exception $e ) {
@@ -909,7 +908,7 @@ class Newspack_Listings_Callable_Importer {
 	 * @param int   $post_id The ID of the post to associate with the category.
 	 */
 	protected function handle_category( array $data, int $post_id ) {
-		if ( array_key_exists( 'categories', $data ) && ! array_key_exists( 'category', $data ) ) {
+		if ( array_key_exists( 'categories', $data ) && ! array_key_exists( 'category', $data ) && ! empty( $data['categories'] ) ) {
 			foreach ( $data['categories'] as $category ) {
 				if ( ! is_array( $category ) ) {
 					$category = [ 'category' => $category ];
@@ -988,7 +987,7 @@ class Newspack_Listings_Callable_Importer {
 	 * @param int   $post_id The ID of the post to associate with tag.
 	 */
 	protected function handle_tag( array $data, int $post_id ) {
-		if ( array_key_exists( 'tags', $data ) && ! array_key_exists( 'tag', $data ) ) {
+		if ( array_key_exists( 'tags', $data ) && ! array_key_exists( 'tag', $data ) && ! empty( $data['tags'] ) ) {
 			foreach ( $data['tags'] as $tag ) {
 				if ( ! is_array( $tag ) ) {
 					$tag = [ 'tag' => $tag ];
@@ -1076,7 +1075,7 @@ class Newspack_Listings_Callable_Importer {
 			$result            = $wpdb->get_results( $term_taxonomy_sql );
 			var_dump( [ 'INSIDE' => $result ] );
 			$result = array_shift( $result );
-			$wpdb->insert(
+			$result = $wpdb->insert(
 				$wpdb->term_relationships,
 				[
 					'object_id'        => $post_id,

@@ -104,6 +104,15 @@ class Listings_Type_Mapper implements Listings_Type_Mapper_Interface {
 	}
 
 	/**
+	 * Convenience function to determine if a custom mapping exists.
+	 *
+	 * @return bool
+	 */
+	public function has_mapped_types(): bool {
+		return ! empty( $this->types );
+	}
+
+	/**
 	 * Checks provided listing type against supported list of Newspack Listing Types.
 	 *
 	 * @param string $listing_type Listing Type.

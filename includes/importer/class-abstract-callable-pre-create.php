@@ -34,7 +34,7 @@ abstract class Abstract_Callable_Pre_Create {
 	 * @param array         $row Row of data from import file.
 	 * @param Importer_Mode $importer_mode Newspack Listing Import Mode.
 	 */
-	public function __invoke( array $row, Importer_Mode $importer_mode ) {
+	public function __invoke( array &$row, Importer_Mode $importer_mode ) {
 		$this->get_callable()( $row, $importer_mode );
 	}
 }

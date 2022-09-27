@@ -94,6 +94,7 @@ class Csv_File extends Abstract_Iterable_File implements Csv_File_Interface {
 	public function getIterator(): Iterator {
 		$handle = $this->get_handle();
 		$header = $this->get_row( $handle );
+		$header = array_map( fn( $column) => trim( $column ), $header );
 
 		$row_count = 1;
 		while ( $row_count < $this->get_start() ) {

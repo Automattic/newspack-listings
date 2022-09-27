@@ -45,4 +45,11 @@ interface Listings_Type_Mapper {
 	 * @return Listings_Type_Mapper
 	 */
 	public function add_type( string $listing_type, string $type ): Listings_Type_Mapper;
+
+	/**
+	 * Convenience function to determine if a custom mapping exists.
+	 *
+	 * @return bool
+	 */
+	public function has_mapped_types(): bool;
 }
