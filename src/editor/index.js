@@ -3,10 +3,6 @@
 /**
  * WordPress dependencies
  */
-import {
-	__experimentalMainDashboardButton as MainDashboardButton,
-	__experimentalFullscreenModeClose as FullscreenModeClose,
-} from '@wordpress/edit-post';
 import { registerPlugin } from '@wordpress/plugins';
 
 /**
@@ -78,17 +74,6 @@ if ( isListing() ) {
 
 // Editor UI changes for listing customers.
 if ( isListingCustomer ) {
-	// For customers, change the default behavior of the full-screen close button.
-	// This normally links back to the post type list, but that page is inaccessible
-	// to customer users.
-	registerPlugin( 'main-dashboard-button-replace', {
-		render: () => (
-			<MainDashboardButton>
-				<FullscreenModeClose href="/wp-admin/" />
-			</MainDashboardButton>
-		),
-	} );
-
 	/**
 	 * Remove the "Mapbox Access Token" sidebar panel from the jetpack/map block.
 	 * We can't really avoid exposing the API token (which is public anyway), but we can
