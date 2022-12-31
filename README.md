@@ -25,3 +25,4 @@ Run `npm run build`.
 Each listing type is a separate custom post type. Configuration is in `includes/newspack-listings-core.php`.
 
 Metadata for listing CPTs is synced from certain blocks in the post content. See configuration in `includes/newspack-listings-core.php` for details.
+test
