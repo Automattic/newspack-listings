@@ -15,7 +15,7 @@ class BlocksTest extends WP_UnitTestCase {
 	private static $listings           = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $default_attributes = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		// Remove any listings (from previous tests).
 		foreach ( self::$listings as $listing_id ) {
 			wp_delete_post( $listing_id );
@@ -68,13 +68,13 @@ class BlocksTest extends WP_UnitTestCase {
 			''
 		);
 
-		self::assertContains(
+		self::assertStringContainsString(
 			get_the_title( $place ),
 			$query_all_block_content,
 			'Query block with type set to all contains the place listing.'
 		);
 
-		self::assertContains(
+		self::assertStringContainsString(
 			get_the_title( $event ),
 			$query_all_block_content,
 			'Query block with type set to all contains the event listing.'
@@ -103,13 +103,13 @@ class BlocksTest extends WP_UnitTestCase {
 			''
 		);
 
-		self::assertContains(
+		self::assertStringContainsString(
 			get_the_title( $place ),
 			$query_place_block_content,
 			'Query block with type set to "place" contains the place listing.'
 		);
 
-		self::assertNotContains(
+		self::assertStringNotContainsString(
 			get_the_title( $event ),
 			$query_place_block_content,
 			'Query block with type set to "place" does not contain the event listing.'

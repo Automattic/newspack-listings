@@ -158,8 +158,8 @@ class Products {
 	 * Create or delete self-serve listing products.
 	 */
 	public static function create_or_delete_listing_products() {
-		$action = filter_input( INPUT_GET, 'newspack-listings-products', FILTER_SANITIZE_STRING );
-		$nonce  = filter_input( INPUT_GET, '_wpnonce', FILTER_SANITIZE_STRING );
+		$action = filter_input( INPUT_GET, 'newspack-listings-products', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$nonce  = filter_input( INPUT_GET, '_wpnonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( wp_verify_nonce( $nonce, self::ACTION_NONCE ) && in_array( $action, self::ACTIONS, true ) ) {
 			if ( self::ACTIONS['create'] === $action ) {

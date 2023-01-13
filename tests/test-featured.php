@@ -17,7 +17,7 @@ class FeaturedTest extends WP_UnitTestCase {
 	private static $terms        = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 	private static $publish_date = []; // phpcs:ignore Squiz.Commenting.VariableComment.Missing
 
-	public function setUp() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	public function set_up() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
 		// Remove any listings (from previous tests).
 		foreach ( self::$listings as $listing_id ) {
 			wp_delete_post( $listing_id );
