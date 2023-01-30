@@ -687,12 +687,6 @@ class Newspack_Listings_Callable_Importer {
 	 * @return string
 	 */
 	protected function handle_post_content( string $listing_type, array $data, array $images = [] ): string {
-		if ( array_key_exists( $listing_type, $this->template_override ) ) {
-			$place_template = file_get_contents( $this->template_override[ $listing_type ] );
-
-			return strtr( $place_template, $data );
-		}
-
 		$featured_image = '';
 
 		if ( array_key_exists( 'featured_image', $images ) ) {
@@ -705,6 +699,23 @@ class Newspack_Listings_Callable_Importer {
 				]
 			);
 		}
+
+        if ( array_key_exists( $listing_type, $this->template_override ) ) {
+            $place_template = file_get_contents( $this->template_override[ $listing_type ] );
+
+            unset( $data['images'] );
+
+            foreach ( $data as $key => $value) {
+                if ( ! str_starts_with( $key, '{' ) && ! str_ends_with( $key, '}' ) ) {
+                    $data["{{$key}}"] = $value;
+                    unset( $data[$key] );
+                }
+            }
+
+            $data['{featured_image}'] = $featured_image;
+
+            return strtr( $place_template, $data );
+        }
 
 		switch ( $listing_type ) {
 			case Listing_Type::PLACE:
