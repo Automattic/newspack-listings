@@ -555,6 +555,10 @@ class Newspack_Listings_Callable_Importer {
 			}
 
 			$images = $this->handle_post_images( $row['images'] );
+
+            if ( array_key_exists( 'featured_image', $images ) ) {
+                $incoming_post_data['meta_input']['_thumbnail_id'] = $images['featured_image']['id'];
+            }
 		}
 
 		$incoming_post_data['post_content'] = $this->handle_post_content(
