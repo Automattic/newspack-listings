@@ -853,7 +853,7 @@ class Newspack_Listings_Callable_Importer {
 				$image_data = file_get_contents( $image['path'] );
 				$image_type = wp_check_filetype( $image_name );
 
-				$file_path = "/$image_name";
+				$file_path = '/' . urldecode( $image_name );
 				if ( wp_mkdir_p( $upload_directory['path'] ) ) {
 					$file_path = "{$upload_directory['path']}$file_path";
 				} else {
