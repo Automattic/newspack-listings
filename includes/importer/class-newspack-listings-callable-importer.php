@@ -556,9 +556,9 @@ class Newspack_Listings_Callable_Importer {
 
 			$images = $this->handle_post_images( $row['images'] );
 
-            if ( array_key_exists( 'featured_image', $images ) ) {
-                $incoming_post_data['meta_input']['_thumbnail_id'] = $images['featured_image']['id'];
-            }
+			if ( array_key_exists( 'featured_image', $images ) ) {
+				$incoming_post_data['meta_input']['_thumbnail_id'] = $images['featured_image']['id'];
+			}
 		}
 
 		$incoming_post_data['post_content'] = $this->handle_post_content(
@@ -700,22 +700,22 @@ class Newspack_Listings_Callable_Importer {
 			);
 		}
 
-        if ( array_key_exists( $listing_type, $this->template_override ) ) {
-            $place_template = file_get_contents( $this->template_override[ $listing_type ] );
+		if ( array_key_exists( $listing_type, $this->template_override ) ) {
+			$place_template = file_get_contents( $this->template_override[ $listing_type ] );
 
-            unset( $data['images'] );
+			unset( $data['images'] );
 
-            foreach ( $data as $key => $value) {
-                if ( ! str_starts_with( $key, '{' ) && ! str_ends_with( $key, '}' ) ) {
-                    $data["{{$key}}"] = $value;
-                    unset( $data[$key] );
-                }
-            }
+			foreach ( $data as $key => $value ) {
+				if ( ! str_starts_with( $key, '{' ) && ! str_ends_with( $key, '}' ) ) {
+					$data[ "{{$key}}" ] = $value;
+					unset( $data[ $key ] );
+				}
+			}
 
-            $data['{featured_image}'] = $featured_image;
+			$data['{featured_image}'] = $featured_image;
 
-            return strtr( $place_template, $data );
-        }
+			return strtr( $place_template, $data );
+		}
 
 		switch ( $listing_type ) {
 			case Listing_Type::PLACE:
