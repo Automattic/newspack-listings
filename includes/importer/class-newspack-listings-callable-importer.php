@@ -306,7 +306,7 @@ class Newspack_Listings_Callable_Importer {
 	 */
 	protected function set_callable_post_create( $callable_post_create ) {
 		if ( is_string( $callable_post_create ) ) {
-			if ( str_ends_with( $callable_post_create, '.php' ) ) {
+			if ( str_contains( $callable_post_create, '.php' ) ) {
 				$callable_post_create = $this->include_class( $callable_post_create );
 			}
 
