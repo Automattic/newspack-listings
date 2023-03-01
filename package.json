@@ -1,6 +1,6 @@
 {
   "name": "newspack-listings",
-  "version": "2.12.4",
+  "version": "2.12.5-alpha.1",
   "description": "",
   "scripts": {
     "cm": "newspack-scripts commit",
@@ -41,11 +41,11 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
     "eslint": "^7.32.0",
-    "lint-staged": "^13.0.3",
-    "newspack-scripts": "^4.3.0",
-    "postcss": "^8.4.16",
-    "postcss-scss": "^4.0.5",
+    "lint-staged": "^13.1.2",
+    "newspack-scripts": "^5.0.0",
+    "postcss": "^8.4.21",
+    "postcss-scss": "^4.0.6",
     "prettier": "npm:wp-prettier@^2.6.2-beta-1",
-    "stylelint": "^14.9.1"
+    "stylelint": "^15.2.0"
   }
 }
