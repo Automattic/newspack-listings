@@ -1,3 +1,10 @@
+## [2.12.4](https://github.com/Automattic/newspack-listings/compare/v2.12.3...v2.12.4) (2023-03-01)
+
+
+### Bug Fixes
+
+* manually bump asset version so CI can pick it up again ([#338](https://github.com/Automattic/newspack-listings/issues/338)) ([d665af4](https://github.com/Automattic/newspack-listings/commit/d665af45aa869b6da733d91dba05833c17b89a7c))
+
 ## [2.12.3](https://github.com/Automattic/newspack-listings/compare/v2.12.2...v2.12.3) (2023-03-01)
 
 
