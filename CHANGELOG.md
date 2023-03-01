@@ -1,3 +1,10 @@
+## [2.12.3](https://github.com/Automattic/newspack-listings/compare/v2.12.2...v2.12.3) (2023-03-01)
+
+
+### Bug Fixes
+
+* accommodate any valid date string in newspack_listings_expiration_date ([#337](https://github.com/Automattic/newspack-listings/issues/337)) ([2150707](https://github.com/Automattic/newspack-listings/commit/215070768a1854d86ff725ccf4352c330309696c))
+
 ## [2.12.2](https://github.com/Automattic/newspack-listings/compare/v2.12.1...v2.12.2) (2022-09-27)
 
 
