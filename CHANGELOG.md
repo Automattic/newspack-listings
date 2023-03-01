@@ -1,3 +1,10 @@
+## [2.12.5-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.12.4...v2.12.5-alpha.1) (2023-03-01)
+
+
+### Bug Fixes
+
+* resolve merge conflicts ([401bf74](https://github.com/Automattic/newspack-listings/commit/401bf74f2fca05aedb4a9e82d1bff6ab87031a64))
+
 ## [2.12.4](https://github.com/Automattic/newspack-listings/compare/v2.12.3...v2.12.4) (2023-03-01)
 
 

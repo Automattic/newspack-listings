@@ -1,6 +1,6 @@
 {
   "name": "newspack-listings",
-  "version": "2.12.4",
+  "version": "2.12.5-alpha.1",
   "description": "",
   "scripts": {
     "cm": "newspack-scripts commit",
