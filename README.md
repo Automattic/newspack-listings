@@ -14,7 +14,7 @@ Create reusable content as listings and add them to lists wherever core blocks c
 6. Choose Specific Listings mode to create a static list, or Query mode to create a dynamic list which will automatically update itself when new listings matching the query options are published.
 7. Edit list options to control the list's display and behavior.
 
-For more detailed instructions, refer to the [public documentation for Newspack Listings](https://newspack.pub/support/listings/).
+For more detailed instructions, refer to the [public documentation for Newspack Listings](https://help.newspack.com/engagement/listings/).
 
 ## Development
 

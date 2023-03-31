@@ -8,7 +8,6 @@ import { Icon, calendar } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import './editor.scss';
 import { EventDatesEditor } from './edit';
 import metadata from './block.json';
 const { attributes, category, name } = metadata;
