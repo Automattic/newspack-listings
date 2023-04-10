@@ -1,3 +1,17 @@
+## [2.12.6](https://github.com/Automattic/newspack-listings/compare/v2.12.5...v2.12.6) (2023-04-10)
+
+
+### Bug Fixes
+
+* remove unneeded editor CSS for Event Dates block ([#345](https://github.com/Automattic/newspack-listings/issues/345)) ([fb388ba](https://github.com/Automattic/newspack-listings/commit/fb388ba443bbafba793a0cc21689f3c8b1f2bac3))
+
+## [2.12.6-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.12.5...v2.12.6-alpha.1) (2023-03-31)
+
+
+### Bug Fixes
+
+* remove unneeded editor CSS for Event Dates block ([#345](https://github.com/Automattic/newspack-listings/issues/345)) ([fb388ba](https://github.com/Automattic/newspack-listings/commit/fb388ba443bbafba793a0cc21689f3c8b1f2bac3))
+
 ## [2.12.5](https://github.com/Automattic/newspack-listings/compare/v2.12.4...v2.12.5) (2023-03-01)
 
 

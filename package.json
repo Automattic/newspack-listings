@@ -1,51 +1,51 @@
 {
-	"name": "newspack-listings",
-	"version": "2.12.5",
-	"description": "",
-	"scripts": {
-		"cm": "newspack-scripts commit",
-		"semantic-release": "newspack-scripts release --files=newspack-listings.php",
-		"start": "npm ci && newspack-scripts watch",
-		"watch": "newspack-scripts watch",
-		"build": "newspack-scripts build",
-		"test": "echo \"Error: no test specified\" && exit 0",
-		"clean": "rm -rf dist/",
-		"lint": "npm run lint:scss && npm run lint:js",
-		"lint:js": "eslint --ext .js,.jsx src",
-		"lint:js:staged": "eslint --ext .js,.jsx",
-		"lint:php:staged": "./vendor/bin/phpcs --filter=GitStaged",
-		"lint:scss": "stylelint '**/*.scss' --customSyntax postcss-scss --config=./node_modules/newspack-scripts/config/stylelint.config.js",
-		"lint:scss:staged": "stylelint --customSyntax postcss-scss --config=./node_modules/newspack-scripts/config/stylelint.config.js",
-		"format:js": "prettier 'src/**/*.{js,jsx}' --write",
-		"format:scss": "prettier --write 'src/**/*.scss'",
-		"format:php": "./vendor/bin/phpcbf .",
-		"release:archive": "rm -rf release && mkdir -p release && rsync -r . ./release/newspack-listings --exclude-from='./.distignore' && cd release && zip -r newspack-listings.zip newspack-listings",
-		"release": "npm run build && npm run semantic-release"
-	},
-	"lint-staged": {
-		"*.js": "npm run lint:js:staged",
-		"*.scss": "npm run lint:scss:staged",
-		"*.php": "npm run lint:php:staged"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Automattic/newspack-listings.git"
-	},
-	"license": "GPL-2.0-or-later",
-	"bugs": {
-		"url": "https://github.com/Automattic/newspack-listings/issues"
-	},
-	"dependencies": {
-		"newspack-components": "^2.1.0"
-	},
-	"devDependencies": {
-		"@rushstack/eslint-patch": "^1.2.0",
-		"eslint": "^7.32.0",
-		"lint-staged": "^13.2.1",
-		"newspack-scripts": "^5.1.0",
-		"postcss": "^8.4.21",
-		"postcss-scss": "^4.0.6",
-		"prettier": "npm:wp-prettier@^2.6.2-beta-1",
-		"stylelint": "^15.4.0"
-	}
+  "name": "newspack-listings",
+  "version": "2.12.6",
+  "description": "",
+  "scripts": {
+    "cm": "newspack-scripts commit",
+    "semantic-release": "newspack-scripts release --files=newspack-listings.php",
+    "start": "npm ci && newspack-scripts watch",
+    "watch": "newspack-scripts watch",
+    "build": "newspack-scripts build",
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "clean": "rm -rf dist/",
+    "lint": "npm run lint:scss && npm run lint:js",
+    "lint:js": "eslint --ext .js,.jsx src",
+    "lint:js:staged": "eslint --ext .js,.jsx",
+    "lint:php:staged": "./vendor/bin/phpcs",
+    "lint:scss": "stylelint '**/*.scss' --customSyntax postcss-scss --config=./node_modules/newspack-scripts/config/stylelint.config.js",
+    "lint:scss:staged": "stylelint --customSyntax postcss-scss --config=./node_modules/newspack-scripts/config/stylelint.config.js",
+    "format:js": "prettier 'src/**/*.{js,jsx}' --write",
+    "format:scss": "prettier --write 'src/**/*.scss'",
+    "format:php": "./vendor/bin/phpcbf .",
+    "release:archive": "rm -rf release && mkdir -p release && rsync -r . ./release/newspack-listings --exclude-from='./.distignore' && cd release && zip -r newspack-listings.zip newspack-listings",
+    "release": "npm run build && npm run semantic-release"
+  },
+  "lint-staged": {
+    "*.js": "npm run lint:js:staged",
+    "*.scss": "npm run lint:scss:staged",
+    "*.php": "npm run lint:php:staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Automattic/newspack-listings.git"
+  },
+  "license": "GPL-2.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Automattic/newspack-listings/issues"
+  },
+  "dependencies": {
+    "newspack-components": "^2.1.0"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.2.0",
+    "eslint": "^7.32.0",
+    "lint-staged": "^13.2.0",
+    "newspack-scripts": "^5.1.0",
+    "postcss": "^8.4.21",
+    "postcss-scss": "^4.0.6",
+    "prettier": "npm:wp-prettier@^2.6.2-beta-1",
+    "stylelint": "^15.3.0"
+  }
 }
