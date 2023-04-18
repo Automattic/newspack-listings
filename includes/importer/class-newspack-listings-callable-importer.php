@@ -503,8 +503,8 @@ class Newspack_Listings_Callable_Importer {
 	protected function create_or_update_listing( array $row ): WP_Post {
 		$post_type     = $this->get_listing_type( $row );
 		$existing_post = function_exists( 'wpcom_vip_get_page_by_title' ) ?
-			wpcom_vip_get_page_by_title( $row['wp_post.post_title'], OBJECT, 'NEWSPACK_LISTING_TYPE' ) :
-			get_page_by_title( $row['wp_post.post_title'], OBJECT, 'NEWSPACK_LISTING_TYPE' );
+			wpcom_vip_get_page_by_title( $row['wp_post.post_title'], OBJECT, $post_type ) :
+			get_page_by_title( $row['wp_post.post_title'], OBJECT, $post_type );
 
 		$incoming_post_data = [
 			'post_author' => 1, // Default user in case author isn't defined.
@@ -571,20 +571,20 @@ class Newspack_Listings_Callable_Importer {
 			if ( $existing_post ) {
 				$diff = array_diff_assoc( $existing_post->to_array(), $incoming_post_data );
 
-				var_dump(
+				/*var_dump(
 					[
 						'Existing Post' => $existing_post->to_array(),
 						'Updates'       => $diff,
 					]
-				);
+				);*/
 
 				return $this->handle_existing_post_properties( $existing_post, $incoming_post_data, $post_type );
 			} else {
-				var_dump(
+				/*var_dump(
 					[
 						'New Post' => $incoming_post_data,
 					]
-				);
+				);*/
 
 				return new WP_Post( (object) $incoming_post_data );
 			}
@@ -602,7 +602,7 @@ class Newspack_Listings_Callable_Importer {
 
 		if ( $this->get_importer_mode()->is_update() ) {
 			if ( $existing_post ) {
-				$post_id = wp_update_post(
+				$post_id = wp_insert_post(
 					$this->handle_existing_post_properties( $existing_post, $incoming_post_data, $post_type ),
 					true
 				);
@@ -687,23 +687,33 @@ class Newspack_Listings_Callable_Importer {
 	 * @return string
 	 */
 	protected function handle_post_content( string $listing_type, array $data, array $images = [] ): string {
-		$featured_image = '';
+		$processed_featured_image = '';
+        $processed_images = '';
 
-		if ( array_key_exists( 'featured_image', $images ) ) {
-			$featured_image = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/featured_image.html' );
-			$featured_image = strtr(
-				$featured_image,
-				[
-					'{id}'  => $images['featured_image']['id'],
-					'{url}' => $images['featured_image']['path'],
-				]
-			);
-		}
+        foreach ( $images as $key => $image ) {
+            if ( 'featured_image' === $key ) {
+                $featured_image_template = file_get_contents( WP_PLUGIN_DIR . '/newspack-listings/includes/templates/featured_image.html' );
+                $processed_featured_image = strtr(
+                    $featured_image_template,
+                    [
+                        '{id}'  => $image['id'],
+                        '{url}' => $image['path'],
+                    ]
+                );
+            } else {
+                $image_template = file_get_contents(WP_PLUGIN_DIR . '/newspack-listings/includes/templates/image.html');
+                $processed_images .= strtr(
+                    $image_template,
+                    [
+                        '{id}' => $image['id'],
+                        '{url}' => $image['path'],
+                    ]
+                );
+            }
+        }
 
 		if ( array_key_exists( $listing_type, $this->template_override ) ) {
 			$place_template = file_get_contents( $this->template_override[ $listing_type ] );
-
-			unset( $data['images'] );
 
 			foreach ( $data as $key => $value ) {
 				if ( ! str_starts_with( $key, '{' ) && ! str_ends_with( $key, '}' ) ) {
@@ -712,7 +722,8 @@ class Newspack_Listings_Callable_Importer {
 				}
 			}
 
-			$data['{featured_image}'] = $featured_image;
+			$data['{featured_image}'] = $processed_featured_image;
+            $data['{processed_images}'] = $processed_images;
 
 			return strtr( $place_template, $data );
 		}
@@ -724,7 +735,7 @@ class Newspack_Listings_Callable_Importer {
 				$content = strtr(
 					$place_template,
 					[
-						'{featured_image}' => $featured_image,
+						'{featured_image}' => $processed_featured_image,
 						'{description}'    => $data['description'] ?? '',
 						'{email}'          => $data['email'] ?? '',
 						'{phone}'          => $data['phone'] ?? '',
@@ -749,7 +760,7 @@ class Newspack_Listings_Callable_Importer {
 					$content = strtr(
 						$classified_template,
 						[
-							'{featured_image}'  => $featured_image,
+							'{featured_image}'  => $processed_featured_image,
 							'{price}'           => $data['price'] ?? '',
 							'{formatted_price}' => $data['formatted_price'] ?? '',
 							'{description}'     => $data['description'] ?? '',
@@ -761,7 +772,7 @@ class Newspack_Listings_Callable_Importer {
 					$content = strtr(
 						$marketplace_template,
 						[
-							'{featured_image}'   => $featured_image,
+							'{featured_image}'   => $processed_featured_image,
 							'{email}'            => $data['email'],
 							'{phone}'            => $data['phone'],
 							'{phone_display}'    => $data['phone_display'] ?? '',
@@ -794,7 +805,7 @@ class Newspack_Listings_Callable_Importer {
 				$content = strtr(
 					$event_template,
 					[
-						'{featured_image}' => $featured_image,
+						'{featured_image}' => $processed_featured_image,
 						'{start_date}'     => $data['start_date'] ?? '',
 					]
 				);
@@ -806,7 +817,7 @@ class Newspack_Listings_Callable_Importer {
 				$content = strtr(
 					$generic_template,
 					[
-						'{featured_image}' => $featured_image,
+						'{featured_image}' => $processed_featured_image,
 						'{html}'           => $data['html'] ?? '',
 					]
 				);
@@ -835,18 +846,25 @@ class Newspack_Listings_Callable_Importer {
 				get_page_by_title( $image_name, OBJECT, 'attachment' );
 
 			if ( $image_exists ) {
+                $uploads_folder_file_path = get_post_meta( $image_exists->ID, '_wp_attached_file', true );
+                $id = $image_exists->ID;
+                $path = $upload_directory['baseurl'] . '/' . $uploads_folder_file_path;
+
 				if ( is_string( $key ) ) {
 					$uploaded_images[ $key ] = [
-						'id'   => $image_exists->ID,
-						'path' => $image_exists->guid,
+						'id'   => $id,
+						'path' => $path,
 					];
 				} else {
 					if ( ! array_key_exists( 'featured_image', $uploaded_images ) ) {
-						$uploaded_images['featured_image'] = $image_exists->ID;
+						$uploaded_images['featured_image'] = [
+                            'id' => $id,
+                            'path' => $path,
+                        ];
 					} else {
 						$uploaded_images[] = [
-							'id'   => $image_exists->ID,
-							'path' => $image_exists->guid,
+							'id'   => $id,
+							'path' => $path,
 						];
 					}
 				}
@@ -892,7 +910,7 @@ class Newspack_Listings_Callable_Importer {
 					require_once ABSPATH . 'wp-admin/includes/image.php';
 					$attachment_data = wp_generate_attachment_metadata( $attachment_id, $file_path );
 					wp_update_attachment_metadata( $attachment_id, $attachment_data );
-					$path = $attachment_data['file'];
+					$path = $upload_directory['baseurl'] . '/' . $attachment_data['file'];
 				}
 
 				$uploaded_image = [
@@ -964,11 +982,6 @@ class Newspack_Listings_Callable_Importer {
 
 		if ( ! empty( $result ) ) {
 			$category = array_shift( $result );
-			var_dump(
-				[
-					'CATEGORY' => $category,
-				]
-			);
 
 			if ( $this->get_category_id() !== $category->parent_term_id && $this->can_touch_database() ) {
 				$wpdb->update(
@@ -1062,6 +1075,8 @@ class Newspack_Listings_Callable_Importer {
 	 * @return WP_Post
 	 */
 	private function handle_existing_post_properties( WP_Post $post, array $new_params, string $post_type ): WP_Post {
+        unset( $new_params['ID'] );
+        unset( $new_params['id'] );
 		foreach ( $new_params as $key => $value ) {
 			$post->$key = $value;
 		}
@@ -1088,9 +1103,8 @@ class Newspack_Listings_Callable_Importer {
 		if ( empty( $result ) && $this->can_touch_database() ) {
 			$term_taxonomy_sql = "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE term_id = $category_id AND taxonomy = 'category'";
 			$result            = $wpdb->get_results( $term_taxonomy_sql );
-			var_dump( [ 'INSIDE' => $result ] );
-			$result = array_shift( $result );
-			$result = $wpdb->insert(
+			$result            = array_shift( $result );
+			$result            = $wpdb->insert(
 				$wpdb->term_relationships,
 				[
 					'object_id'        => $post_id,
