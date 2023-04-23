@@ -20,6 +20,7 @@ use Newspack_Listings\Core;
 use WP_CLI;
 use WP_Error;
 use WP_Post;
+use WP_Query;
 
 /**
  * The main benefit of this class is the ability to inject callbacks to
@@ -504,7 +505,13 @@ class Newspack_Listings_Callable_Importer {
 		$post_type     = $this->get_listing_type( $row );
 		$existing_post = function_exists( 'wpcom_vip_get_page_by_title' ) ?
 			wpcom_vip_get_page_by_title( $row['wp_post.post_title'], OBJECT, $post_type ) :
-			get_page_by_title( $row['wp_post.post_title'], OBJECT, $post_type );
+			new WP_Query( [ 'post_type' => $post_type, 'title' => $row['wp_post.post_title'] ] );
+
+		if ( $existing_post instanceof WP_Query ) {
+			if ( $existing_post->found_posts >= 1 ) {
+				$existing_post = $existing_post->posts[0];
+			}
+		}
 
 		$incoming_post_data = [
 			'post_author' => 1, // Default user in case author isn't defined.
@@ -843,7 +850,13 @@ class Newspack_Listings_Callable_Importer {
 			$image_name   = basename( $image['path'] );
 			$image_exists = function_exists( 'wpcom_vip_get_page_by_title' ) ?
 				wpcom_vip_get_page_by_title( $image_name, OBJECT, 'attachment' ) :
-				get_page_by_title( $image_name, OBJECT, 'attachment' );
+				new WP_Query( [ 'post_type' => 'attachment', 'title' => $image_name] );
+
+			if ( $image_exists instanceof WP_Query ) {
+				if ( $image_exists->found_posts >= 1 ) {
+					$image_exists = $image_exists->posts[0];
+				}
+			}
 
 			if ( $image_exists ) {
                 $uploads_folder_file_path = get_post_meta( $image_exists->ID, '_wp_attached_file', true );
