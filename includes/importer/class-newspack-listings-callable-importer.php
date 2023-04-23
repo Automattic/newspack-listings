@@ -384,8 +384,8 @@ class Newspack_Listings_Callable_Importer {
 
 		if ( array_key_exists( 'use-parent-category', $assoc_args ) ) {
 			if ( $assoc_args['use-parent-category'] ) {
-				if ( ! array_key_exists( 'category', $assoc_args ) ) {
-					WP_CLI::error( 'The `--use-parent-category` flag was set, but no category was provided.' );
+				if ( ! array_key_exists( 'parent-category', $assoc_args ) ) {
+					WP_CLI::error( 'The `--use-parent-category` flag was set, but no parent category was provided.' );
 				}
 
 				$this->set_category_id( $assoc_args['parent-category'] );
