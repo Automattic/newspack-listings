@@ -1,3 +1,10 @@
+## [2.12.7](https://github.com/Automattic/newspack-listings/compare/v2.12.6...v2.12.7) (2023-05-02)
+
+
+### Bug Fixes
+
+* only run self-serve-related actions if enabled ([#364](https://github.com/Automattic/newspack-listings/issues/364)) ([560a3f7](https://github.com/Automattic/newspack-listings/commit/560a3f7efe12c06672dc38b92e6c4418a37f6bd0))
+
 ## [2.12.6](https://github.com/Automattic/newspack-listings/compare/v2.12.5...v2.12.6) (2023-04-10)
 
 
