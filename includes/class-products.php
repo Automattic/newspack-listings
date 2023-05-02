@@ -89,15 +89,13 @@ class Products {
 	 * Initialize self-serve listings features.
 	 */
 	public static function init() {
-		if ( self::is_active() ) {
-			// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
-			add_action( 'woocommerce_after_register_post_type', [ __CLASS__, 'setup' ] );
-			add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_listing_products' ], 99 );
+		// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
+		add_action( 'woocommerce_after_register_post_type', [ __CLASS__, 'setup' ] );
+		add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_listing_products' ], 99 );
 
-			// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
-			add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
-			add_action( 'updated_post_meta', [ __CLASS__, 'update_product_option' ], 10, 4 );
-		}
+		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
+		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
+		add_action( 'updated_post_meta', [ __CLASS__, 'update_product_option' ], 10, 4 );
 	}
 
 	/**
@@ -299,6 +297,10 @@ class Products {
 	 * @param mixed  $new_value The new option value.
 	 */
 	public static function update_products( $option, $old_value, $new_value ) {
+		if ( ! self::is_active() ) {
+			return;
+		}
+
 		// Only if the updated option is a Newspack Listing setting.
 		$settings = Settings::get_settings();
 		if ( ! in_array( $option, array_keys( $settings ) ) ) {
@@ -343,6 +345,11 @@ class Products {
 	 * @param mixed  $meta_value Value of $meta_key.
 	 */
 	public static function update_product_option( $meta_id, $post_id, $meta_key, $meta_value ) {
+		// Only run if self-serve listings are enabled.
+		if ( ! self::is_active() ) {
+			return;
+		}
+
 		// Only run if post being updated is a product and meta field being updated is '_price'.
 		if ( 'product' !== get_post_type( $post_id ) || '_price' !== $meta_key ) {
 			return;
