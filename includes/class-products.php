@@ -89,13 +89,15 @@ class Products {
 	 * Initialize self-serve listings features.
 	 */
 	public static function init() {
-		// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
-		add_action( 'woocommerce_after_register_post_type', [ __CLASS__, 'setup' ] );
-		add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_listing_products' ], 99 );
+		if ( self::is_active() ) {
+			// WP actions to create the necessary products, and to handle submission of the Self-Serve Listings block form.
+			add_action( 'woocommerce_after_register_post_type', [ __CLASS__, 'setup' ] );
+			add_action( 'wp_loaded', [ __CLASS__, 'create_or_delete_listing_products' ], 99 );
 
-		// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
-		add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
-		add_action( 'updated_post_meta', [ __CLASS__, 'update_product_option' ], 10, 4 );
+			// When product settings are updated, make sure to update the corresponding WooCommerce products as well.
+			add_action( 'update_option', [ __CLASS__, 'update_products' ], 10, 3 );
+			add_action( 'updated_post_meta', [ __CLASS__, 'update_product_option' ], 10, 4 );
+		}
 	}
 
 	/**
