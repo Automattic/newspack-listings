@@ -1,3 +1,10 @@
+## [2.12.8](https://github.com/Automattic/newspack-listings/compare/v2.12.7...v2.12.8) (2023-05-08)
+
+
+### Bug Fixes
+
+* add pre push hook ([#352](https://github.com/Automattic/newspack-listings/issues/352)) ([a271f9d](https://github.com/Automattic/newspack-listings/commit/a271f9da10b1048537afd144c88c697da4bb4efc))
+
 ## [2.12.8-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.12.7...v2.12.8-alpha.1) (2023-05-02)
 
 
