@@ -1,3 +1,10 @@
+# [2.13.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.12.8...v2.13.0-alpha.1) (2023-06-08)
+
+
+### Features
+
+* add POT file to Listings plugin ([#371](https://github.com/Automattic/newspack-listings/issues/371)) ([641e61b](https://github.com/Automattic/newspack-listings/commit/641e61b1676ade685714e69c11de985379ca81e2))
+
 ## [2.12.8](https://github.com/Automattic/newspack-listings/compare/v2.12.7...v2.12.8) (2023-05-08)
 
 
