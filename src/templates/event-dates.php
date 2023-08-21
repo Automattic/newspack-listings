@@ -38,11 +38,11 @@ call_user_func(
 			}
 		}
 
-		$the_start_date = $start_date->format( $start_date_format );
+		$the_start_date = date_i18n( $start_date_format, strtotime( $start_date->format( $start_date_format ) ) );
 		$the_end_date   = '';
 
 		if ( ! empty( $end_date ) ) {
-			$the_end_date = $end_date->format( $end_date_format );
+			$the_end_date = date_i18n( $end_date_format, strtotime( $end_date->format( $end_date_format ) ) );
 		}
 		?>
 	<div class="newspack-listings__event-dates">
@@ -50,11 +50,12 @@ call_user_func(
 			class="newspack-listings__event-date"
 			datetime="<?php echo esc_attr( $show_time ? $attributes['startDate'] : Utils\strip_time( $attributes['startDate'] ) ); ?>"
 		>
+
 			<?php echo esc_html( $the_start_date ); ?>
 
 			<?php if ( $show_time ) : ?>
 				<span class="newspack-listings__event-date-time">
-					<?php echo esc_html( $start_date->format( $time_format ) ); ?>
+					<?php echo esc_html( date_i18n( $time_format, strtotime( $start_date->format( $time_format ) ) ) ); ?>
 				</span>
 			<?php endif; ?>
 		</time>
@@ -75,7 +76,7 @@ call_user_func(
 				?>
 				<?php if ( $show_time ) : ?>
 					<span class="newspack-listings__event-time">
-						<?php echo esc_html( $end_date->format( $time_format ) ); ?>
+						<?php echo esc_html( date_i18n( $time_format, strtotime( $end_date->format( $time_format ) ) ) ); ?>
 					</span>
 				<?php endif; ?>
 			</time>
