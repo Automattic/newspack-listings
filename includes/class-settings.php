@@ -45,6 +45,10 @@ final class Settings {
 				'slug'  => 'newspack_listings_meta_settings',
 				'title' => __( 'Post Meta Settings', 'newspack-listings' ),
 			],
+			'date'      => [
+				'slug'  => 'newspack_listings_event_date_settings',
+				'title' => __( 'Event Listings Date Settings', 'newspack-listings' ),
+			],
 		];
 
 		// Product settings are only relevant if WooCommerce is available.
@@ -189,6 +193,38 @@ final class Settings {
 				'value'       => false,
 				'section'     => $sections['meta']['slug'],
 			],
+			[
+				'description' => __( 'The full date format used by the Events Listings. <a href="https://wordpress.org/documentation/article/customize-date-and-time-format/">Documentation on date and time formatting.</a>', 'newspack-listings' ),
+				'key'         => 'newspack_listings_events_date_format',
+				'label'       => __( 'Events date format', 'newpack-listings' ),
+				'type'        => 'input',
+				'value'       => 'F j, Y',
+				'section'     => $sections['date']['slug'],
+			],
+			[
+				'description' => __( 'The time format used by the Events Listings.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_events_time_format',
+				'label'       => __( 'Events time format', 'newpack-listings' ),
+				'type'        => 'input',
+				'value'       => 'g:i A',
+				'section'     => $sections['date']['slug'],
+			],
+			[
+				'description' => __( 'Used for date ranges where the year is already listed.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_events_date_format_no_year',
+				'label'       => __( 'Events date without year', 'newpack-listings' ),
+				'type'        => 'input',
+				'value'       => 'F j',
+				'section'     => $sections['date']['slug'],
+			],
+			[
+				'description' => __( 'Used for date ranges where the month is already listed.', 'newspack-listings' ),
+				'key'         => 'newspack_listings_events_date_format_no_month',
+				'label'       => __( 'Events date without month', 'newpack-listings' ),
+				'type'        => 'input',
+				'value'       => 'j, Y',
+				'section'     => $sections['date']['slug'],
+			]
 		];
 
 		// If Related Posts is on, show the setting to hide it.

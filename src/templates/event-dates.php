@@ -8,17 +8,19 @@
 
 use \Newspack_Listings\Core;
 use \Newspack_Listings\Utils;
+use \Newspack_Listings\Settings;
 
 call_user_func(
 	function( $data ) {
 		$attributes = $data['attributes'];
+		$settings   = Settings::get_settings();
 
 		if ( empty( $attributes ) ) {
 			return;
 		}
 
-		$date_format   = 'F j, Y';
-		$time_format   = get_option( 'time_format', 'g:i A' );
+		$date_format   = $settings['newspack_listings_events_date_format'];
+		$time_format   = $settings['newspack_listings_events_time_format'];
 		$is_date_range = ! empty( $attributes['endDate'] ) && ! empty( $attributes['showEnd'] );
 		$start_date    = new \DateTime( $attributes['startDate'] );
 		$end_date      = ! empty( $attributes['endDate'] ) ? new \DateTime( $attributes['endDate'] ) : false;
@@ -30,11 +32,11 @@ call_user_func(
 
 		if ( $is_date_range && ! $show_time ) {
 			if ( Utils\is_same_year( $start_date, $end_date ) && empty( $is_same_day ) ) {
-				$start_date_format = 'F j';
+				$start_date_format = $settings['newspack_listings_events_date_format_no_year'];
 			}
 
 			if ( Utils\is_same_month( $start_date, $end_date ) ) {
-				$end_date_format = 'j, Y';
+				$end_date_format = $settings['newspack_listings_events_date_format_no_month'];
 			}
 		}
 
