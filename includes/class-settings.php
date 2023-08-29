@@ -224,7 +224,7 @@ final class Settings {
 				'type'        => 'input',
 				'value'       => 'j, Y',
 				'section'     => $sections['date']['slug'],
-			]
+			],
 		];
 
 		// If Related Posts is on, show the setting to hide it.
