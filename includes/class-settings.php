@@ -99,22 +99,23 @@ final class Settings {
 	/**
 	 * Optionally remove the year or month from the date format default for use in date ranges.
 	 *
+	 * @param string $remove Element in date format to remove (month or year).
+	 *
 	 * @return string Updated date format string.
 	 */
 	public static function date_update_format( $remove ) {
 		if ( 'year' === $remove ) {
 			// Remove the year (Y or y), and try to clean up any unnecessary leading or preceding forward slashes, dashes, commas, or spaces.
 			$pattern = '/[,-\/]? ?y ?[,-\/]?/i';
-		} else if ( 'month' === $remove ) {
+		} elseif ( 'month' === $remove ) {
 			// Remove the month (m, M, n or F) and try to clean up any unnecessary leading or preceding forward slashes, dashes, commas, or spaces.
 			$pattern = '/\b(m|M|n|N|F)\b[ ,\-\/]?/';
-		}
-		else {
+		} else {
 			$pattern = '';
 		}
 
-		$date_format = get_option( 'date_format', 'F j, Y' );
-		$update_format = preg_replace($pattern, '', $date_format);
+		$date_format   = get_option( 'date_format', 'F j, Y' );
+		$update_format = preg_replace( $pattern, '', $date_format );
 		return $update_format;
 	}
 
