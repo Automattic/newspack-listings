@@ -198,7 +198,7 @@ final class Settings {
 				'key'         => 'newspack_listings_events_date_format',
 				'label'       => __( 'Events date format', 'newpack-listings' ),
 				'type'        => 'input',
-				'value'       => 'F j, Y',
+				'value'       => get_option( 'date_format', 'F j, Y', ),
 				'section'     => $sections['date']['slug'],
 			],
 			[
@@ -206,7 +206,7 @@ final class Settings {
 				'key'         => 'newspack_listings_events_time_format',
 				'label'       => __( 'Events time format', 'newpack-listings' ),
 				'type'        => 'input',
-				'value'       => 'g:i A',
+				'value'       => get_option( 'time_format', 'g:i A' ),
 				'section'     => $sections['date']['slug'],
 			],
 			[
