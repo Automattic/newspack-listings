@@ -97,29 +97,6 @@ final class Settings {
 	}
 
 	/**
-	 * Optionally remove the year or month from the date format default for use in date ranges.
-	 *
-	 * @param string $remove Element in date format to remove (month or year).
-	 *
-	 * @return string Updated date format string.
-	 */
-	public static function date_update_format( $remove ) {
-		if ( 'year' === $remove ) {
-			// Remove the year (Y or y), and try to clean up any unnecessary leading or preceding forward slashes, dashes, commas, or spaces.
-			$pattern = '/[,-\/]? ?y ?[,-\/]?/i';
-		} elseif ( 'month' === $remove ) {
-			// Remove the month (m, M, n or F) and try to clean up any unnecessary leading or preceding forward slashes, dashes, commas, or spaces.
-			$pattern = '/\b(m|M|n|N|F)\b[ ,\-\/]?/';
-		} else {
-			$pattern = '';
-		}
-
-		$date_format   = get_option( 'date_format', 'F j, Y' );
-		$update_format = preg_replace( $pattern, '', $date_format );
-		return $update_format;
-	}
-
-	/**
 	 * Default values for site-wide settings.
 	 *
 	 * @return array Array of default settings.
@@ -231,23 +208,7 @@ final class Settings {
 				'type'        => 'input',
 				'value'       => get_option( 'time_format', 'g:i A' ),
 				'section'     => $sections['date']['slug'],
-			],
-			[
-				'description' => __( 'Used for date ranges where the year is already listed.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_events_date_format_no_year',
-				'label'       => __( 'Events date without year', 'newpack-listings' ),
-				'type'        => 'input',
-				'value'       => esc_attr( self::date_update_format( 'year' ) ),
-				'section'     => $sections['date']['slug'],
-			],
-			[
-				'description' => __( 'Used for date ranges where the month is already listed.', 'newspack-listings' ),
-				'key'         => 'newspack_listings_events_date_format_no_month',
-				'label'       => __( 'Events date without month', 'newpack-listings' ),
-				'type'        => 'input',
-				'value'       => esc_attr( self::date_update_format( 'month' ) ),
-				'section'     => $sections['date']['slug'],
-			],
+			]
 		];
 
 		// If Related Posts is on, show the setting to hide it.

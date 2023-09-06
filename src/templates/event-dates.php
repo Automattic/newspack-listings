@@ -30,21 +30,23 @@ call_user_func(
 		$start_date_format = $date_format;
 		$end_date_format   = $date_format;
 
-		if ( $is_date_range && ! $show_time ) {
-			if ( Utils\is_same_year( $start_date, $end_date ) && empty( $is_same_day ) ) {
-				$start_date_format = $settings['newspack_listings_events_date_format_no_year'];
-			}
+		if ( 'F j, Y' === $date_format ) {
+			if ( $is_date_range && ! $show_time ) {
+				if ( Utils\is_same_year( $start_date, $end_date ) && empty( $is_same_day ) ) {
+					$start_date_format = 'F j';
+				}
 
-			if ( Utils\is_same_month( $start_date, $end_date ) ) {
-				$end_date_format = $settings['newspack_listings_events_date_format_no_month'];
+				if ( Utils\is_same_month( $start_date, $end_date ) ) {
+					$end_date_format = 'j, Y';
+				}
 			}
 		}
 
-		$the_start_date = date_i18n( $start_date_format, strtotime( $start_date->format( $start_date_format ) ) );
+		$the_start_date = date_i18n( $start_date_format, $start_date->getTimestamp() );
 		$the_end_date   = '';
 
 		if ( ! empty( $end_date ) ) {
-			$the_end_date = date_i18n( $end_date_format, strtotime( $end_date->format( $end_date_format ) ) );
+			$the_end_date = date_i18n( $end_date_format, $end_date->getTimestamp() );
 		}
 		?>
 	<div class="newspack-listings__event-dates">
