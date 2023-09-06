@@ -208,7 +208,7 @@ final class Settings {
 				'type'        => 'input',
 				'value'       => get_option( 'time_format', 'g:i A' ),
 				'section'     => $sections['date']['slug'],
-			]
+			],
 		];
 
 		// If Related Posts is on, show the setting to hide it.
