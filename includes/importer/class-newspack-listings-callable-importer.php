@@ -983,9 +983,9 @@ class Newspack_Listings_Callable_Importer {
 		$constraint = '';
 
 		if ( is_string( $category ) ) {
-			$constraint = "name = '$category'";
+			$constraint = "t.name = '$category'";
 		} elseif ( is_int( $category ) ) {
-			$constraint = "term_id = $category";
+			$constraint = "t.term_id = $category";
 		}
 
 		$category_sql = "SELECT t.term_id, t.name, tt.taxonomy, tt.parent as parent_term_id FROM $wpdb->terms as t
