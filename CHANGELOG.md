@@ -1,3 +1,19 @@
+# [2.14.0](https://github.com/Automattic/newspack-listings/compare/v2.13.0...v2.14.0) (2023-09-13)
+
+
+### Features
+
+* add internationalization to event dates ([#391](https://github.com/Automattic/newspack-listings/issues/391)) ([315b68e](https://github.com/Automattic/newspack-listings/commit/315b68e2aeffbfdd2a366955ab291fe15791717d))
+* add option to change the event date/time format ([#399](https://github.com/Automattic/newspack-listings/issues/399)) ([d4fcc33](https://github.com/Automattic/newspack-listings/commit/d4fcc33b00d10a9ba6818cc381bd4d108290e217))
+
+# [2.14.0-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.13.0...v2.14.0-alpha.1) (2023-09-06)
+
+
+### Features
+
+* add internationalization to event dates ([#391](https://github.com/Automattic/newspack-listings/issues/391)) ([315b68e](https://github.com/Automattic/newspack-listings/commit/315b68e2aeffbfdd2a366955ab291fe15791717d))
+* add option to change the event date/time format ([#399](https://github.com/Automattic/newspack-listings/issues/399)) ([d4fcc33](https://github.com/Automattic/newspack-listings/commit/d4fcc33b00d10a9ba6818cc381bd4d108290e217))
+
 # [2.13.0](https://github.com/Automattic/newspack-listings/compare/v2.12.8...v2.13.0) (2023-06-19)
 
 
