@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name:     Newspack Listings
- * Plugin URI:      https://newspack.pub
+ * Plugin URI:      https://newspack.com
  * Description:     Listings and directories for Newspack sites.
  * Author:          Automattic
- * Author URI:      https://newspack.pub
+ * Author URI:      https://newspack.com
  * Text Domain:     newspack-listings
  * Domain Path:     /languages
  * Version:         2.14.0
