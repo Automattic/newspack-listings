@@ -1,3 +1,17 @@
+## [2.14.1](https://github.com/Automattic/newspack-listings/compare/v2.14.0...v2.14.1) (2023-10-31)
+
+
+### Bug Fixes
+
+* newspack.pub > newspack.com ([#413](https://github.com/Automattic/newspack-listings/issues/413)) ([e0ff70e](https://github.com/Automattic/newspack-listings/commit/e0ff70e5ada6585e0669fdd6990cba1269bdf36c))
+
+## [2.14.1-alpha.1](https://github.com/Automattic/newspack-listings/compare/v2.14.0...v2.14.1-alpha.1) (2023-10-16)
+
+
+### Bug Fixes
+
+* newspack.pub > newspack.com ([#413](https://github.com/Automattic/newspack-listings/issues/413)) ([e0ff70e](https://github.com/Automattic/newspack-listings/commit/e0ff70e5ada6585e0669fdd6990cba1269bdf36c))
+
 # [2.14.0](https://github.com/Automattic/newspack-listings/compare/v2.13.0...v2.14.0) (2023-09-13)
 
 
