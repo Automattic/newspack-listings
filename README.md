@@ -1,6 +1,6 @@
 # newspack-listings
 
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release) [![newspack-listings](https://circleci.com/gh/Automattic/newspack-listings/tree/master.svg?style=shield)](https://circleci.com/gh/Automattic/newspack-listings)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release) [![newspack-listings](https://circleci.com/gh/Automattic/newspack-listings/tree/trunk.svg?style=shield)](https://circleci.com/gh/Automattic/newspack-listings)
 
 Create reusable content as listings and add them to lists wherever core blocks can be used. Create static, curated lists or dynamic, auto-updating lists with optional "load more" functionality. Edit display options to control how the list looks and behaves for readers. Compatible with [AMP](https://amp.dev/).
 
