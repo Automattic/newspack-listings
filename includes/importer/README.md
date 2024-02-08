@@ -10,7 +10,7 @@ The importer script requires a config file that describes the CSV data and how i
 * `NEWSPACK_LISTINGS_IMPORT_SEPARATOR` - (Required) This should be a string that defines what character (or set of characters) is used by the CSV file to separate multiple values that exist under a single column. For example, categories might be grouped under a single CSV column separated by a `;`.
 * `NEWSPACK_LISTINGS_IMPORT_DEFAULT_POST_TYPE` - (Optional) This lets you set the Newspack Listings post type the importer will default to if it can't determine what post type a CSV row should be imported as. If not defined, the importer will default to importing unknown data as generic listings.
 
-[A sample config file](https://github.com/Automattic/newspack-listings/tree/master/includes/importer/config-sample.php) is included in this repo for reference. For field mapping, only the keys present in this sample config will be used by the importer.
+[A sample config file](https://github.com/Automattic/newspack-listings/tree/trunk/includes/importer/config-sample.php) is included in this repo for reference. For field mapping, only the keys present in this sample config will be used by the importer.
 
 ## Usage
 
