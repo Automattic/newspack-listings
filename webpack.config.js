@@ -2,6 +2,7 @@
  **** WARNING: No ES6 modules here. Not transpiled! ****
  */
 /* eslint-disable import/no-nodejs-modules */
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 /**
  * External dependencies
@@ -33,10 +34,8 @@ const assets = fs
 	);
 
 const webpackConfig = getBaseWebpackConfig(
-	{ WP: true },
 	{
 		entry: { editor, ...assets },
-		'output-path': path.join( __dirname, 'dist' ),
 	}
 );
 
