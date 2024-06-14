@@ -184,18 +184,17 @@ const CuratedListEditorComponent = ( {
 		} else {
 			newLocations = list
 				? list.innerBlocks.reduce( ( acc, innerBlock ) => {
-						if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
-							innerBlock.attributes.locations.map( location => {
-								if ( isValidLocation( location ) ) {
-									acc.push( location );
-								}
+					if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
+						innerBlock.attributes.locations.map( location => {
+							if ( isValidLocation( location ) ) {
+								acc.push( location );
+							}
 
-								return acc;
-							} );
-						}
-						return acc;
-				  }, [] )
-				: [];
+							return acc;
+						} );
+					}
+					return acc;
+				}, [] ) : [];
 		}
 
 		setLocations( newLocations );
@@ -645,10 +644,10 @@ const CuratedListEditorComponent = ( {
 						queryMode &&
 						showLoadMore &&
 						queryOptions.maxItems < queriedListings.length && (
-							<Button className="newspack-listings__load-more" isPrimary>
-								{ loadMoreText }
-							</Button>
-						) }
+						<Button className="newspack-listings__load-more" isPrimary>
+							{ loadMoreText }
+						</Button>
+					) }
 				</div>
 			</div>
 		</>
