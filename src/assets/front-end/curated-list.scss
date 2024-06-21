@@ -1,4 +1,4 @@
-@use '../shared/curated-list';
+@use "../shared/curated-list";
 
 .newspack-listings {
 	&__curated-list {
@@ -38,12 +38,12 @@
 		}
 
 		.newspack-listings__listing + .newspack-listings__listing {
-			border-top: 1px solid var( --newspack-listings--border-dark );
+			border-top: 1px solid var(--newspack-listings--border-dark);
 		}
 
 		.has-dark-background & {
 			.newspack-listings__listing + .newspack-listings__listing {
-				border-top-color: var( --newspack-listings--border-light );
+				border-top-color: var(--newspack-listings--border-light);
 			}
 		}
 	}

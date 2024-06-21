@@ -1,20 +1,20 @@
-@use 'variables.scss';
+@use "variables.scss";
 
 .newspack-listings__self-serve-form.wpbnbd {
-	border: 1px solid var( --newspack-listings--border );
+	border: 1px solid var(--newspack-listings--border);
 
 	.frequencies {
 		font-size: 0.8em;
 		padding-top: 7.65em;
-		padding-top: calc( 3 * ( 0.76rem + 1.6em + 1px ) );
+		padding-top: calc(3 * ( 0.76rem + 1.6em + 1px ));
 		position: relative;
 
 		@media only screen and ( min-width: variables.$tablet_width ) {
 			padding-top: 2.55em;
-			padding-top: calc( 0.76rem + 1.6em + 1px );
+			padding-top: calc(0.76rem + 1.6em + 1px);
 		}
 
-		input[type='radio'] {
+		input[type="radio"] {
 			display: none;
 		}
 	}
@@ -22,9 +22,9 @@
 	.frequency {
 		.freq-label {
 			align-items: center;
-			border: 0 solid var( --newspack-listings--border );
+			border: 0 solid var(--newspack-listings--border);
 			border-width: 0 0 1px;
-			color: var( --newspack-listings--text-light );
+			color: var(--newspack-listings--text-light);
 			cursor: pointer;
 			display: flex;
 			font-weight: bold;
@@ -40,14 +40,14 @@
 
 			&:focus,
 			&:hover {
-				background: var( --newspack-listings--background-screen );
-				color: var( --newspack-listings--text-main );
+				background: var(--newspack-listings--background-screen);
+				color: var(--newspack-listings--text-main);
 			}
 
 			&::before {
 				border: 2px solid currentcolor;
 				border-radius: 100%;
-				content: '';
+				content: "";
 				display: block;
 				height: 20px;
 				padding: 3px;
@@ -57,7 +57,7 @@
 
 			&.listing-subscription {
 				left: 50%;
-				top: calc( 0.76rem + 1.6em + 1px );
+				top: calc(0.76rem + 1.6em + 1px);
 
 				@media only screen and ( min-width: variables.$tablet_width ) {
 					border-left-width: 1px;
@@ -78,12 +78,12 @@
 		}
 	}
 
-	input[type='radio']:checked {
+	input[type="radio"]:checked {
 		+ .freq-label {
 			color: inherit;
 
 			&::before {
-				background: var( --newspack-listings--text-main );
+				background: var(--newspack-listings--text-main);
 				background-clip: content-box;
 			}
 
@@ -92,7 +92,7 @@
 			}
 
 			&:hover {
-				background: var( --newspack-listings--background );
+				background: var(--newspack-listings--background);
 			}
 		}
 	}
@@ -103,7 +103,7 @@
 	}
 
 	hr {
-		background-color: var( --newspack-listings--border-light );
+		background-color: var(--newspack-listings--border-light);
 		max-width: none;
 	}
 
@@ -116,7 +116,7 @@
 		}
 	}
 
-	input[type='radio']:checked ~ .input-container {
+	input[type="radio"]:checked ~ .input-container {
 		display: block;
 	}
 
@@ -126,7 +126,7 @@
 			font-size: 20px;
 		}
 
-		input[type='text'],
+		input[type="text"],
 		select {
 			display: block;
 			margin-bottom: 24px;
@@ -134,7 +134,7 @@
 			width: 100%;
 		}
 
-		input[type='checkbox'] {
+		input[type="checkbox"] {
 			display: inline-block;
 			margin-right: 8px;
 		}
@@ -149,7 +149,7 @@
 		font-size: 20px;
 
 		&.newspack-listings__help {
-			color: var( --newspack-listings--grey-medium );
+			color: var(--newspack-listings--grey-medium);
 			font-size: 16px;
 			margin-top: 0;
 		}
@@ -157,11 +157,11 @@
 
 	button {
 		align-self: flex-end;
-		background: var( --newspack-listings--secondary );
+		background: var(--newspack-listings--secondary);
 		border: none;
 		border-radius: 5px;
 		box-sizing: border-box;
-		color: var( --newspack-listings--background );
+		color: var(--newspack-listings--background);
 		font-size: 16px;
 		font-weight: bold;
 		outline: none;
