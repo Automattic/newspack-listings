@@ -18,10 +18,6 @@ workflows:
           requires:
             - newspack/build
           archive-name: 'newspack-listings'
-          filters:
-            branches:
-              only:
-                - trunk
       - newspack/release:
           requires:
             - newspack/build
