@@ -32,10 +32,19 @@ const assets = fs
 		{}
 	);
 
+const entry = {
+	editor,
+	...assets,
+};
+
+Object.keys( entry ).forEach( key => {
+	entry[ key ] = [ 'regenerator-runtime/runtime', entry[ key ] ];
+} );
+
 const webpackConfig = getBaseWebpackConfig(
 	{ WP: true },
 	{
-		entry: { editor, ...assets },
+		entry,
 		'output-path': path.join( __dirname, 'dist' ),
 	}
 );
