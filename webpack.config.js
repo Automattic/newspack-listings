@@ -33,9 +33,14 @@ const assets = fs
 		{}
 	);
 
+const entry = {
+	editor,
+	...assets,
+};
+
 const webpackConfig = getBaseWebpackConfig(
 	{
-		entry: { editor, ...assets },
+		entry,
 	}
 );
 
