@@ -9,9 +9,9 @@
 
 namespace Newspack_Listings;
 
-use \WP_CLI;
-use \Newspack_Listings\Core;
-use \Newspack_Listings\Importer_Utils;
+use WP_CLI;
+use Newspack_Listings\Core;
+use Newspack_Listings\Importer_Utils;
 
 defined( 'ABSPATH' ) || exit;
 
