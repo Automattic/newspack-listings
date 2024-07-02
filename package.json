@@ -39,7 +39,7 @@
 		"url": "https://github.com/Automattic/newspack-listings/issues"
 	},
 	"dependencies": {
-		"newspack-components": "^2.2.1"
+		"newspack-components": "^3.0.0"
 	},
 	"devDependencies": {
 		"@rushstack/eslint-patch": "^1.10.3",
