@@ -26,7 +26,7 @@ function _manually_load_plugin() {
 	$_SERVER['HTTP_REFERER'] = 'https://' . $_SERVER['HTTP_HOST']; // phpcs:ignore
 	$_SERVER['HTTP_USER_AGENT'] = 'Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/89.0.4389.90 Safari\/537.36'; // phpcs:ignore
 
-	require dirname( dirname( __FILE__ ) ) . '/newspack-listings.php';
+	require dirname( __DIR__ ) . '/newspack-listings.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
