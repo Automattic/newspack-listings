@@ -1,4 +1,4 @@
-@use '../../assets/shared/curated-list';
+@use "../../assets/shared/curated-list";
 
 .newspack-listings {
 	&__curated-list-editor {
@@ -16,20 +16,18 @@
 			margin-bottom: 8px;
 		}
 
-		.wp-block[data-type^='newspack-listings']
-			+ .wp-block[data-type^='newspack-listings']
-			.newspack-listings__listing-editor,
+		.wp-block[data-type^="newspack-listings"] + .wp-block[data-type^="newspack-listings"]
+		.newspack-listings__listing-editor,
 		.newspack-listings__listing-editor + .newspack-listings__listing-editor {
-			border-top: 1px solid var( --newspack-listings--border-dark );
+			border-top: 1px solid var(--newspack-listings--border-dark);
 			padding-top: 1rem;
 		}
 
 		.has-dark-background {
-			.wp-block[data-type^='newspack-listings']
-				+ .wp-block[data-type^='newspack-listings']
-				.newspack-listings__listing-editor,
+			.wp-block[data-type^="newspack-listings"] + .wp-block[data-type^="newspack-listings"]
+			.newspack-listings__listing-editor,
 			.newspack-listings__listing-editor + .newspack-listings__listing-editor {
-				border-top-color: var( --newspack-listings--border-light );
+				border-top-color: var(--newspack-listings--border-light);
 			}
 		}
 
