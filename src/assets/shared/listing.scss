@@ -1,4 +1,4 @@
-@use 'variables.scss';
+@use "variables.scss";
 
 .newspack-listings {
 	&__listing-post {
@@ -129,7 +129,7 @@
 		display: flex;
 
 		.sponsor-logos {
-			border-right: 1px solid var( --newspack-listings--grey-light );
+			border-right: 1px solid var(--newspack-listings--grey-light);
 			margin-right: 0.75rem;
 		}
 	}

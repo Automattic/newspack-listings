@@ -98,9 +98,15 @@ export const getCuratedListClasses = ( className, attributes ) => {
 
 	const classes = [ className, 'newspack-listings__curated-list' ];
 
-	if ( showNumbers ) classes.push( 'show-numbers' );
-	if ( showMap ) classes.push( 'show-map' );
-	if ( showSortUi ) classes.push( 'has-sort-ui' );
+	if ( showNumbers ) {
+		classes.push( 'show-numbers' );
+	}
+	if ( showMap ) {
+		classes.push( 'show-map' );
+	}
+	if ( showSortUi ) {
+		classes.push( 'has-sort-ui' );
+	}
 	if ( showImage ) {
 		classes.push( 'show-image' );
 		classes.push( `media-position-${ mediaPosition }` );

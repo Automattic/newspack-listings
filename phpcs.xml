@@ -8,10 +8,18 @@
 
 	<rule ref="WordPress">
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found" />
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found" />
+		<exclude name="Universal.Operators.DisallowStandalonePostIncrementDecrement.PostIncrementFound" />
+		<exclude name="Squiz.Functions.MultiLineFunctionDeclaration.SpaceAfterFunction" />
+		<exclude name="WordPress.PHP.YodaConditions.NotYoda" />
+		<exclude name="Generic.Formatting.MultipleStatementAlignment.NotSameWarning" />
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames" />
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found" />
 	</rule>
 
 	<rule ref="PHPCompatibilityWP"/>
-	<config name="testVersion" value="7.2"/>
+	<config name="testVersion" value="7.2-"/>
 
 	<arg name="extensions" value="php"/>
 
@@ -25,4 +33,5 @@
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/dist/*</exclude-pattern>
+	<exclude-pattern>*/release/*</exclude-pattern>
 </ruleset>

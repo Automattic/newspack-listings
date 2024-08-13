@@ -5,9 +5,9 @@
  * @package Newspack_Listings
  */
 
-use \Newspack_Listings\Core;
-use \Newspack_Listings\Featured;
-use \Newspack_Listings\Utils;
+use Newspack_Listings\Core;
+use Newspack_Listings\Featured;
+use Newspack_Listings\Utils;
 
 /**
  * Featured listing test case.
@@ -108,7 +108,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		$current_listing    = 0;
 		$category_id        = self::create_term( 'Featured Category', 'category' );
 		while ( $current_listing < $number_of_listings ) {
-			$current_listing ++;
+			$current_listing++;
 			$listing_id = self::create_listing(
 				[
 					'date'  => self::$publish_date->modify( '+' . $current_listing . 'minute' )->format( 'Y-m-d H:i:s' ),
@@ -131,7 +131,7 @@ class FeaturedTest extends WP_UnitTestCase {
 				$listing->post_title . ' is item number ' . $index . ' in the query results.'
 			);
 
-			$index --;
+			--$index;
 		}
 	}
 
@@ -155,7 +155,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		$number_of_listings = 10;
 		$current_listing    = 0;
 		while ( $current_listing < $number_of_listings ) {
-			$current_listing ++;
+			$current_listing++;
 			$listing_id = self::create_listing(
 				[
 					'date'  => self::$publish_date->modify( '+' . $current_listing . 'minute' )->format( 'Y-m-d H:i:s' ),
@@ -187,7 +187,7 @@ class FeaturedTest extends WP_UnitTestCase {
 				);
 			}
 
-			$index --;
+			--$index;
 		}
 	}
 
@@ -218,7 +218,7 @@ class FeaturedTest extends WP_UnitTestCase {
 		$number_of_listings = 10;
 		$current_listing    = 0;
 		while ( $current_listing < $number_of_listings ) {
-			$current_listing ++;
+			$current_listing++;
 			$listing_id = self::create_listing(
 				[
 					'date'  => self::$publish_date->modify( '+' . $current_listing . 'minute' )->format( 'Y-m-d H:i:s' ),
@@ -255,7 +255,7 @@ class FeaturedTest extends WP_UnitTestCase {
 				);
 			}
 
-			$index --;
+			--$index;
 		}
 	}
 }
