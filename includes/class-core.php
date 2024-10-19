@@ -95,6 +95,8 @@ final class Core {
 
 	/**
 	 * Add options page.
+	 * 
+	 * Note: with Newspack Plugin active and Information Architecture UI (2024): this callback is replaced.
 	 */
 	public static function add_plugin_page() {
 		// Top-level menu item.
@@ -108,6 +110,8 @@ final class Core {
 			35
 		);
 
+		// @ todo: possibly remove category and tags since these just redirect to Posts categories/tags.
+		
 		// Custom taxonomy menu links.
 		add_submenu_page(
 			'newspack-listings',
@@ -192,25 +196,7 @@ final class Core {
 				'rewrite'  => [ 'slug' => $prefix . $settings['newspack_listings_event_slug'] ],
 				'template' => [ [ 'newspack-listings/event-dates' ] ],
 			],
-			'generic'     => [
-				'labels'  => [
-					'name'               => _x( 'Generic Listings', 'post type general name', 'newspack-listings' ),
-					'singular_name'      => _x( 'Generic Listing', 'post type singular name', 'newspack-listings' ),
-					'menu_name'          => _x( 'Generic Listings', 'admin menu', 'newspack-listings' ),
-					'name_admin_bar'     => _x( 'Generic Listing', 'add new on admin bar', 'newspack-listings' ),
-					'add_new'            => _x( 'Add New', 'popup', 'newspack-listings' ),
-					'add_new_item'       => __( 'Add New Generic Listing', 'newspack-listings' ),
-					'new_item'           => __( 'New Generic Listing', 'newspack-listings' ),
-					'edit_item'          => __( 'Edit Generic Listing', 'newspack-listings' ),
-					'view_item'          => __( 'View Generic Listing', 'newspack-listings' ),
-					'all_items'          => __( 'Generic Listings', 'newspack-listings' ),
-					'search_items'       => __( 'Search Generic Listings', 'newspack-listings' ),
-					'parent_item_colon'  => __( 'Parent Generic Listing:', 'newspack-listings' ),
-					'not_found'          => __( 'No generic listings found.', 'newspack-listings' ),
-					'not_found_in_trash' => __( 'No generic listings found in Trash.', 'newspack-listings' ),
-				],
-				'rewrite' => [ 'slug' => $prefix . $settings['newspack_listings_generic_slug'] ],
-			],
+			// Move Marketplace above Generic here so that admin submenu will show Marketplace above Generic.
 			'marketplace' => [
 				'labels'  => [
 					'name'               => _x( 'Marketplace', 'post type general name', 'newspack-listings' ),
@@ -229,6 +215,25 @@ final class Core {
 					'not_found_in_trash' => __( 'No Marketplace listings found in Trash.', 'newspack-listings' ),
 				],
 				'rewrite' => [ 'slug' => $prefix . $settings['newspack_listings_marketplace_slug'] ],
+			],
+			'generic'     => [
+				'labels'  => [
+					'name'               => _x( 'Generic Listings', 'post type general name', 'newspack-listings' ),
+					'singular_name'      => _x( 'Generic Listing', 'post type singular name', 'newspack-listings' ),
+					'menu_name'          => _x( 'Generic Listings', 'admin menu', 'newspack-listings' ),
+					'name_admin_bar'     => _x( 'Generic Listing', 'add new on admin bar', 'newspack-listings' ),
+					'add_new'            => _x( 'Add New', 'popup', 'newspack-listings' ),
+					'add_new_item'       => __( 'Add New Generic Listing', 'newspack-listings' ),
+					'new_item'           => __( 'New Generic Listing', 'newspack-listings' ),
+					'edit_item'          => __( 'Edit Generic Listing', 'newspack-listings' ),
+					'view_item'          => __( 'View Generic Listing', 'newspack-listings' ),
+					'all_items'          => __( 'Generic Listings', 'newspack-listings' ),
+					'search_items'       => __( 'Search Generic Listings', 'newspack-listings' ),
+					'parent_item_colon'  => __( 'Parent Generic Listing:', 'newspack-listings' ),
+					'not_found'          => __( 'No generic listings found.', 'newspack-listings' ),
+					'not_found_in_trash' => __( 'No generic listings found in Trash.', 'newspack-listings' ),
+				],
+				'rewrite' => [ 'slug' => $prefix . $settings['newspack_listings_generic_slug'] ],
 			],
 			'place'       => [
 				'labels'  => [
