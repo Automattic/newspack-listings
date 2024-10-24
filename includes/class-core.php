@@ -95,7 +95,7 @@ final class Core {
 
 	/**
 	 * Add options page.
-	 * 
+	 *
 	 * Note: with Newspack Plugin active and Information Architecture UI (2024): this callback is replaced.
 	 */
 	public static function add_plugin_page() {
@@ -108,24 +108,6 @@ final class Core {
 			'',
 			'data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJtNS41IDcuNWgydjJoLTJ6bTIgNGgtMnYyaDJ6bTEtNGg3djJoLTd6bTcgNGgtN3YyaDd6Ii8+PHBhdGggY2xpcC1ydWxlPSJldmVub2RkIiBkPSJtNC42MjUgM2MtLjg5NyAwLTEuNjI1LjcyOC0xLjYyNSAxLjYyNXYxMS43NWMwIC44OTguNzI4IDEuNjI1IDEuNjI1IDEuNjI1aDExLjc1Yy44OTggMCAxLjYyNS0uNzI3IDEuNjI1LTEuNjI1di0xMS43NWMwLS44OTctLjcyNy0xLjYyNS0xLjYyNS0xLjYyNXptMTEuNzUgMS41aC0xMS43NWEuMTI1LjEyNSAwIDAgMCAtLjEyNS4xMjV2MTEuNzVjMCAuMDY5LjA1Ni4xMjUuMTI1LjEyNWgxMS43NWEuMTI1LjEyNSAwIDAgMCAuMTI1LS4xMjV2LTExLjc1YS4xMjUuMTI1IDAgMCAwIC0uMTI1LS4xMjV6IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48cGF0aCBkPSJtMjEuNzUgOGgtMS41djExYzAgLjY5LS41NiAxLjI1LTEuMjQ5IDEuMjVoLTEzLjAwMXYxLjVoMTMuMDAxYTIuNzQ5IDIuNzQ5IDAgMCAwIDIuNzQ5LTIuNzV6Ii8+PC9zdmc+Cg==',
 			35
-		);
-
-		// @ todo: possibly remove category and tags since these just redirect to Posts categories/tags.
-		
-		// Custom taxonomy menu links.
-		add_submenu_page(
-			'newspack-listings',
-			__( 'Newspack Listings: Categories', 'newspack-listings' ),
-			__( 'Categories', 'newspack-listings' ),
-			'manage_categories',
-			'edit-tags.php?taxonomy=category'
-		);
-		add_submenu_page(
-			'newspack-listings',
-			__( 'Newspack Listings: Tags', 'newspack-listings' ),
-			__( 'Tags', 'newspack-listings' ),
-			'manage_categories',
-			'edit-tags.php?taxonomy=post_tag'
 		);
 
 		// Settings menu link.
