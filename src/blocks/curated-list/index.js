@@ -19,7 +19,7 @@ export const registerCuratedListBlock = () => {
 		title: __( 'Curated List', 'newspack-listings' ),
 		icon: {
 			src: <List />,
-			foreground: '#36f',
+			foreground: '#003da5',
 		},
 		category,
 		keywords: [

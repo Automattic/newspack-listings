@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-import { Icon, currencyDollar } from '@wordpress/icons';
+import { currencyDollar } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,8 +16,8 @@ export const registerPriceBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Price', 'newspack-listings' ),
 		icon: {
-			src: <Icon icon={ currencyDollar } />,
-			foreground: '#36f',
+			src: currencyDollar,
+			foreground: '#003da5',
 		},
 		category,
 		keywords: [

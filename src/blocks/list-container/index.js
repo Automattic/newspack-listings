@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
-import { Icon, group } from '@wordpress/icons';
+import { group } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -19,8 +19,8 @@ export const registerListContainerBlock = () => {
 	registerBlockType( 'newspack-listings/list-container', {
 		title: __( 'Container', 'newspack-listings' ),
 		icon: {
-			src: <Icon icon={ group } />,
-			foreground: '#36f',
+			src: group,
+			foreground: '#003da5',
 		},
 		category: 'newspack',
 		parent: [ 'newspack-listings/curated-list' ],

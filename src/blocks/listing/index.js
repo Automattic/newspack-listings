@@ -24,7 +24,7 @@ export const registerListingBlock = () => {
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
 				icon: {
 					src: getIcon( listingType ),
-					foreground: '#36f',
+					foreground: '#003da5',
 				},
 				category,
 				parent: [ 'newspack-listings/list-container' ],

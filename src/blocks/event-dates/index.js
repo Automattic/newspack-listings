@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-import { Icon, calendar } from '@wordpress/icons';
+import { calendar } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,8 +16,8 @@ export const registerEventDatesBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Event Dates', 'newspack-listings' ),
 		icon: {
-			src: <Icon icon={ calendar } />,
-			foreground: '#36f',
+			src: calendar,
+			foreground: '#003da5',
 		},
 		category,
 		keywords: [
