@@ -102,9 +102,7 @@ if ( isListingCustomer ) {
 							if ( mutation.target.classList.contains( 'components-panel' ) ) {
 								const sidebar = editor.querySelector( '.components-panel' );
 								if ( sidebar ) {
-									const panels = Array.from(
-										sidebar.querySelectorAll( '.components-panel__body' )
-									);
+									const panels = Array.from( sidebar.querySelectorAll( '.components-panel__body' ) );
 
 									panels.forEach( panel => {
 										const title = panel.querySelector( '.components-panel__body-title' );

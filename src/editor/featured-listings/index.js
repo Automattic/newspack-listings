@@ -3,14 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import {
-	BaseControl,
-	Button,
-	DatePicker,
-	PanelRow,
-	RangeControl,
-	ToggleControl,
-} from '@wordpress/components';
+import { BaseControl, Button, DatePicker, PanelRow, RangeControl, ToggleControl } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { dateI18n } from '@wordpress/date';
@@ -27,14 +20,7 @@ const validateResponse = ( response = 0 ) => {
 	return parseInt( response );
 };
 
-const FeaturedListingsComponent = ( {
-	createNotice,
-	isSavingPost,
-	meta,
-	postId,
-	setIsDirty,
-	updateMetaValue,
-} ) => {
+const FeaturedListingsComponent = ( { createNotice, isSavingPost, meta, postId, setIsDirty, updateMetaValue } ) => {
 	const [ error, setError ] = useState( null );
 	const [ priority, setPriority ] = useState( null );
 	const { newspack_listings_featured, newspack_listings_featured_expires } = meta;
@@ -63,20 +49,14 @@ const FeaturedListingsComponent = ( {
 				.then( response => {
 					if ( false === response ) {
 						throw new Error(
-							__(
-								'There was an error updating the feature priority for this post. Please try saving again.',
-								'newspack-listings'
-							)
+							__( 'There was an error updating the feature priority for this post. Please try saving again.', 'newspack-listings' )
 						);
 					}
 				} )
 				.catch( e => {
 					setError(
 						e?.message ||
-							__(
-								'There was an error updating the feature priority for this post. Please try saving again.',
-								'newspack-listings'
-							)
+							__( 'There was an error updating the feature priority for this post. Please try saving again.', 'newspack-listings' )
 					);
 				} );
 		}
@@ -100,11 +80,7 @@ const FeaturedListingsComponent = ( {
 				} )
 				.catch( e => {
 					setError(
-						e?.message ||
-							__(
-								'There was an error fetching the priority for this post. Please refresh the editor.',
-								'newspack-listings'
-							)
+						e?.message || __( 'There was an error fetching the priority for this post. Please refresh the editor.', 'newspack-listings' )
 					);
 				} );
 		}
@@ -121,11 +97,9 @@ const FeaturedListingsComponent = ( {
 					className={ 'newspack-listings__toggle-control' }
 					label={ __( 'Featured Listing', 'newspack-listings' ) }
 					help={ sprintf(
-						// Translators: Feature status help message.
+						// translators: %s: feature status.
 						__( 'This listing is %sfeatured.', 'newspack-listings' ),
-						newspack_listings_featured
-							? __( '', 'newspack-listings' )
-							: __( 'not ', 'newspack-listings' )
+						newspack_listings_featured ? __( '', 'newspack-listings' ) : __( 'not', 'newspack-listings' )
 					) }
 					checked={ newspack_listings_featured }
 					onChange={ value => updateMetaValue( 'newspack_listings_featured', value ) }
@@ -137,10 +111,7 @@ const FeaturedListingsComponent = ( {
 						<RangeControl
 							disabled={ null === priority && null === error }
 							label={ __( 'Priority Level', 'newspack-listings' ) }
-							help={ __(
-								'Relative importance of the featured item. Higher numbers mean higher priority.',
-								'newspack-listings'
-							) }
+							help={ __( 'Relative importance of the featured item. Higher numbers mean higher priority.', 'newspack-listings' ) }
 							value={ priority || 5 }
 							onChange={ value => {
 								setIsDirty();
@@ -152,32 +123,19 @@ const FeaturedListingsComponent = ( {
 						/>
 					</PanelRow>
 					<PanelRow>
-						<BaseControl
-							id="newspack-listings__featured-listing-expiration"
-							label={ __( 'Expiration Date', 'newspack-listings' ) }
-						>
+						<BaseControl id="newspack-listings__featured-listing-expiration" label={ __( 'Expiration Date', 'newspack-listings' ) }>
 							<DatePicker
-								currentDate={
-									newspack_listings_featured_expires
-										? new Date( newspack_listings_featured_expires )
-										: null
-								}
+								currentDate={ newspack_listings_featured_expires ? new Date( newspack_listings_featured_expires ) : null }
 								onMonthPreviewed={ () => {} }
 								onChange={ value => {
 									// Convert value to midnight in the local timezone.
 									const date = new Date( value );
 									const midnight = new Date( date.getFullYear(), date.getMonth(), date.getDate() );
-									updateMetaValue(
-										'newspack_listings_featured_expires',
-										dateI18n( 'Y-m-d\\TH:i:s', midnight )
-									);
+									updateMetaValue( 'newspack_listings_featured_expires', dateI18n( 'Y-m-d\\TH:i:s', midnight ) );
 								} }
 							/>
 							{ newspack_listings_featured_expires && (
-								<Button
-									isLink
-									onClick={ () => updateMetaValue( 'newspack_listings_featured_expires', '' ) }
-								>
+								<Button isLink onClick={ () => updateMetaValue( 'newspack_listings_featured_expires', '' ) }>
 									{ __( 'Reset', 'newspack-listings' ) }
 								</Button>
 							) }
@@ -190,8 +148,7 @@ const FeaturedListingsComponent = ( {
 };
 
 const mapStateToProps = select => {
-	const { getCurrentPostId, getEditedPostAttribute, isAutosavingPost, isSavingPost } =
-		select( 'core/editor' );
+	const { getCurrentPostId, getEditedPostAttribute, isAutosavingPost, isSavingPost } = select( 'core/editor' );
 
 	return {
 		isSavingPost: isSavingPost() && ! isAutosavingPost(),
@@ -211,7 +168,4 @@ const mapDispatchToProps = dispatch => {
 	};
 };
 
-export const FeaturedListings = compose( [
-	withSelect( mapStateToProps ),
-	withDispatch( mapDispatchToProps ),
-] )( FeaturedListingsComponent );
+export const FeaturedListings = compose( [ withSelect( mapStateToProps ), withDispatch( mapDispatchToProps ) ] )( FeaturedListingsComponent );

@@ -16,14 +16,7 @@ import { Listing } from './listing';
 import { AutocompleteWithSuggestions } from 'newspack-components';
 import { capitalize, getIcon } from '../../editor/utils';
 
-const ListingEditorComponent = ( {
-	attributes,
-	clientId,
-	getBlock,
-	getBlockParents,
-	name,
-	setAttributes,
-} ) => {
+const ListingEditorComponent = ( { attributes, clientId, getBlock, getBlockParents, name, setAttributes } ) => {
 	const [ post, setPost ] = useState( null );
 	const [ error, setError ] = useState( null );
 	const [ isEditingPost, setIsEditingPost ] = useState( false );
@@ -92,17 +85,9 @@ const ListingEditorComponent = ( {
 	// Renders the autocomplete search field to select listings. Will only show listings of the type that matches the block.
 	const renderSearch = () => {
 		return (
-			<Placeholder
-				className="newspack-listings__listing-search"
-				label={ capitalize( listingTypeSlug ) }
-				icon={ getIcon( listingTypeSlug ) }
-			>
+			<Placeholder className="newspack-listings__listing-search" label={ capitalize( listingTypeSlug ) } icon={ getIcon( listingTypeSlug ) }>
 				<AutocompleteWithSuggestions
-					label={
-						__( 'Search for a ', 'newspack-listings' ) +
-						listingTypeSlug +
-						__( ' listing to display.', 'newspack-listings' )
-					}
+					label={ __( 'Search for a', 'newspack-listings' ) + listingTypeSlug + __( 'listing to display.', 'newspack-listings' ) }
 					fetchSavedPosts={ async postIDs => {
 						const posts = await apiFetch( {
 							path: addQueryArgs( 'newspack-listings/v1/listings', {
@@ -129,10 +114,7 @@ const ListingEditorComponent = ( {
 
 						// Only show suggestions if they aren't already in the list.
 						const result = posts.reduce( ( acc, _post ) => {
-							if (
-								listItems.indexOf( _post.id ) < 0 &&
-								listItems.indexOf( _post.id.toString() ) < 0
-							) {
+							if ( listItems.indexOf( _post.id ) < 0 && listItems.indexOf( _post.id.toString() ) < 0 ) {
 								acc.push( {
 									value: _post.id,
 									label: decodeEntities( _post.title ) || __( '(no title)', 'newspack-listings' ),
@@ -183,11 +165,7 @@ const ListingEditorComponent = ( {
 			<div className="newspack-listings__listing-editor newspack-listings__listing">
 				<Listing attributes={ attributes } error={ error } post={ post } />
 				{ post && (
-					<Button
-						isLink
-						href={ `/wp-admin/post.php?post=${ post.id }&action=edit` }
-						target="_blank"
-					>
+					<Button isLink href={ `/wp-admin/post.php?post=${ post.id }&action=edit` } target="_blank">
 						{ __( 'Edit this listing', 'newspack-listings' ) }
 					</Button>
 				) }

@@ -16,15 +16,7 @@ import { getTermClasses } from '../../editor/utils';
 export const Listing = ( { attributes, error, post } ) => {
 	// Parent Curated List block attributes.
 	const { showAuthor, showCategory, showTags, showExcerpt, showImage, showCaption } = attributes;
-	const {
-		author = '',
-		category = [],
-		excerpt = '',
-		media = {},
-		sponsors = false,
-		tags = [],
-		title = '',
-	} = post;
+	const { author = '', category = [], excerpt = '', media = {}, sponsors = false, tags = [], title = '' } = post;
 
 	const classes = [ 'newspack-listings__listing-post', 'entry-wrapper' ];
 	const termClasses = getTermClasses( post );
@@ -38,16 +30,8 @@ export const Listing = ( { attributes, error, post } ) => {
 			) }
 			{ showImage && post && media && media.image && (
 				<figure className="newspack-listings__listing-featured-media">
-					<img
-						className="newspack-listings__listing-thumbnail"
-						src={ media.image }
-						alt={ media.caption || title }
-					/>
-					{ showCaption && media.caption && (
-						<figcaption className="newspack-listings__listing-caption">
-							{ media.caption }
-						</figcaption>
-					) }
+					<img className="newspack-listings__listing-thumbnail" src={ media.image } alt={ media.caption || title } />
+					{ showCaption && media.caption && <figcaption className="newspack-listings__listing-caption">{ media.caption }</figcaption> }
 				</figure>
 			) }
 			{ post && (
@@ -89,27 +73,23 @@ export const Listing = ( { attributes, error, post } ) => {
 										// Translators: Sponsorship attribution.
 										'%1$s%2$s%3$s%4$s',
 										0 === index ? sponsor.sponsor_byline + ' ' : '',
-										1 < sponsors.length && index + 1 === sponsors.length
-											? __( ' and ', 'newspack-listings' )
-											: '',
+										1 < sponsors.length && index + 1 === sponsors.length ? __( 'and', 'newspack-listings' ) : '',
 										sponsor.sponsor_name,
 										2 < sponsors.length && index + 1 < sponsors.length
-											? _x( ', ', 'separator character', 'newspack-listings' )
+											? _x( ',', 'separator character', 'newspack-listings' )
 											: ''
 									)
 								) }
 							</span>
 						</div>
 					) }
-					{ showAuthor && author && ! sponsors && (
-						<cite>{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( author ) }</cite>
-					) }
+					{ showAuthor && author && ! sponsors && <cite>{ __( 'By', 'newpack-listings' ) + ' ' + decodeEntities( author ) }</cite> }
 
 					{ showExcerpt && excerpt && <RawHTML>{ excerpt }</RawHTML> }
 
 					{ showTags && tags.length && (
 						<p>
-							<strong>{ __( 'Tagged: ', 'newspack-listings' ) }</strong>
+							<strong>{ __( 'Tagged:', 'newspack-listings' ) }</strong>
 							{ tags.map( ( tag, index ) => (
 								<Fragment key="index">
 									{ decodeEntities( tag.name ) }

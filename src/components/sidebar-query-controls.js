@@ -3,15 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Component, Fragment } from '@wordpress/element';
-import {
-	Button,
-	QueryControls as BaseControl,
-	RadioControl,
-	RangeControl,
-	SelectControl,
-	TextControl,
-	ToggleControl,
-} from '@wordpress/components';
+import { Button, QueryControls as BaseControl, RadioControl, RangeControl, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { decodeEntities } from '@wordpress/html-entities';
@@ -135,24 +127,13 @@ class QueryControls extends Component {
 	};
 
 	render = () => {
-		const { disabled, loadMoreText, queryOptions, setAttributes, showAuthor, showLoadMore } =
-			this.props;
+		const { disabled, loadMoreText, queryOptions, setAttributes, showAuthor, showLoadMore } = this.props;
 
 		if ( ! queryOptions || ! setAttributes ) {
 			return null;
 		}
 
-		const {
-			type,
-			authors,
-			categories,
-			categoryExclusions,
-			tags,
-			tagExclusions,
-			maxItems,
-			sortBy,
-			order,
-		} = queryOptions;
+		const { type, authors, categories, categoryExclusions, tags, tagExclusions, maxItems, sortBy, order } = queryOptions;
 		const { showAdvancedFilters } = this.state;
 		const { post_types } = window.newspack_listings_data;
 		const isEventList = post_types.event.name === type;
@@ -208,9 +189,7 @@ class QueryControls extends Component {
 				key="categories"
 				disabled={ disabled }
 				tokens={ categories || [] }
-				onChange={ value =>
-					setAttributes( { queryOptions: { ...queryOptions, categories: value } } )
-				}
+				onChange={ value => setAttributes( { queryOptions: { ...queryOptions, categories: value } } ) }
 				fetchSuggestions={ this.fetchCategorySuggestions }
 				fetchSavedInfo={ this.fetchSavedCategories }
 				label={ __( 'Categories', 'newspack-listings' ) }
@@ -233,9 +212,7 @@ class QueryControls extends Component {
 					'newspack-listings'
 				) }
 				value={ maxItems }
-				onChange={ value =>
-					setAttributes( { queryOptions: { ...queryOptions, maxItems: value } } )
-				}
+				onChange={ value => setAttributes( { queryOptions: { ...queryOptions, maxItems: value } } ) }
 				min={ 1 }
 				max={ 50 }
 				required
@@ -258,13 +235,8 @@ class QueryControls extends Component {
 				/>
 			),
 			<p key="toggle-advanced-filters">
-				<Button
-					isLink
-					onClick={ () => this.setState( { showAdvancedFilters: ! showAdvancedFilters } ) }
-				>
-					{ showAdvancedFilters
-						? __( 'Hide Advanced Filters', 'newspack-listings' )
-						: __( 'Show Advanced Filters', 'newspack-listings' ) }
+				<Button isLink onClick={ () => this.setState( { showAdvancedFilters: ! showAdvancedFilters } ) }>
+					{ showAdvancedFilters ? __( 'Hide Advanced Filters', 'newspack-listings' ) : __( 'Show Advanced Filters', 'newspack-listings' ) }
 				</Button>
 			</p>,
 			showAdvancedFilters && (
@@ -273,18 +245,14 @@ class QueryControls extends Component {
 						disabled={ disabled }
 						label={ __( 'Sort By', 'newspack-listings' ) }
 						value={ sortBy }
-						onChange={ value =>
-							setAttributes( { queryOptions: { ...queryOptions, sortBy: value } } )
-						}
+						onChange={ value => setAttributes( { queryOptions: { ...queryOptions, sortBy: value } } ) }
 						options={ sortOptions }
 					/>
 					<RadioControl
 						disabled={ disabled }
 						label={ __( 'Sort Order', 'newspack-listings' ) }
 						selected={ order }
-						onChange={ value =>
-							setAttributes( { queryOptions: { ...queryOptions, order: value } } )
-						}
+						onChange={ value => setAttributes( { queryOptions: { ...queryOptions, order: value } } ) }
 						options={ [
 							{ label: __( 'Ascending', 'newspack-listings' ), value: 'ASC' },
 							{ label: __( 'Descending', 'newspack-listings' ), value: 'DESC' },
@@ -294,9 +262,7 @@ class QueryControls extends Component {
 						key="category-exclusion"
 						disabled={ disabled }
 						tokens={ categoryExclusions || [] }
-						onChange={ value =>
-							setAttributes( { queryOptions: { ...queryOptions, categoryExclusions: value } } )
-						}
+						onChange={ value => setAttributes( { queryOptions: { ...queryOptions, categoryExclusions: value } } ) }
 						fetchSuggestions={ this.fetchCategorySuggestions }
 						fetchSavedInfo={ this.fetchSavedCategories }
 						label={ __( 'Excluded Categories', 'newspack-listings' ) }
@@ -305,9 +271,7 @@ class QueryControls extends Component {
 						key="tag-exclusion"
 						disabled={ disabled }
 						tokens={ tagExclusions || [] }
-						onChange={ value =>
-							setAttributes( { queryOptions: { ...queryOptions, tagExclusions: value } } )
-						}
+						onChange={ value => setAttributes( { queryOptions: { ...queryOptions, tagExclusions: value } } ) }
 						fetchSuggestions={ this.fetchTagSuggestions }
 						fetchSavedInfo={ this.fetchSavedTags }
 						label={ __( 'Excluded Tags', 'newspack-listings' ) }

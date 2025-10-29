@@ -3,14 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { InspectorControls } from '@wordpress/block-editor';
-import {
-	BaseControl,
-	Button,
-	DateTimePicker,
-	PanelBody,
-	PanelRow,
-	ToggleControl,
-} from '@wordpress/components';
+import { BaseControl, Button, DateTimePicker, PanelBody, PanelRow, ToggleControl } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { Fragment } from '@wordpress/element';
 
@@ -39,7 +32,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 						<ToggleControl
 							className="newspack-listings__event-time-toggle"
 							label={ sprintf(
-								// Translators: End date/time help message.
+								// translators: %s: end date/time label.
 								__( 'Show End %s', 'newspack-listings' ),
 								showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 							) }
@@ -58,7 +51,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 					<BaseControl
 						id={ `event-start-date-${ clientId }` }
 						label={ sprintf(
-							// Translators: Help message for Event start date/time.
+							// translators: %1$s: start date/time label, %2$s: start date/time label.
 							__( 'Event %1$s %2$s', 'newspack-listings' ),
 							showEnd ? __( 'Start', 'newspack-listings' ) : '',
 							showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
@@ -76,15 +69,11 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 									return setAttributes( { startDate: value } );
 								}
 
-								createNotice(
-									'warning',
-									__( 'Event end must be after event start.', 'newspack-listings' ),
-									{
-										id: 'newspack-listings__date-error',
-										isDismissible: true,
-										type: 'default',
-									}
-								);
+								createNotice( 'warning', __( 'Event end must be after event start.', 'newspack-listings' ), {
+									id: 'newspack-listings__date-error',
+									isDismissible: true,
+									type: 'default',
+								} );
 							} }
 						/>
 						{ ! showTime && startDate && (
@@ -97,7 +86,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 						<BaseControl
 							id={ `event-end-date-${ clientId }` }
 							label={ sprintf(
-								// Translators: Help message for Event end date/time.
+								// translators: %s: end date/time label.
 								__( 'Event End %s', 'newspack-listings' ),
 								showTime ? __( 'Time', 'newspack-listings' ) : __( 'Date', 'newspack-listings' )
 							) }
@@ -106,23 +95,15 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 								currentDate={ endDate ? new Date( endDate ) : null }
 								is12Hour={ true }
 								onChange={ value => {
-									if (
-										! value ||
-										! startDate ||
-										( startDate && 0 <= new Date( value ) - new Date( startDate ) )
-									) {
+									if ( ! value || ! startDate || ( startDate && 0 <= new Date( value ) - new Date( startDate ) ) ) {
 										return setAttributes( { endDate: value } );
 									}
 
-									createNotice(
-										'warning',
-										__( 'Event end must be after event start.', 'newspack-listings' ),
-										{
-											id: 'newspack-listings__date-error',
-											isDismissible: true,
-											type: 'default',
-										}
-									);
+									createNotice( 'warning', __( 'Event end must be after event start.', 'newspack-listings' ), {
+										id: 'newspack-listings__date-error',
+										isDismissible: true,
+										type: 'default',
+									} );
 								} }
 							/>
 							{ ! showTime && endDate && (

@@ -15,15 +15,9 @@ const fetchRetryCount = 3;
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
-Array.prototype.forEach.call(
-	document.querySelectorAll( '.newspack-listings__curated-list.has-more-button' ),
-	buildLoadMoreHandler
-);
+Array.prototype.forEach.call( document.querySelectorAll( '.newspack-listings__curated-list.has-more-button' ), buildLoadMoreHandler );
 
-Array.prototype.forEach.call(
-	document.querySelectorAll( '.newspack-listings__curated-list.show-sort-ui' ),
-	buildSortHandler
-);
+Array.prototype.forEach.call( document.querySelectorAll( '.newspack-listings__curated-list.show-sort-ui' ), buildSortHandler );
 
 /**
  * Builds a function to handle clicks on the load more button.
@@ -119,18 +113,14 @@ function buildSortHandler( blockWrapperEl ) {
 	const sortUi = blockWrapperEl.querySelector( '.newspack-listings__sort-ui' );
 	const sortBy = blockWrapperEl.querySelector( '.newspack-listings__sort-select-control' );
 	const sortOrder = blockWrapperEl.querySelectorAll( '[name="newspack-listings__sort-order"]' );
-	const sortOrderContainer = blockWrapperEl.querySelector(
-		'.newspack-listings__sort-order-container'
-	);
+	const sortOrderContainer = blockWrapperEl.querySelector( '.newspack-listings__sort-order-container' );
 
 	if ( ! sortUi || ! sortBy || ! sortOrder.length || ! sortOrderContainer ) {
 		return;
 	}
 
 	const btnEl = blockWrapperEl.querySelector( '[data-next]' );
-	const triggers = Array.prototype.concat.call( Array.prototype.slice.call( sortOrder ), [
-		sortBy,
-	] );
+	const triggers = Array.prototype.concat.call( Array.prototype.slice.call( sortOrder ), [ sortBy ] );
 
 	const postsContainerEl = blockWrapperEl.querySelector( '.newspack-listings__list-container' );
 	const restURL = sortUi.getAttribute( 'data-url' );
@@ -165,9 +155,9 @@ function buildSortHandler( blockWrapperEl ) {
 			sortOrderContainer.classList.remove( 'is-hidden' );
 		}
 
-		const requestURL = `${ restURL }&${ encodeURIComponent(
-			'query[sortBy]'
-		) }=${ _sortBy }&${ encodeURIComponent( 'query[order]' ) }=${ _order }`;
+		const requestURL = `${ restURL }&${ encodeURIComponent( 'query[sortBy]' ) }=${ _sortBy }&${ encodeURIComponent(
+			'query[order]'
+		) }=${ _order }`;
 
 		if ( hasMoreButton && btnEl ) {
 			blockWrapperEl.classList.add( 'has-more-button' );
@@ -278,10 +268,7 @@ function isPostsDataValid( data ) {
 	if ( data && Array.isArray( data ) ) {
 		isValid = true;
 
-		if (
-			data.length &&
-			! ( hasOwnProp( data[ 0 ], 'html' ) && typeof data[ 0 ].html === 'string' )
-		) {
+		if ( data.length && ! ( hasOwnProp( data[ 0 ], 'html' ) && typeof data[ 0 ].html === 'string' ) ) {
 			isValid = false;
 		}
 	}

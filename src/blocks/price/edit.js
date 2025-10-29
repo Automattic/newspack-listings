@@ -3,14 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { InspectorControls } from '@wordpress/block-editor';
-import {
-	PanelBody,
-	PanelRow,
-	Placeholder,
-	SelectControl,
-	TextControl,
-	ToggleControl,
-} from '@wordpress/components';
+import { PanelBody, PanelRow, Placeholder, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import { currencyDollar } from '@wordpress/icons';
@@ -65,10 +58,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 						<ToggleControl
 							className="newspack-listings__decimals-toggle"
 							label={ __( 'Show decimals', 'newspack-listings' ) }
-							help={ __(
-								'If disabled, the price shown will be rounded to the nearest integer.',
-								'newspack-listings'
-							) }
+							help={ __( 'If disabled, the price shown will be rounded to the nearest integer.', 'newspack-listings' ) }
 							checked={ showDecimals }
 							onChange={ value => setAttributes( { showDecimals: value } ) }
 						/>
@@ -77,14 +67,10 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 			</InspectorControls>
 
 			{ isSelected ? (
-				<Placeholder
-					icon={ currencyDollar }
-					label={ __( 'Price', 'newspack-listings' ) }
-					isColumnLayout
-				>
+				<Placeholder icon={ currencyDollar } label={ __( 'Price', 'newspack-listings' ) } isColumnLayout>
 					<TextControl
 						label={ sprintf(
-							// Translators: Price currency help message.
+							// translators: %s: currency.
 							__( 'Price in %s', 'newspack-listings' ),
 							currency || defaultCurrency
 						) }

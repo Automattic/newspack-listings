@@ -22,13 +22,7 @@ const assets = fs
 	.reduce(
 		( acc, fileName ) => ( {
 			...acc,
-			[ fileName.replace( '.js', '' ) ]: path.join(
-				__dirname,
-				'src',
-				'assets',
-				'front-end',
-				fileName
-			),
+			[ fileName.replace( '.js', '' ) ]: path.join( __dirname, 'src', 'assets', 'front-end', fileName ),
 		} ),
 		{}
 	);
@@ -38,10 +32,8 @@ const entry = {
 	...assets,
 };
 
-const webpackConfig = getBaseWebpackConfig(
-	{
-		entry,
-	}
-);
+const webpackConfig = getBaseWebpackConfig( {
+	entry,
+} );
 
 module.exports = webpackConfig;

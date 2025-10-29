@@ -30,10 +30,7 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 			{ showSortUi && (
 				<div className="newspack-listings__sort-ui">
 					<section>
-						<label
-							className="newspack-listings__sort-ui-label"
-							htmlFor={ `newspack-listings__sort-by-${ clientId }` }
-						>
+						<label className="newspack-listings__sort-ui-label" htmlFor={ `newspack-listings__sort-by-${ clientId }` }>
 							{ __( 'Sort by:', 'newspack-listings' ) }
 						</label>
 						<select
@@ -48,10 +45,7 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 					</section>
 
 					<section>
-						<label
-							className="newspack-listings__sort-ui-label"
-							htmlFor={ `sort-buttons-${ clientId }` }
-						>
+						<label className="newspack-listings__sort-ui-label" htmlFor={ `sort-buttons-${ clientId }` }>
 							{ __( 'Sort order:', 'newspack-listings' ) }
 						</label>
 
@@ -64,9 +58,7 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 								value="ASC"
 								checked={ queryMode && order === 'ASC' }
 							/>
-							<label htmlFor={ `sort-ascending-${ clientId }` }>
-								{ __( 'Ascending', 'newspack-listings' ) }
-							</label>
+							<label htmlFor={ `sort-ascending-${ clientId }` }>{ __( 'Ascending', 'newspack-listings' ) }</label>
 						</div>
 
 						<div>
@@ -78,9 +70,7 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 								value="DESC"
 								checked={ queryMode && order === 'DESC' }
 							/>
-							<label htmlFor={ `sort-descending-${ clientId }` }>
-								{ __( 'Descending', 'newspack-listings' ) }
-							</label>
+							<label htmlFor={ `sort-descending-${ clientId }` }>{ __( 'Descending', 'newspack-listings' ) }</label>
 						</div>
 					</section>
 				</div>
@@ -118,7 +108,4 @@ const mapDispatchToProps = dispatch => {
 	};
 };
 
-export const ListContainerEditor = compose( [
-	withSelect( mapStateToProps ),
-	withDispatch( mapDispatchToProps ),
-] )( ListContainerEditorComponent );
+export const ListContainerEditor = compose( [ withSelect( mapStateToProps ), withDispatch( mapDispatchToProps ) ] )( ListContainerEditorComponent );

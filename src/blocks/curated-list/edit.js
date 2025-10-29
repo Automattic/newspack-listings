@@ -93,9 +93,7 @@ const CuratedListEditorComponent = ( {
 	} = attributes;
 
 	const isEmpty = !! window.newspack_listings_data.no_listings || false;
-	const list = innerBlocks.find(
-		innerBlock => innerBlock.name === 'newspack-listings/list-container'
-	);
+	const list = innerBlocks.find( innerBlock => innerBlock.name === 'newspack-listings/list-container' );
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
 	const classes = getCuratedListClasses( className, attributes );
 	const initialRender = useDidMount();
@@ -184,17 +182,18 @@ const CuratedListEditorComponent = ( {
 		} else {
 			newLocations = list
 				? list.innerBlocks.reduce( ( acc, innerBlock ) => {
-					if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
-						innerBlock.attributes.locations.map( location => {
-							if ( isValidLocation( location ) ) {
-								acc.push( location );
-							}
+						if ( innerBlock.attributes.locations && 0 < innerBlock.attributes.locations.length ) {
+							innerBlock.attributes.locations.map( location => {
+								if ( isValidLocation( location ) ) {
+									acc.push( location );
+								}
 
-							return acc;
-						} );
-					}
-					return acc;
-				}, [] ) : [];
+								return acc;
+							} );
+						}
+						return acc;
+				  }, [] )
+				: [];
 		}
 
 		setLocations( newLocations );
@@ -205,9 +204,7 @@ const CuratedListEditorComponent = ( {
 	 */
 	useEffect( () => {
 		if ( ! queryMode && list ) {
-			const newListingIds = list.innerBlocks.map( innerBlock =>
-				parseInt( innerBlock.attributes.listing )
-			);
+			const newListingIds = list.innerBlocks.map( innerBlock => parseInt( innerBlock.attributes.listing ) );
 
 			setAttributes( { listingIds: newListingIds } );
 		}
@@ -311,11 +308,7 @@ const CuratedListEditorComponent = ( {
 		<div key={ index } className="newspack-listings__listing-editor newspack-listings__listing">
 			<Listing attributes={ attributes } error={ error } post={ listing } />
 			{
-				<Button
-					isLink
-					href={ `/wp-admin/post.php?post=${ listing.id }&action=edit` }
-					target="_blank"
-				>
+				<Button isLink href={ `/wp-admin/post.php?post=${ listing.id }&action=edit` } target="_blank">
 					{ __( 'Edit this listing', 'newspack-listings' ) }
 				</Button>
 			}
@@ -329,13 +322,7 @@ const CuratedListEditorComponent = ( {
 	 * @return {boolean} True if the data is valid location data, false if not.
 	 */
 	const isValidLocation = location => {
-		if (
-			! location ||
-			! location.id ||
-			! location.coordinates ||
-			! location.coordinates.latitude ||
-			! location.coordinates.longitude
-		) {
+		if ( ! location || ! location.id || ! location.coordinates || ! location.coordinates.latitude || ! location.coordinates.longitude ) {
 			return false;
 		}
 
@@ -363,14 +350,8 @@ const CuratedListEditorComponent = ( {
 		},
 		{
 			value: 4,
-			label: /* translators: label for extra large size option */ __(
-				'Extra Large',
-				'newspack-listings'
-			),
-			shortName: /* translators: abbreviation for extra large size */ __(
-				'XL',
-				'newspack-listings'
-			),
+			label: /* translators: label for extra large size option */ __( 'Extra Large', 'newspack-listings' ),
+			shortName: /* translators: abbreviation for extra large size */ __( 'XL', 'newspack-listings' ),
 		},
 	];
 
@@ -380,9 +361,7 @@ const CuratedListEditorComponent = ( {
 	if ( isEmpty ) {
 		return (
 			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
-				<Notice isDismissible={ false }>
-					{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }
-				</Notice>
+				<Notice isDismissible={ false }>{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }</Notice>
 			</Placeholder>
 		);
 	}
@@ -453,7 +432,7 @@ const CuratedListEditorComponent = ( {
 							<ToggleControl
 								label={ __( 'Show map', 'newspack-listings' ) }
 								help={ sprintf(
-									// Translators: Help message for map behavior.
+									// translators: %d: maximum number of items to display on the map.
 									__(
 										'The map will display locations for up to %d items in the list, regardless of the current number of items shown.',
 										'newspack-listings'
@@ -506,15 +485,9 @@ const CuratedListEditorComponent = ( {
 
 					{ showImage && mediaPosition !== 'top' && mediaPosition !== 'behind' && (
 						<Fragment>
-							<BaseControl
-								label={ __( 'Featured Image Size', 'newspack-listings' ) }
-								id="newspackfeatured-image-size"
-							>
+							<BaseControl label={ __( 'Featured Image Size', 'newspack-listings' ) } id="newspackfeatured-image-size">
 								<PanelRow>
-									<ButtonGroup
-										id="newspackfeatured-image-size"
-										aria-label={ __( 'Featured Image Size', 'newspack-listings' ) }
-									>
+									<ButtonGroup id="newspackfeatured-image-size" aria-label={ __( 'Featured Image Size', 'newspack-listings' ) }>
 										{ imageSizeOptions.map( option => {
 											const isCurrent = imageScale === option.value;
 											return (
@@ -640,10 +613,7 @@ const CuratedListEditorComponent = ( {
 						// If in query mode, show the queried listings.
 						! isFetching && queryMode && queriedListings.map( renderQueriedListings )
 					}
-					{ ! isFetching &&
-						queryMode &&
-						showLoadMore &&
-						queryOptions.maxItems < queriedListings.length && (
+					{ ! isFetching && queryMode && showLoadMore && queryOptions.maxItems < queriedListings.length && (
 						<Button className="newspack-listings__load-more" isPrimary>
 							{ loadMoreText }
 						</Button>
@@ -668,8 +638,7 @@ const mapStateToProps = ( select, ownProps ) => {
 };
 
 const mapDispatchToProps = dispatch => {
-	const { insertBlocks, removeBlocks, selectBlock, updateBlockAttributes } =
-		dispatch( 'core/block-editor' );
+	const { insertBlocks, removeBlocks, selectBlock, updateBlockAttributes } = dispatch( 'core/block-editor' );
 
 	return {
 		insertBlocks,
@@ -679,7 +648,4 @@ const mapDispatchToProps = dispatch => {
 	};
 };
 
-export const CuratedListEditor = compose( [
-	withSelect( mapStateToProps ),
-	withDispatch( mapDispatchToProps ),
-] )( CuratedListEditorComponent );
+export const CuratedListEditor = compose( [ withSelect( mapStateToProps ), withDispatch( mapDispatchToProps ) ] )( CuratedListEditorComponent );

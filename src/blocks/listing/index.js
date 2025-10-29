@@ -28,11 +28,7 @@ export const registerListingBlock = () => {
 				},
 				category,
 				parent: [ 'newspack-listings/list-container' ],
-				keywords: [
-					__( 'lists', 'newspack-listings' ),
-					__( 'listings', 'newspack-listings' ),
-					__( 'latest', 'newspack-listings' ),
-				],
+				keywords: [ __( 'lists', 'newspack-listings' ), __( 'listings', 'newspack-listings' ), __( 'latest', 'newspack-listings' ) ],
 
 				// Combine attributes with parent attributes, so parent can pass data to InnerBlocks without relying on contexts.
 				attributes: Object.assign( attributes, parentAttributes ),
