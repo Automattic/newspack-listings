@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
-import { edit } from '@wordpress/icons';
+import { pencil } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,7 +16,7 @@ export const registerSelfServeListingsBlock = () => {
 	registerBlockType( name, {
 		title: __( 'Listings: Self-Serve Form', 'newspack-listings' ),
 		icon: {
-			src: edit,
+			src: pencil,
 			foreground: '#003da5',
 		},
 		category,
