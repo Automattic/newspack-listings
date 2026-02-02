@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-// Define NEWSPACK_LISTINGS_PLUGIN_FILE.
+// Define plugin constants.
 if ( ! defined( 'NEWSPACK_LISTINGS_PLUGIN_FILE' ) ) {
 	define( 'NEWSPACK_LISTINGS_FILE', __FILE__ );
 	define( 'NEWSPACK_LISTINGS_PLUGIN_FILE', plugin_dir_path( NEWSPACK_LISTINGS_FILE ) );
