@@ -37,12 +37,9 @@ Featured priority is stored in a custom DB table (`wp_newspack_listings_priority
 - **Sorting**: `posts_clauses` filter joins the table at query time ([`Featured::sort_featured_listings`](includes/class-featured.php#L326))
 - **Meta keys**: `newspack_listings_featured`, `newspack_listings_featured_expires`
 
-### Block Hierarchy
+### Blocks
 
-Blocks split into two groups based on context ([`src/editor/index.js`](src/editor/index.js)). The [`isListing()`](src/editor/utils.js#L17) utility checks `window.newspack_listings_data.post_type` against registered listing CPTs:
-
-- **Editor-only blocks** (registered when `isListing()` is true): only available when editing a listing CPT.
-- **Frontend blocks** (registered when `isListing()` is false): available in regular posts/pages.
+Blocks are registered based on context ([`src/editor/index.js`](src/editor/index.js)). The [`isListing()`](src/editor/utils.js#L17) utility checks `window.newspack_listings_data.post_type` against registered listing CPTs. Blocks are registered based on whether the current editor is for a listing CPT or not.
 
 Discover all blocks via `src/blocks/*/block.json`.
 
