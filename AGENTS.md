@@ -1,80 +1,51 @@
-# Newspack Listings: Agent Instructions
+# Newspack Listings agent guide
 
-This file covers what is specific to `newspack-listings`. Shared conventions (Docker commands, `n` script, coding standards, git rules, etc.) are in the root `newspack-workspace/AGENTS.md`.
-
-## Core Architecture
-
-### Custom Post Types
-
-All four listing CPTs are defined in [`Core::NEWSPACK_LISTINGS_POST_TYPES`](includes/class-core.php#L27) ([`includes/class-core.php:27`](includes/class-core.php#L27)):
-
-| Key           | Slug                   | Permalink    |
-|---------------|------------------------|--------------|
-| `event`       | `newspack_lst_event`   | `/events/`   |
-| `generic`     | `newspack_lst_generic` | `/items/`    |
-| `marketplace` | `newspack_lst_mktplce` | `/marketplace/` |
-| `place`       | `newspack_lst_place`   | `/places/`   |
-
-Use [`Core::is_listing( $post_type )`](includes/class-core.php#L131) to check whether a post type is a listing.
-
-### Meta Syncing from Blocks
-
-Block attributes are synced to post meta on every `save_post` via [`Core::sync_post_meta()`](includes/class-core.php#L641) ([`includes/class-core.php:641`](includes/class-core.php#L641)). The flow:
-
-1. `save_post` fires for a listing CPT.
-2. Post content is parsed into blocks via `parse_blocks()`.
-3. Each meta field registered in [`Core::get_meta_fields()`](includes/class-core.php#L270) that has a `source` key is matched to a block type + attribute.
-4. [`Utils\get_data_from_blocks()`](includes/utils.php#L121) ([`includes/utils.php:121`](includes/utils.php#L121)) extracts the attribute value from the matching block.
-5. Post meta is updated (or deleted if the block is removed).
-
-See [`class-core.php:428`](includes/class-core.php#L428) for the meta field definition format.
-
-### Featured Listings
-
-Featured priority is stored in a custom DB table (`wp_newspack_listings_priority`) instead of post meta for query performance. Defined in [`includes/class-featured.php`](includes/class-featured.php):
-
-- **Table columns**: `post_id` (PK), `feature_priority` (0 = not featured, 1-9 = priority)
-- **Sorting**: `posts_clauses` filter joins the table at query time ([`Featured::sort_featured_listings`](includes/class-featured.php#L326))
-- **Meta keys**: `newspack_listings_featured`, `newspack_listings_featured_expires`
-
-### Blocks
-
-Blocks are registered based on context ([`src/editor/index.js`](src/editor/index.js)). The [`isListing()`](src/editor/utils.js#L17) utility checks `window.newspack_listings_data.post_type` against registered listing CPTs. Blocks are registered based on whether the current editor is for a listing CPT or not.
-
-Discover all blocks via `src/blocks/*/block.json`.
-
-### Template Pattern
-
-Server-side templates use closures for variable isolation (`call_user_func` wrapping `$data`). Templates are loaded via [`Utils\template_include( 'listing', $data )`](includes/utils.php#L41) ([`includes/utils.php:41`](includes/utils.php#L41)), which uses output buffering to return rendered HTML. See [`src/templates/listing.php`](src/templates/listing.php#L12) for the pattern.
+Shared conventions (Docker, `n` script, coding standards, git rules) are in `../../AGENTS.md`.
 
 ## Gotchas
 
-1. **Meta syncing is automatic** - Changing a block's attribute name or block name breaks the `source` mapping in [`Core::get_meta_fields()`](includes/class-core.php#L270). Always update both together.
-2. **Featured priority uses a custom table**, not post meta. Direct `get_post_meta()` calls won't return priority values. Use [`Featured::get_priority()`](includes/class-featured.php#L229).
-3. **`isListing()` controls block visibility** - Editor-only blocks won't appear outside listing CPTs. If a block should appear everywhere, register it in the non-listing branch of [`src/editor/index.js`](src/editor/index.js).
-4. **Block `save` returns `null`** - All blocks use server-side rendering via `view.php` templates. Don't add JSX to `save` functions.
-5. **Template variable isolation** - Templates wrap in `call_user_func` closures. Access data only through the `$data` parameter, not global variables.
-6. **CPT slugs are abbreviated** (`newspack_lst_mktplce`, not `newspack_lst_marketplace`). Always reference `Core::NEWSPACK_LISTINGS_POST_TYPES` instead of hardcoding slugs.
-7. **All major classes use the singleton pattern** - Access instances via `ClassName::instance()`, not `new ClassName()`.
-8. **WooCommerce integration is optional** - `class-products.php` only loads if WooCommerce is active. Don't assume its classes exist.
-9. **No JavaScript tests** in this repo. Only PHPUnit tests in `tests/`.
+- **No PHP autoloader.** All classes use manual `require_once`. Adding a new class requires a corresponding `require_once` in `newspack-listings.php` (or `class-products.php` for product subclasses). Forgetting this fails silently until the class is instantiated.
 
-## Recipes
+- **CPT slug is abbreviated.** Marketplace post type is `newspack_lst_mktplce`, not `newspack_lst_marketplace`. Always use `Core::NEWSPACK_LISTINGS_POST_TYPES` instead of hardcoding slugs.
 
-### Add a New Synced Meta Field
+- **Featured priority uses a custom DB table** (`wp_newspack_listings_priority`), not post meta. `get_post_meta()` won't return priority values. Use `Featured::get_priority()`. Schema changes require bumping `Featured::TABLE_VERSION`.
 
-**Goal**: Store a block attribute as post meta so it's queryable.
+- **Block attribute-to-meta syncing.** Block attributes auto-sync to post meta via `Core::sync_post_meta()` on `save_post`. The mapping lives in `Core::get_meta_fields()` using a `source` key. Renaming a block attribute or block name without updating the source mapping silently breaks syncing.
 
-1. **Register the meta field** in [`Core::get_meta_fields()`](includes/class-core.php#L270). Add an entry following the existing format (see [`class-core.php:428`](includes/class-core.php#L428) for an example).
-2. **Add the attribute** to the block's `block.json` ([`src/blocks/event-dates/block.json`](src/blocks/event-dates/block.json)).
-3. **Use the attribute** in the block's `edit.js` component and `view.php` template.
-4. **Test**: Save a listing, then verify with `get_post_meta( $post_id, 'newspack_listings_my_field', true )`.
+- **"newspack-listings/listing" is not a real block.** The listing block dynamically registers per-CPT variants (`newspack-listings/event`, `newspack-listings/generic`, etc.) at runtime from `window.newspack_listings_data.post_types`. See `src/blocks/listing/index.js`.
 
-The `save_post` hook in [`Core::sync_post_meta()`](includes/class-core.php#L641) handles the rest automatically.
+- **All block JS compiles into `dist/editor.js`.** Block directories under `src/blocks/` have `block.json` but no individual JS bundles in `dist/`.
 
-### Add a New Block
+- **Front-end scripts are auto-discovered.** Any `.js` file in `src/assets/front-end/` automatically becomes a webpack entry point (`webpack.config.js` uses `fs.readdirSync()`).
 
-1. **Create the block directory** under `src/blocks/my-block/` with `block.json`, `index.js`, `edit.js`, and `view.php`.
-2. **Register in the editor** ([`src/editor/index.js`](src/editor/index.js)) in the appropriate branch (isListing or not).
-3. **Register server-side rendering** in [`includes/class-blocks.php`](includes/class-blocks.php) if the block needs PHP rendering.
-4. **Follow existing patterns**: `save: () => null`, functional React components, `InspectorControls` for sidebar settings.
+- **All blocks are server-side rendered.** Every `save` function returns `null`. Rendering is in `view.php` templates.
+
+- **WooCommerce integration is conditional.** `class-products.php` and subclasses in `includes/products/` only activate when WooCommerce is present. Self-serve listings won't work without it, with no visible error.
+
+- **No JavaScript tests.** `npm test` is a no-op. Only PHPUnit tests exist.
+
+- **Mixed React patterns.** Most blocks use `withSelect`/`withDispatch` HOCs. Only `event-dates` uses modern hooks. Match the existing pattern when modifying a block; prefer hooks for new code.
+
+## Dominant pattern: adding a PHP class
+
+```php
+// 1. Create includes/class-my-feature.php
+class My_Feature {
+	private static $instance;
+	public static function instance() {
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+	private function __construct() {
+		// Register hooks here.
+	}
+}
+My_Feature::instance(); // Self-instantiate at end of file.
+```
+
+```php
+// 2. Add require_once in newspack-listings.php (no autoloader).
+require_once NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/class-my-feature.php';
+```
