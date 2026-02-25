@@ -18,7 +18,7 @@ Shared conventions (Docker, `n` script, coding standards, git rules) are in `../
 
 - **Front-end scripts are auto-discovered.** Any `.js` file in `src/assets/front-end/` automatically becomes a webpack entry point (`webpack.config.js` uses `fs.readdirSync()`).
 
-- **All blocks are server-side rendered** via `view.php` templates. Most `save` function returns `null`. The exceptions are `curated-list` and `list-container`, which return `<InnerBlocks.Content />` to persist inner block content.
+- **All blocks are server-side rendered** via `view.php` templates. Most `save` functions return `null`. The exceptions are `curated-list` and `list-container`, which return `<InnerBlocks.Content />` to persist inner block content.
 
 - **WooCommerce integration is conditional.** `class-products.php` and subclasses in `includes/products/` only activate when WooCommerce, WooCommerce Subscriptions, and the `NEWSPACK_LISTINGS_SELF_SERVE_ENABLED` constant are all present. Self-serve listings won't work without these conditions, with no visible error.
 
@@ -26,7 +26,7 @@ Shared conventions (Docker, `n` script, coding standards, git rules) are in `../
 
 - **Mixed React patterns.** Most blocks use `withSelect`/`withDispatch` HOCs. Only `event-dates` uses modern hooks. Match the existing pattern when modifying a block; prefer hooks for new code.
 
-- **NEWSPACK_LISTINGS_PLUGIN_FILE is misleadingly named.** It holds the directory path (from `plugin_dir_path()`), not a file path. It always ends with a trailing slash. The actual main plugin file path is `NEWSPACK_LISTINGS_FILE` (set to `__FILE__`). Usage of `require_once` paths using `NEWSPACK_LISTINGS_PLUGIN_FILE` are also inconsistent. For example, `newspack-listings.php` uses a leading slash (`NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/...'`) while `class-products.php` omits it (`NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/...'). Both resolve correctly because `plugin_dir_path()` returns a trailing slash.
+- **NEWSPACK_LISTINGS_PLUGIN_FILE is misleadingly named.** It holds the directory path (from `plugin_dir_path()`), not a file path. It always ends with a trailing slash. The actual main plugin file path is `NEWSPACK_LISTINGS_FILE` (set to `__FILE__`). Usage of `require_once` paths using `NEWSPACK_LISTINGS_PLUGIN_FILE` are also inconsistent. For example, `newspack-listings.php` uses a leading slash (`NEWSPACK_LISTINGS_PLUGIN_FILE . '/includes/...'`) while `class-products.php` omits it (`NEWSPACK_LISTINGS_PLUGIN_FILE . 'includes/...'`). Both resolve correctly because `plugin_dir_path()` returns a trailing slash.
 
 
 ## Dominant pattern: adding a PHP class
