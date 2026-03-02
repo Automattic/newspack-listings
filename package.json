@@ -41,7 +41,7 @@
 		"*.php": "npm run lint:php:staged"
 	},
 	"dependencies": {
-		"newspack-components": "^4.2.0"
+		"newspack-components": "^4.3.0"
 	},
 	"devDependencies": {
 		"newspack-scripts": "^5.8.0"
