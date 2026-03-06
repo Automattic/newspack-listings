@@ -175,11 +175,7 @@ const ListingEditorComponent = ( { attributes, clientId, getBlock, getBlockParen
 		);
 	};
 
-	return (
-		<div { ...blockProps }>
-			{ ! listing || isEditingPost ? renderSearch() : renderPost() }
-		</div>
-	);
+	return <div { ...blockProps }>{ ! listing || isEditingPost ? renderSearch() : renderPost() }</div>;
 };
 
 const mapStateToProps = select => {
