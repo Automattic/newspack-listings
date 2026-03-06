@@ -227,7 +227,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								<label htmlFor={ `listing-single-upgrade-${ clientId }` }>
 									{ __( 'Upgrade to a featured listing', 'newspack-listings' ) }
 								</label>
-								<p class="newspack-listings__help">
+								<p className="newspack-listings__help">
 									{ __(
 										'Featured listings appear first in lists, directory pages and search results.',
 										'newspack-listings'
@@ -290,7 +290,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								<label htmlFor={ `listing-subscription-upgrade-${ clientId }` }>
 									{ __( 'Upgrade to a premium subscription', 'newspack-listings' ) }
 								</label>
-								<p class="newspack-listings__help">
+								<p className="newspack-listings__help">
 									{ __(
 										'A premium subscription upgrades your listing to "featured" status and lets you create up to 10 additional Marketplace or Event listings.',
 										'newspack-listings'
