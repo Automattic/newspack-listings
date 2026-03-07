@@ -48,9 +48,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 	}, [ allowSubscription ] );
 
 	const classNames = [ 'newspack-listings__self-serve-form', 'wpbnbd', allowedPurchases ];
-	const blockProps = useBlockProps( {
-		className: classNames.join( ' ' ),
-	} );
+	const blockProps = useBlockProps();
 
 	const getPurchaseTypeLabel = () => {
 		switch (allowedPurchases) {
@@ -156,7 +154,8 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 					) }
 				</PanelBody>
 			</InspectorControls>
-			<form>
+			<div className={ classNames.join( ' ' ) }>
+				<form>
 				<div className="frequencies">
 					{ ( 'subscription-only' !== allowedPurchases || false === allowSubscription ) && (
 						<div className="newspack-listings__form-tabs frequency">
@@ -171,7 +170,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							/>
 							<label
 								className="freq-label listing-single"
-								htmlFor="listing-single-${ clientId }"
+								htmlFor="listing-single"
 								onClick={ () => setSelectedType( 'single' ) }
 							>
 								{ __( 'Single Listing' ) }
@@ -212,7 +211,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								<label htmlFor={ `listing-type-${ clientId }` }>
 									{ __( 'Listing Type', 'newspack-listings' ) }
 								</label>
-								<select id={ `listing-type-${ clientId }` } name="listing-single-type">
+								<select id={ `${ clientId }` } name="listing-single-type">
 									{ allowedSingleListingTypes.map( listingType => (
 										<option key={ listingType.slug } value={ `listing-type-${ listingType.slug }` }>
 											{ listingType.name }
@@ -249,7 +248,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							/>
 							<label
 								className="freq-label listing-subscription"
-								htmlFor="listing-subscription-${ clientId }"
+								htmlFor="listing-subscription"
 								onClick={ () => setSelectedType( 'subscription' ) }
 							>
 								{ __( 'Listing Subscription' ) }
@@ -308,7 +307,8 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 						tagName="span"
 					/>
 				</button>
-			</form>
+				</form>
+			</div>
 		</div>
 	);
 };
