@@ -171,7 +171,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							/>
 							<label
 								className="freq-label listing-single"
-								htmlFor="listing-single"
+								htmlFor="listing-single-${ clientId }"
 								onClick={ () => setSelectedType( 'single' ) }
 							>
 								{ __( 'Single Listing' ) }
@@ -212,7 +212,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 								<label htmlFor={ `listing-type-${ clientId }` }>
 									{ __( 'Listing Type', 'newspack-listings' ) }
 								</label>
-								<select id={ `${ clientId }` } name="listing-single-type">
+								<select id={ `listing-type-${ clientId }` } name="listing-single-type">
 									{ allowedSingleListingTypes.map( listingType => (
 										<option key={ listingType.slug } value={ `listing-type-${ listingType.slug }` }>
 											{ listingType.name }
@@ -249,7 +249,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							/>
 							<label
 								className="freq-label listing-subscription"
-								htmlFor="listing-subscription"
+								htmlFor="listing-subscription-${ clientId }"
 								onClick={ () => setSelectedType( 'subscription' ) }
 							>
 								{ __( 'Listing Subscription' ) }
