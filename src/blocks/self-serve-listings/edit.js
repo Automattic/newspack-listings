@@ -206,8 +206,8 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									type="text"
 									id={ `listing-title-single-${ clientId }` }
 									name="listing-title-single"
-									value=""
 									placeholder={ __( 'My Listing Title' ) }
+									readOnly
 								/>
 								<label htmlFor={ `listing-type-${ clientId }` }>
 									{ __( 'Listing Type', 'newspack-listings' ) }
@@ -279,8 +279,8 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 									type="text"
 									id={ `listing-title-subscription${ clientId }` }
 									name="listing-title-subscription"
-									value=""
 									placeholder={ __( 'My Listing Title' ) }
+									readOnly
 								/>
 								<input
 									type="checkbox"
