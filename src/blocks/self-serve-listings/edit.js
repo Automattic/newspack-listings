@@ -170,7 +170,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							/>
 							<label
 								className="freq-label listing-single"
-								htmlFor="listing-single"
+								htmlFor={ `listing-single-${ clientId }` }
 								onClick={ () => setSelectedType( 'single' ) }
 							>
 								{ __( 'Single Listing' ) }
@@ -248,7 +248,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 							/>
 							<label
 								className="freq-label listing-subscription"
-								htmlFor="listing-subscription"
+								htmlFor={ `listing-subscription-${ clientId }` }
 								onClick={ () => setSelectedType( 'subscription' ) }
 							>
 								{ __( 'Listing Subscription' ) }
