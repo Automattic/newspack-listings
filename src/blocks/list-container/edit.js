@@ -19,13 +19,14 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 	}
 
 	return (
-		<div { ...blockProps }>
+		<>
 			<InspectorControls>
 				<PanelRow className="newspack-listings__list-container-spinner">
 					<Spinner />
 				</PanelRow>
 			</InspectorControls>
-			{ ! queryMode && innerBlocks && 0 === innerBlocks.length && (
+			<div { ...blockProps }>
+				{ ! queryMode && innerBlocks && 0 === innerBlocks.length && (
 				<Notice className="newspack-listings__info" status="info" isDismissible={ false }>
 					{ __( 'This list is empty. Click the [+] button to add some listings.' ) }
 				</Notice>
@@ -78,16 +79,17 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 					</section>
 				</div>
 			) }
-			<InnerBlocks
-				allowedBlocks={ [
-					'newspack-listings/event',
-					'newspack-listings/generic',
-					'newspack-listings/marketplace',
-					'newspack-listings/place',
-				] }
-				renderAppender={ () => ( queryMode ? null : <InnerBlocks.ButtonBlockAppender /> ) }
-			/>
-		</div>
+				<InnerBlocks
+					allowedBlocks={ [
+						'newspack-listings/event',
+						'newspack-listings/generic',
+						'newspack-listings/marketplace',
+						'newspack-listings/place',
+					] }
+					renderAppender={ () => ( queryMode ? null : <InnerBlocks.ButtonBlockAppender /> ) }
+				/>
+			</div>
+		</>
 	);
 };
 

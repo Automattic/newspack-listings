@@ -18,7 +18,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 	const blockProps = useBlockProps();
 
 	return (
-		<div { ...blockProps }>
+		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Event Dates Settings' ) }>
 					<PanelRow>
@@ -46,8 +46,8 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-
-			<div className={ classes.join( ' ' ) }>
+			<div { ...blockProps }>
+				<div className={ classes.join( ' ' ) }>
 				<div className="newspack-listings__event-dates-controls">
 					<BaseControl
 						id={ `event-start-date-${ clientId }` }
@@ -116,6 +116,7 @@ export const EventDatesEditor = ( { attributes, clientId, setAttributes } ) => {
 					) }
 				</div>
 			</div>
-		</div>
+			</div>
+		</>
 	);
 };

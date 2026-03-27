@@ -37,7 +37,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 	}, [ currency, showDecimals, price ] );
 
 	return (
-		<div { ...blockProps }>
+		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Price Settings' ) }>
 					{ 0 < Object.keys( currencies ).length && (
@@ -66,8 +66,8 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-
-			{ isSelected ? (
+			<div { ...blockProps }>
+				{ isSelected ? (
 				<Placeholder icon={ currencyDollar } label={ __( 'Price', 'newspack-listings' ) } isColumnLayout>
 					<TextControl
 						label={ sprintf(
@@ -88,7 +88,8 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 				<p className="newspack-listings__price has-large-font-size">
 					<strong>{ formattedPrice }</strong>
 				</p>
-			) }
-		</div>
+				) }
+			</div>
+		</>
 	);
 };

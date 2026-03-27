@@ -411,7 +411,7 @@ const CuratedListEditorComponent = ( {
 	}
 
 	return (
-		<div { ...blockProps }>
+		<>
 			<InspectorControls>
 				{ queryMode && (
 					<PanelBody title={ __( 'Query Settings', 'newspack-listings' ) }>
@@ -589,8 +589,9 @@ const CuratedListEditorComponent = ( {
 					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-			<div
-				className={ classes.join( ' ' ) }
+			<div { ...blockProps }>
+				<div
+					className={ classes.join( ' ' ) }
 				style={ {
 					backgroundColor: backgroundColor || '#fff',
 					color: textColor || '#000',
@@ -624,8 +625,9 @@ const CuratedListEditorComponent = ( {
 						{ loadMoreText }
 					</Button>
 				) }
+				</div>
 			</div>
-		</div>
+		</>
 	);
 };
 

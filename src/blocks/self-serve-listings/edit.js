@@ -62,7 +62,7 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 	}
 
 	return (
-		<div { ...blockProps }>
+		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Self-Serve Listing Settings' ) }>
 					<PanelRow>
@@ -154,7 +154,8 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 					) }
 				</PanelBody>
 			</InspectorControls>
-			<div className={ classNames.join( ' ' ) }>
+			<div { ...blockProps }>
+				<div className={ classNames.join( ' ' ) }>
 				<form>
 				<div className="frequencies">
 					{ ( 'subscription-only' !== allowedPurchases || false === allowSubscription ) && (
@@ -308,7 +309,8 @@ export const SelfServeListingsEditor = ( { attributes, clientId, setAttributes }
 					/>
 				</button>
 				</form>
+				</div>
 			</div>
-		</div>
+		</>
 	);
 };
