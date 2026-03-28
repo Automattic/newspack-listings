@@ -27,58 +27,58 @@ const ListContainerEditorComponent = ( { attributes, clientId, innerBlocks } ) =
 			</InspectorControls>
 			<div { ...blockProps }>
 				{ ! queryMode && innerBlocks && 0 === innerBlocks.length && (
-				<Notice className="newspack-listings__info" status="info" isDismissible={ false }>
-					{ __( 'This list is empty. Click the [+] button to add some listings.' ) }
-				</Notice>
-			) }
-			{ showSortUi && (
-				<div className="newspack-listings__sort-ui">
-					<section>
-						<label className="newspack-listings__sort-ui-label" htmlFor={ `newspack-listings__sort-by-${ clientId }` }>
-							{ __( 'Sort by:', 'newspack-listings' ) }
-						</label>
-						<select
-							disabled // Just a dummy component for demo display.
-							className="newspack-listings__sort-select-control"
-							id={ `newspack-listings__sort-by-${ clientId }` }
-						>
-							<option value="" selected>
-								{ __( 'Sort by', 'newspack-listings' ) }
-							</option>
-						</select>
-					</section>
+					<Notice className="newspack-listings__info" status="info" isDismissible={ false }>
+						{ __( 'This list is empty. Click the [+] button to add some listings.' ) }
+					</Notice>
+				) }
+				{ showSortUi && (
+					<div className="newspack-listings__sort-ui">
+						<section>
+							<label className="newspack-listings__sort-ui-label" htmlFor={ `newspack-listings__sort-by-${ clientId }` }>
+								{ __( 'Sort by:', 'newspack-listings' ) }
+							</label>
+							<select
+								disabled // Just a dummy component for demo display.
+								className="newspack-listings__sort-select-control"
+								id={ `newspack-listings__sort-by-${ clientId }` }
+							>
+								<option value="" selected>
+									{ __( 'Sort by', 'newspack-listings' ) }
+								</option>
+							</select>
+						</section>
 
-					<section>
-						<label className="newspack-listings__sort-ui-label" htmlFor={ `sort-buttons-${ clientId }` }>
-							{ __( 'Sort order:', 'newspack-listings' ) }
-						</label>
+						<section>
+							<label className="newspack-listings__sort-ui-label" htmlFor={ `sort-buttons-${ clientId }` }>
+								{ __( 'Sort order:', 'newspack-listings' ) }
+							</label>
 
-						<div id={ `sort-buttons-${ clientId }` }>
-							<input
-								disabled
-								id={ `sort-ascending-${ clientId }` }
-								type="radio"
-								name="newspack-listings__sort-order"
-								value="ASC"
-								checked={ queryMode && order === 'ASC' }
-							/>
-							<label htmlFor={ `sort-ascending-${ clientId }` }>{ __( 'Ascending', 'newspack-listings' ) }</label>
-						</div>
+							<div id={ `sort-buttons-${ clientId }` }>
+								<input
+									disabled
+									id={ `sort-ascending-${ clientId }` }
+									type="radio"
+									name="newspack-listings__sort-order"
+									value="ASC"
+									checked={ queryMode && order === 'ASC' }
+								/>
+								<label htmlFor={ `sort-ascending-${ clientId }` }>{ __( 'Ascending', 'newspack-listings' ) }</label>
+							</div>
 
-						<div>
-							<input
-								disabled
-								id={ `sort-descending-${ clientId }` }
-								type="radio"
-								name="newspack-listings__sort-order"
-								value="DESC"
-								checked={ queryMode && order === 'DESC' }
-							/>
-							<label htmlFor={ `sort-descending-${ clientId }` }>{ __( 'Descending', 'newspack-listings' ) }</label>
-						</div>
-					</section>
-				</div>
-			) }
+							<div>
+								<input
+									disabled
+									id={ `sort-descending-${ clientId }` }
+									type="radio"
+									name="newspack-listings__sort-order"
+									value="DESC"
+									checked={ queryMode && order === 'DESC' }
+								/>
+								<label htmlFor={ `sort-descending-${ clientId }` }>{ __( 'Descending', 'newspack-listings' ) }</label>
+							</div>
+						</section>
+					</div>
+				) }
 				<InnerBlocks
 					allowedBlocks={ [
 						'newspack-listings/event',
