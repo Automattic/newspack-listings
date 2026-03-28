@@ -68,26 +68,26 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 			</InspectorControls>
 			<div { ...blockProps }>
 				{ isSelected ? (
-				<Placeholder icon={ currencyDollar } label={ __( 'Price', 'newspack-listings' ) } isColumnLayout>
-					<TextControl
-						label={ sprintf(
-							// translators: %s: currency.
-							__( 'Price in %s', 'newspack-listings' ),
-							currency || defaultCurrency
-						) }
-						type="number"
-						value={ price }
-						onChange={ value => {
-							setAttributes( {
-								price: parseFloat( value < 0 ? 0 : value ),
-							} );
-						} }
-					/>
-				</Placeholder>
-			) : (
-				<p className="newspack-listings__price has-large-font-size">
-					<strong>{ formattedPrice }</strong>
-				</p>
+					<Placeholder icon={ currencyDollar } label={ __( 'Price', 'newspack-listings' ) } isColumnLayout>
+						<TextControl
+							label={ sprintf(
+								// translators: %s: currency.
+								__( 'Price in %s', 'newspack-listings' ),
+								currency || defaultCurrency
+							) }
+							type="number"
+							value={ price }
+							onChange={ value => {
+								setAttributes( {
+									price: parseFloat( value < 0 ? 0 : value ),
+								} );
+							} }
+						/>
+					</Placeholder>
+				) : (
+					<p className="newspack-listings__price has-large-font-size">
+						<strong>{ formattedPrice }</strong>
+					</p>
 				) }
 			</div>
 		</>
