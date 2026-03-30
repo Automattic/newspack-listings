@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { PanelBody, PanelRow, Placeholder, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
@@ -12,6 +12,7 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 	const { currencies = {}, currency: defaultCurrency = 'USD' } = window.newspack_listings_data;
 	const locale = window.navigator?.language || 'en-US';
 	const { currency, formattedPrice, price, showDecimals } = attributes;
+	const blockProps = useBlockProps();
 
 	useEffect( () => {
 		// Guard against setting invalid price attribute.
@@ -65,29 +66,30 @@ export const PriceEditor = ( { attributes, isSelected, setAttributes } ) => {
 					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-
-			{ isSelected ? (
-				<Placeholder icon={ currencyDollar } label={ __( 'Price', 'newspack-listings' ) } isColumnLayout>
-					<TextControl
-						label={ sprintf(
-							// translators: %s: currency.
-							__( 'Price in %s', 'newspack-listings' ),
-							currency || defaultCurrency
-						) }
-						type="number"
-						value={ price }
-						onChange={ value => {
-							setAttributes( {
-								price: parseFloat( value < 0 ? 0 : value ),
-							} );
-						} }
-					/>
-				</Placeholder>
-			) : (
-				<p className="newspack-listings__price has-large-font-size">
-					<strong>{ formattedPrice }</strong>
-				</p>
-			) }
+			<div { ...blockProps }>
+				{ isSelected ? (
+					<Placeholder icon={ currencyDollar } label={ __( 'Price', 'newspack-listings' ) } isColumnLayout>
+						<TextControl
+							label={ sprintf(
+								// translators: %s: currency.
+								__( 'Price in %s', 'newspack-listings' ),
+								currency || defaultCurrency
+							) }
+							type="number"
+							value={ price }
+							onChange={ value => {
+								setAttributes( {
+									price: parseFloat( value < 0 ? 0 : value ),
+								} );
+							} }
+						/>
+					</Placeholder>
+				) : (
+					<p className="newspack-listings__price has-large-font-size">
+						<strong>{ formattedPrice }</strong>
+					</p>
+				) }
+			</div>
 		</>
 	);
 };
