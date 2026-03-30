@@ -1,3 +1,10 @@
+# [3.6.0](https://github.com/Automattic/newspack-listings/compare/v3.5.0...v3.6.0) (2026-03-30)
+
+
+### Features
+
+* add AI agent guidelines ([#576](https://github.com/Automattic/newspack-listings/issues/576)) ([00300ab](https://github.com/Automattic/newspack-listings/commit/00300ab986820a87744d89a24f2375131cee0037))
+
 # [3.5.0](https://github.com/Automattic/newspack-listings/compare/v3.4.1...v3.5.0) (2025-11-24)
 
 
