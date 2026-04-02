@@ -21,6 +21,7 @@ export const registerListingBlock = () => {
 	for ( const listingType in post_types ) {
 		if ( post_types.hasOwnProperty( listingType ) ) {
 			registerBlockType( `newspack-listings/${ listingType }`, {
+				apiVersion: 3,
 				title: listingType.charAt( 0 ).toUpperCase() + listingType.slice( 1 ),
 				icon: {
 					src: getIcon( listingType ),

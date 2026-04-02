@@ -14,6 +14,7 @@ const { attributes, category, name } = metadata;
 
 export const registerSelfServeListingsBlock = () => {
 	registerBlockType( name, {
+		apiVersion: 3,
 		title: __( 'Listings: Self-Serve Form', 'newspack-listings' ),
 		icon: {
 			src: pencil,
