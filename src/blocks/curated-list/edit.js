@@ -9,6 +9,7 @@ import {
 	InnerBlocks,
 	InspectorControls,
 	PanelColorSettings,
+	useBlockProps,
 } from '@wordpress/block-editor';
 import { createBlock } from '@wordpress/blocks';
 import {
@@ -54,7 +55,6 @@ const MAX_EDITOR_ITEMS = 100;
 const CuratedListEditorComponent = ( {
 	attributes,
 	canUseMapBlock,
-	className,
 	clientId,
 	innerBlocks,
 	insertBlocks,
@@ -68,6 +68,9 @@ const CuratedListEditorComponent = ( {
 	const [ error, setError ] = useState( null );
 	const [ isFetching, setIsFetching ] = useState( false );
 	const [ locations, setLocations ] = useState( [] );
+	const blockProps = useBlockProps( {
+		className: 'newspack-listings__curated-list-editor',
+	} );
 	const {
 		showNumbers,
 		showMap,
@@ -95,7 +98,7 @@ const CuratedListEditorComponent = ( {
 	const isEmpty = !! window.newspack_listings_data.no_listings || false;
 	const list = innerBlocks.find( innerBlock => innerBlock.name === 'newspack-listings/list-container' );
 	const hasMap = innerBlocks.find( innerBlock => innerBlock.name === 'jetpack/map' );
-	const classes = getCuratedListClasses( className, attributes );
+	const classes = getCuratedListClasses( blockProps.className, attributes );
 	const initialRender = useDidMount();
 
 	/**
@@ -360,45 +363,49 @@ const CuratedListEditorComponent = ( {
 	 */
 	if ( isEmpty ) {
 		return (
-			<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
-				<Notice isDismissible={ false }>{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }</Notice>
-			</Placeholder>
+			<div { ...blockProps }>
+				<Placeholder icon={ <List /> } label={ __( 'Curated List', 'newspack-listings' ) }>
+					<Notice isDismissible={ false }>{ __( 'Your site doesn’t have any listings. Create some to get started.' ) }</Notice>
+				</Placeholder>
+			</div>
 		);
 	}
 
 	// Let user pick Query or Specific mode on startup.
 	if ( startup ) {
 		return (
-			<div className="newspack-listings__placeholder">
-				<BlockVariationPicker
-					icon={ <List /> }
-					label={ __( 'Curated List', 'newspack-listings' ) }
-					instructions={ __( 'Select the type of list to start with.' ) }
-					onSelect={ variation => {
-						if ( variation.name && 'query' === variation.name ) {
-							setAttributes( {
-								queryMode: true,
-								startup: false,
-							} );
-						} else {
-							setAttributes( {
-								startup: false,
-							} );
-						}
-					} }
-					variations={ [
-						{
-							name: 'query',
-							title: __( 'Query', 'newspack-listings' ),
-							icon: <Icon icon={ loop } />,
-						},
-						{
-							name: 'specific',
-							title: __( 'Specific Listings', 'newspack-listings' ),
-							icon: <Icon icon={ postList } />,
-						},
-					] }
-				/>
+			<div { ...blockProps }>
+				<div className="newspack-listings__placeholder">
+					<BlockVariationPicker
+						icon={ <List /> }
+						label={ __( 'Curated List', 'newspack-listings' ) }
+						instructions={ __( 'Select the type of list to start with.' ) }
+						onSelect={ variation => {
+							if ( variation.name && 'query' === variation.name ) {
+								setAttributes( {
+									queryMode: true,
+									startup: false,
+								} );
+							} else {
+								setAttributes( {
+									startup: false,
+								} );
+							}
+						} }
+						variations={ [
+							{
+								name: 'query',
+								title: __( 'Query', 'newspack-listings' ),
+								icon: <Icon icon={ loop } />,
+							},
+							{
+								name: 'specific',
+								title: __( 'Specific Listings', 'newspack-listings' ),
+								icon: <Icon icon={ postList } />,
+							},
+						] }
+					/>
+				</div>
 			</div>
 		);
 	}
@@ -582,7 +589,7 @@ const CuratedListEditorComponent = ( {
 					</PanelRow>
 				</PanelBody>
 			</InspectorControls>
-			<div className="newspack-listings__curated-list-editor">
+			<div { ...blockProps }>
 				<div
 					className={ classes.join( ' ' ) }
 					style={ {

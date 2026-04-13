@@ -14,6 +14,7 @@ const { attributes, category, name } = metadata;
 
 export const registerEventDatesBlock = () => {
 	registerBlockType( name, {
+		apiVersion: 3,
 		title: __( 'Event Dates', 'newspack-listings' ),
 		icon: {
 			src: calendar,

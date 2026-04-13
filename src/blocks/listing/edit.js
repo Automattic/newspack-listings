@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import { useBlockProps } from '@wordpress/block-editor';
 import { Button, Placeholder, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
 import { useEffect, useState } from '@wordpress/element';
@@ -20,6 +21,7 @@ const ListingEditorComponent = ( { attributes, clientId, getBlock, getBlockParen
 	const [ post, setPost ] = useState( null );
 	const [ error, setError ] = useState( null );
 	const [ isEditingPost, setIsEditingPost ] = useState( false );
+	const blockProps = useBlockProps();
 	const { listing } = attributes;
 
 	// Get the parent List Container block.
@@ -173,7 +175,7 @@ const ListingEditorComponent = ( { attributes, clientId, getBlock, getBlockParen
 		);
 	};
 
-	return ! listing || isEditingPost ? renderSearch() : renderPost();
+	return <div { ...blockProps }>{ ! listing || isEditingPost ? renderSearch() : renderPost() }</div>;
 };
 
 const mapStateToProps = select => {
