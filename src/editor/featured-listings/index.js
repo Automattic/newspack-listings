@@ -7,7 +7,7 @@ import { BaseControl, Button, DatePicker, PanelRow, RangeControl, ToggleControl 
 import { compose } from '@wordpress/compose';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { dateI18n } from '@wordpress/date';
-import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
+import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { useEffect, useState } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
