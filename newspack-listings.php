@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:     Newspack Listings
+ * Plugin Name:     Newspack Listings (WRONG VERSION)
  * Plugin URI:      https://newspack.com
- * Description:     Listings and directories for Newspack sites.
+ * Description:     This plugin was downloaded from the legacy plugin repo. Please download the latest version from https://github.com/Automattic/newspack-workspace.
  * Author:          Automattic
  * Author URI:      https://newspack.com
  * Text Domain:     newspack-listings
