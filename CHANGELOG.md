@@ -1,3 +1,10 @@
+## [3.6.2](https://github.com/Automattic/newspack-listings/compare/v3.6.1...v3.6.2) (2026-08-05)
+
+
+### Bug Fixes
+
+* trigger wrong version to sunset the repo ([754cb96](https://github.com/Automattic/newspack-listings/commit/754cb965362eb788c88d61db6a8e09a8a61c743c))
+
 ## [3.6.1](https://github.com/Automattic/newspack-listings/compare/v3.6.0...v3.6.1) (2026-04-13)
 
 
